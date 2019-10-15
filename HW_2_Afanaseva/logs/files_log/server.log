@@ -1,0 +1,386 @@
+DEBUG 2019-10-13 16:20:33,959   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 16:20:33,960   decos.py   Запущена функция get_args, из модуля __main__, с параметрами (), {}
+INFO  2019-10-13 16:20:33,962   server.py  Полученны данные ip и port, которые слушает сервер - , 7777
+DEBUG 2019-10-13 16:21:54,952   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 16:21:54,952   decos.py   Запущена функция get_args, из модуля __main__, с параметрами (), {}
+INFO  2019-10-13 16:21:54,953   server.py  Полученны данные ip и port, которые слушает сервер - , 7777
+DEBUG 2019-10-13 16:51:31,159   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 16:51:31,159   decos.py   Запущена функция start_server, из модуля __main__, с параметрами (<__main__.Server object at 0x000001E9EE161C50>,), {}
+DEBUG 2019-10-13 16:51:31,159   decos.py   Запущена функция socket_init, из модуля __main__, с параметрами (<__main__.Server object at 0x000001E9EE161C50>,), {}
+DEBUG 2019-10-13 16:51:31,160   decos.py   Запущена функция get_args, из модуля __main__, с параметрами (<__main__.Server object at 0x000001E9EE161C50>,), {}
+INFO  2019-10-13 16:51:31,160   server.py  Полученны данные ip и port, которые слушает сервер - , 7777
+DEBUG 2019-10-13 17:03:21,391   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 17:03:21,391   decos.py   Запущена функция start_server, из модуля __main__, с параметрами (<__main__.Server object at 0x000002687CA21C50>,), {}
+DEBUG 2019-10-13 17:03:21,391   decos.py   Запущена функция socket_init, из модуля __main__, с параметрами (<__main__.Server object at 0x000002687CA21C50>,), {}
+DEBUG 2019-10-13 17:03:21,391   decos.py   Запущена функция get_args, из модуля __main__, с параметрами (<__main__.Server object at 0x000002687CA21C50>,), {}
+INFO  2019-10-13 17:03:21,392   server.py  Полученны данные ip и port, которые слушает сервер - , 7777
+DEBUG 2019-10-13 17:05:08,739   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 17:05:08,739   decos.py   Запущена функция start_server, из модуля __main__, с параметрами (<__main__.Server object at 0x0000017205D31C50>,), {}
+DEBUG 2019-10-13 17:05:08,739   decos.py   Запущена функция socket_init, из модуля __main__, с параметрами (<__main__.Server object at 0x0000017205D31C50>,), {}
+DEBUG 2019-10-13 17:05:08,740   decos.py   Запущена функция get_args, из модуля __main__, с параметрами (<__main__.Server object at 0x0000017205D31C50>,), {}
+INFO  2019-10-13 17:05:08,740   server.py  Полученны данные ip и port, которые слушает сервер - , 7777
+INFO  2019-10-13 17:05:28,575   server.py  Установлено соединение с клиетом - ('127.0.0.1', 52858)
+DEBUG 2019-10-13 17:05:29,075   decos.py   Запущена функция get_msg, из модуля common.utils, с параметрами (<socket.socket fd=592, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52858)>,), {}
+DEBUG 2019-10-13 17:05:29,076   decos.py   Запущена функция client_msg, из модуля __main__, с параметрами (<__main__.Server object at 0x0000017205D31C50>, {'action': 'presence', 'time': 1570979128.5740592, 'user': {'account_name': 'Maria'}}, [], <socket.socket fd=592, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52858)>, {}, [<socket.socket fd=592, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52858)>]), {}
+DEBUG 2019-10-13 17:05:29,076   server.py  Разбор сообщения от клиента - {'action': 'presence', 'time': 1570979128.5740592, 'user': {'account_name': 'Maria'}}
+DEBUG 2019-10-13 17:05:29,076   decos.py   Запущена функция send_msg, из модуля common.utils, с параметрами (<socket.socket fd=592, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52858)>, {'response': 200}), {}
+DEBUG 2019-10-13 17:05:29,077   server.py  Отправлен ответ клиенту - {'response': 200} 
+
+DEBUG 2019-10-13 17:05:29,077   server.py  Получено сообщение от клиента
+DEBUG 2019-10-13 17:05:29,577   decos.py   Запущена функция get_msg, из модуля common.utils, с параметрами (<socket.socket fd=592, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52858)>,), {}
+DEBUG 2019-10-13 17:06:28,160   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 17:06:28,160   decos.py   Запущена функция start_server, из модуля __main__, с параметрами (<__main__.Server object at 0x00000183AEEA1C50>,), {}
+DEBUG 2019-10-13 17:06:28,160   decos.py   Запущена функция socket_init, из модуля __main__, с параметрами (<__main__.Server object at 0x00000183AEEA1C50>,), {}
+DEBUG 2019-10-13 17:06:28,161   decos.py   Запущена функция get_args, из модуля __main__, с параметрами (<__main__.Server object at 0x00000183AEEA1C50>,), {}
+INFO  2019-10-13 17:06:28,161   server.py  Полученны данные ip и port, которые слушает сервер - , 7777
+INFO  2019-10-13 17:06:36,126   server.py  Установлено соединение с клиетом - ('127.0.0.1', 52859)
+DEBUG 2019-10-13 17:06:36,628   decos.py   Запущена функция get_msg, из модуля common.utils, с параметрами (<socket.socket fd=572, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52859)>,), {}
+DEBUG 2019-10-13 17:06:36,628   decos.py   Запущена функция client_msg, из модуля __main__, с параметрами (<__main__.Server object at 0x00000183AEEA1C50>, {'action': 'presence', 'time': 1570979196.1267858, 'user': {'account_name': 'mari'}}, [], <socket.socket fd=572, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52859)>, {}, [<socket.socket fd=572, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52859)>]), {}
+DEBUG 2019-10-13 17:06:36,628   server.py  Разбор сообщения от клиента - {'action': 'presence', 'time': 1570979196.1267858, 'user': {'account_name': 'mari'}}
+DEBUG 2019-10-13 17:06:36,628   decos.py   Запущена функция send_msg, из модуля common.utils, с параметрами (<socket.socket fd=572, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52859)>, {'response': 200}), {}
+DEBUG 2019-10-13 17:06:36,629   server.py  Отправлен ответ клиенту - {'response': 200} 
+
+DEBUG 2019-10-13 17:06:36,629   server.py  Получено сообщение от клиента
+DEBUG 2019-10-13 17:06:55,148   decos.py   Запущена функция get_msg, из модуля common.utils, с параметрами (<socket.socket fd=572, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52859)>,), {}
+INFO  2019-10-13 17:06:55,148   server.py  Клиент ('127.0.0.1', 52859) отключился от сервера.
+DEBUG 2019-10-13 17:07:06,333   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 17:07:06,333   decos.py   Запущена функция start_server, из модуля __main__, с параметрами (<__main__.Server object at 0x00000219C4711C50>,), {}
+DEBUG 2019-10-13 17:07:06,333   decos.py   Запущена функция socket_init, из модуля __main__, с параметрами (<__main__.Server object at 0x00000219C4711C50>,), {}
+DEBUG 2019-10-13 17:07:06,334   decos.py   Запущена функция get_args, из модуля __main__, с параметрами (<__main__.Server object at 0x00000219C4711C50>,), {}
+INFO  2019-10-13 17:07:06,334   server.py  Полученны данные ip и port, которые слушает сервер - , 7777
+INFO  2019-10-13 17:07:07,421   server.py  Установлено соединение с клиетом - ('127.0.0.1', 52860)
+DEBUG 2019-10-13 17:07:07,422   decos.py   Запущена функция get_msg, из модуля common.utils, с параметрами (<socket.socket fd=608, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52860)>,), {}
+DEBUG 2019-10-13 17:07:07,422   decos.py   Запущена функция client_msg, из модуля __main__, с параметрами (<__main__.Server object at 0x00000219C4711C50>, {'action': 'presence', 'time': 1570979227.4213126, 'user': {'account_name': 'test2'}}, [], <socket.socket fd=608, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52860)>, {}, [<socket.socket fd=608, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52860)>]), {}
+DEBUG 2019-10-13 17:07:07,422   server.py  Разбор сообщения от клиента - {'action': 'presence', 'time': 1570979227.4213126, 'user': {'account_name': 'test2'}}
+DEBUG 2019-10-13 17:07:07,422   decos.py   Запущена функция send_msg, из модуля common.utils, с параметрами (<socket.socket fd=608, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52860)>, {'response': 200}), {}
+DEBUG 2019-10-13 17:07:07,422   server.py  Отправлен ответ клиенту - {'response': 200} 
+
+DEBUG 2019-10-13 17:07:07,422   server.py  Получено сообщение от клиента
+INFO  2019-10-13 17:07:07,422   server.py  Установлено соединение с клиетом - ('127.0.0.1', 52861)
+DEBUG 2019-10-13 17:07:07,423   decos.py   Запущена функция get_msg, из модуля common.utils, с параметрами (<socket.socket fd=612, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52861)>,), {}
+DEBUG 2019-10-13 17:07:07,423   decos.py   Запущена функция client_msg, из модуля __main__, с параметрами (<__main__.Server object at 0x00000219C4711C50>, {'action': 'presence', 'time': 1570979227.4213126, 'user': {'account_name': 'test1'}}, [], <socket.socket fd=612, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52861)>, {'test2': <socket.socket fd=608, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52860)>}, [<socket.socket fd=608, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52860)>, <socket.socket fd=612, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52861)>]), {}
+DEBUG 2019-10-13 17:07:07,423   server.py  Разбор сообщения от клиента - {'action': 'presence', 'time': 1570979227.4213126, 'user': {'account_name': 'test1'}}
+DEBUG 2019-10-13 17:07:07,423   decos.py   Запущена функция send_msg, из модуля common.utils, с параметрами (<socket.socket fd=612, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52861)>, {'response': 200}), {}
+DEBUG 2019-10-13 17:07:07,423   server.py  Отправлен ответ клиенту - {'response': 200} 
+
+DEBUG 2019-10-13 17:07:07,423   server.py  Получено сообщение от клиента
+INFO  2019-10-13 17:07:07,428   server.py  Установлено соединение с клиетом - ('127.0.0.1', 52862)
+DEBUG 2019-10-13 17:07:07,429   decos.py   Запущена функция get_msg, из модуля common.utils, с параметрами (<socket.socket fd=548, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52862)>,), {}
+DEBUG 2019-10-13 17:07:07,429   decos.py   Запущена функция client_msg, из модуля __main__, с параметрами (<__main__.Server object at 0x00000219C4711C50>, {'action': 'presence', 'time': 1570979227.4282975, 'user': {'account_name': 'test3'}}, [], <socket.socket fd=548, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52862)>, {'test2': <socket.socket fd=608, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52860)>, 'test1': <socket.socket fd=612, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52861)>}, [<socket.socket fd=608, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52860)>, <socket.socket fd=612, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52861)>, <socket.socket fd=548, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52862)>]), {}
+DEBUG 2019-10-13 17:07:07,430   server.py  Разбор сообщения от клиента - {'action': 'presence', 'time': 1570979227.4282975, 'user': {'account_name': 'test3'}}
+DEBUG 2019-10-13 17:07:07,430   decos.py   Запущена функция send_msg, из модуля common.utils, с параметрами (<socket.socket fd=548, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52862)>, {'response': 200}), {}
+DEBUG 2019-10-13 17:07:07,430   server.py  Отправлен ответ клиенту - {'response': 200} 
+
+DEBUG 2019-10-13 17:07:07,430   server.py  Получено сообщение от клиента
+DEBUG 2019-10-13 17:07:21,946   decos.py   Запущена функция get_msg, из модуля common.utils, с параметрами (<socket.socket fd=548, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52862)>,), {}
+DEBUG 2019-10-13 17:07:21,947   decos.py   Запущена функция client_msg, из модуля __main__, с параметрами (<__main__.Server object at 0x00000219C4711C50>, {'action': 'msg', 'from': 'test3', 'to': 'test2', 'time': 1570979241.8410892, 'msg_text': 'herr'}, [], <socket.socket fd=548, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52862)>, {'test2': <socket.socket fd=608, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52860)>, 'test1': <socket.socket fd=612, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52861)>, 'test3': <socket.socket fd=548, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52862)>}, [<socket.socket fd=608, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52860)>, <socket.socket fd=612, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52861)>, <socket.socket fd=548, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52862)>]), {}
+DEBUG 2019-10-13 17:07:21,947   server.py  Разбор сообщения от клиента - {'action': 'msg', 'from': 'test3', 'to': 'test2', 'time': 1570979241.8410892, 'msg_text': 'herr'}
+DEBUG 2019-10-13 17:07:21,948   server.py  Получено сообщение от клиента
+DEBUG 2019-10-13 17:07:21,948   decos.py   Запущена функция send_messages_users, из модуля __main__, с параметрами (<__main__.Server object at 0x00000219C4711C50>, {'test2': <socket.socket fd=608, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52860)>, 'test1': <socket.socket fd=612, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52861)>, 'test3': <socket.socket fd=548, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52862)>}, [<socket.socket fd=608, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52860)>, <socket.socket fd=612, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52861)>, <socket.socket fd=548, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52862)>], {'action': 'msg', 'from': 'test3', 'to': 'test2', 'time': 1570979241.8410892, 'msg_text': 'herr'}), {}
+DEBUG 2019-10-13 17:07:21,949   decos.py   Запущена функция send_msg, из модуля common.utils, с параметрами (<socket.socket fd=608, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52860)>, {'action': 'msg', 'from': 'test3', 'to': 'test2', 'time': 1570979241.8410892, 'msg_text': 'herr'}), {}
+INFO  2019-10-13 17:07:21,949   server.py  Отправлено сообщение пользователю test2 от пользователя test3.
+DEBUG 2019-10-13 17:07:27,958   decos.py   Запущена функция get_msg, из модуля common.utils, с параметрами (<socket.socket fd=548, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52862)>,), {}
+DEBUG 2019-10-13 17:07:27,959   decos.py   Запущена функция client_msg, из модуля __main__, с параметрами (<__main__.Server object at 0x00000219C4711C50>, {'action': 'exit', 'time': 1570979247.9132695, 'account_name': 'test3'}, [], <socket.socket fd=548, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52862)>, {'test2': <socket.socket fd=608, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52860)>, 'test1': <socket.socket fd=612, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52861)>, 'test3': <socket.socket fd=548, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52862)>}, [<socket.socket fd=608, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52860)>, <socket.socket fd=612, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52861)>, <socket.socket fd=548, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52862)>]), {}
+DEBUG 2019-10-13 17:07:27,959   server.py  Разбор сообщения от клиента - {'action': 'exit', 'time': 1570979247.9132695, 'account_name': 'test3'}
+INFO  2019-10-13 17:07:27,959   server.py  Пользователь test3 отключился
+DEBUG 2019-10-13 17:07:27,960   server.py  Получено сообщение от клиента
+DEBUG 2019-10-13 17:07:47,477   decos.py   Запущена функция get_msg, из модуля common.utils, с параметрами (<socket.socket fd=612, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52861)>,), {}
+DEBUG 2019-10-13 17:07:47,478   decos.py   Запущена функция client_msg, из модуля __main__, с параметрами (<__main__.Server object at 0x00000219C4711C50>, {'action': 'msg', 'from': 'test1', 'to': 'test65', 'time': 1570979267.396342, 'msg_text': 'zfd'}, [], <socket.socket fd=612, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52861)>, {'test2': <socket.socket fd=608, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52860)>, 'test1': <socket.socket fd=612, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52861)>}, [<socket.socket fd=608, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52860)>, <socket.socket fd=612, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52861)>]), {}
+DEBUG 2019-10-13 17:07:47,478   server.py  Разбор сообщения от клиента - {'action': 'msg', 'from': 'test1', 'to': 'test65', 'time': 1570979267.396342, 'msg_text': 'zfd'}
+DEBUG 2019-10-13 17:07:47,478   server.py  Получено сообщение от клиента
+DEBUG 2019-10-13 17:07:47,479   decos.py   Запущена функция send_messages_users, из модуля __main__, с параметрами (<__main__.Server object at 0x00000219C4711C50>, {'test2': <socket.socket fd=608, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52860)>, 'test1': <socket.socket fd=612, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52861)>}, [<socket.socket fd=608, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52860)>, <socket.socket fd=612, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52861)>], {'action': 'msg', 'from': 'test1', 'to': 'test65', 'time': 1570979267.396342, 'msg_text': 'zfd'}), {}
+ERROR 2019-10-13 17:07:47,479   server.py  Пользователь test65 не зарегистрирован на сервере, отправка сообщения невозможна.
+DEBUG 2019-10-13 17:08:17,014   decos.py   Запущена функция get_msg, из модуля common.utils, с параметрами (<socket.socket fd=612, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52861)>,), {}
+DEBUG 2019-10-13 17:08:17,015   decos.py   Запущена функция client_msg, из модуля __main__, с параметрами (<__main__.Server object at 0x00000219C4711C50>, {'action': 'msg', 'from': 'test1', 'to': 'test2', 'time': 1570979296.5940242, 'msg_text': 'frau'}, [], <socket.socket fd=612, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52861)>, {'test2': <socket.socket fd=608, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52860)>, 'test1': <socket.socket fd=612, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52861)>}, [<socket.socket fd=608, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52860)>, <socket.socket fd=612, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52861)>]), {}
+DEBUG 2019-10-13 17:08:17,015   server.py  Разбор сообщения от клиента - {'action': 'msg', 'from': 'test1', 'to': 'test2', 'time': 1570979296.5940242, 'msg_text': 'frau'}
+DEBUG 2019-10-13 17:08:17,015   server.py  Получено сообщение от клиента
+DEBUG 2019-10-13 17:08:17,016   decos.py   Запущена функция send_messages_users, из модуля __main__, с параметрами (<__main__.Server object at 0x00000219C4711C50>, {'test2': <socket.socket fd=608, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52860)>, 'test1': <socket.socket fd=612, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52861)>}, [<socket.socket fd=608, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52860)>, <socket.socket fd=612, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52861)>], {'action': 'msg', 'from': 'test1', 'to': 'test2', 'time': 1570979296.5940242, 'msg_text': 'frau'}), {}
+DEBUG 2019-10-13 17:08:17,016   decos.py   Запущена функция send_msg, из модуля common.utils, с параметрами (<socket.socket fd=608, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52860)>, {'action': 'msg', 'from': 'test1', 'to': 'test2', 'time': 1570979296.5940242, 'msg_text': 'frau'}), {}
+INFO  2019-10-13 17:08:17,016   server.py  Отправлено сообщение пользователю test2 от пользователя test1.
+DEBUG 2019-10-13 17:08:25,025   decos.py   Запущена функция get_msg, из модуля common.utils, с параметрами (<socket.socket fd=612, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52861)>,), {}
+DEBUG 2019-10-13 17:08:25,025   decos.py   Запущена функция client_msg, из модуля __main__, с параметрами (<__main__.Server object at 0x00000219C4711C50>, {'action': 'exit', 'time': 1570979305.0053961, 'account_name': 'test1'}, [], <socket.socket fd=612, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52861)>, {'test2': <socket.socket fd=608, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52860)>, 'test1': <socket.socket fd=612, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52861)>}, [<socket.socket fd=608, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52860)>, <socket.socket fd=612, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52861)>]), {}
+DEBUG 2019-10-13 17:08:25,025   server.py  Разбор сообщения от клиента - {'action': 'exit', 'time': 1570979305.0053961, 'account_name': 'test1'}
+INFO  2019-10-13 17:08:25,025   server.py  Пользователь test1 отключился
+DEBUG 2019-10-13 17:08:25,026   server.py  Получено сообщение от клиента
+DEBUG 2019-10-13 17:08:28,529   decos.py   Запущена функция get_msg, из модуля common.utils, с параметрами (<socket.socket fd=608, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52860)>,), {}
+DEBUG 2019-10-13 17:08:28,530   decos.py   Запущена функция client_msg, из модуля __main__, с параметрами (<__main__.Server object at 0x00000219C4711C50>, {'action': 'exit', 'time': 1570979308.0795453, 'account_name': 'test2'}, [], <socket.socket fd=608, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52860)>, {'test2': <socket.socket fd=608, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52860)>}, [<socket.socket fd=608, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 52860)>]), {}
+DEBUG 2019-10-13 17:08:28,530   server.py  Разбор сообщения от клиента - {'action': 'exit', 'time': 1570979308.0795453, 'account_name': 'test2'}
+INFO  2019-10-13 17:08:28,530   server.py  Пользователь test2 отключился
+DEBUG 2019-10-13 17:08:28,531   server.py  Получено сообщение от клиента
+DEBUG 2019-10-13 17:19:12,276   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 17:19:12,276   decos.py   Запущена функция get_args, из модуля __main__, с параметрами (), {}
+INFO  2019-10-13 17:19:12,276   server.py  Полученны данные ip и port, которые слушает сервер - , 7777
+DEBUG 2019-10-13 17:19:12,276   decos.py   Запущена функция start_server, из модуля __main__, с параметрами (<__main__.Server object at 0x0000014194111C88>,), {}
+DEBUG 2019-10-13 17:19:12,277   decos.py   Запущена функция socket_init, из модуля __main__, с параметрами (<__main__.Server object at 0x0000014194111C88>,), {}
+DEBUG 2019-10-13 17:43:37,401   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 17:43:37,401   decos.py   Запущена функция get_args, из модуля __main__, с параметрами (), {}
+INFO  2019-10-13 17:43:37,401   descriptors_server.py Полученны данные address, который слушает сервер - 
+INFO  2019-10-13 17:43:37,401   descriptors_server.py Полученны данные port, который слушает сервер - 7777
+DEBUG 2019-10-13 17:43:37,401   decos.py   Запущена функция start_server, из модуля __main__, с параметрами (<__main__.Server object at 0x00000201ECB1AE80>,), {}
+DEBUG 2019-10-13 17:43:37,401   decos.py   Запущена функция socket_init, из модуля __main__, с параметрами (<__main__.Server object at 0x00000201ECB1AE80>,), {}
+DEBUG 2019-10-13 17:46:07,234   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 17:46:07,234   decos.py   Запущена функция get_args, из модуля __main__, с параметрами (), {}
+INFO  2019-10-13 17:46:07,234   descriptors_server.py Полученны данные address, который слушает сервер - 127.0.0.1
+CRITICAL 2019-10-13 17:46:07,234   descriptors_server.py Неверные значения port (-p)
+DEBUG 2019-10-13 17:47:05,862   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 17:47:05,862   decos.py   Запущена функция get_args, из модуля __main__, с параметрами (), {}
+INFO  2019-10-13 17:47:05,862   descriptors_server.py Полученны данные address, который слушает сервер - 127.0.0.1
+INFO  2019-10-13 17:47:05,862   descriptors_server.py Полученны данные port, который слушает сервер - 7877
+DEBUG 2019-10-13 17:47:05,862   decos.py   Запущена функция start_server, из модуля __main__, с параметрами (<__main__.Server object at 0x0000016239ACD7B8>,), {}
+DEBUG 2019-10-13 17:47:05,862   decos.py   Запущена функция socket_init, из модуля __main__, с параметрами (<__main__.Server object at 0x0000016239ACD7B8>,), {}
+DEBUG 2019-10-13 17:48:26,582   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 17:48:26,582   decos.py   Запущена функция get_args, из модуля __main__, с параметрами (), {}
+INFO  2019-10-13 17:48:26,582   descriptors_server.py Полученны данные address, который слушает сервер - 127.0.0.1
+INFO  2019-10-13 17:48:26,582   descriptors_server.py Полученны данные port, который слушает сервер - 7877
+DEBUG 2019-10-13 17:48:26,582   decos.py   Запущена функция start_server, из модуля __main__, с параметрами (<__main__.Server object at 0x000001677A39D7F0>,), {}
+DEBUG 2019-10-13 17:48:26,582   decos.py   Запущена функция socket_init, из модуля __main__, с параметрами (<__main__.Server object at 0x000001677A39D7F0>,), {}
+INFO  2019-10-13 17:48:27,613   server.py  Установлено соединение с клиетом - ('127.0.0.1', 52905)
+DEBUG 2019-10-13 17:48:27,613   decos.py   Запущена функция get_msg, из модуля common.utils, с параметрами (<socket.socket fd=532, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7877), raddr=('127.0.0.1', 52905)>,), {}
+DEBUG 2019-10-13 17:48:27,613   decos.py   Запущена функция client_msg, из модуля __main__, с параметрами (<__main__.Server object at 0x000001677A39D7F0>, {'action': 'presence', 'time': 1570981707.6132007, 'user': {'account_name': 'test3'}}, [], <socket.socket fd=532, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7877), raddr=('127.0.0.1', 52905)>, {}, [<socket.socket fd=532, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7877), raddr=('127.0.0.1', 52905)>]), {}
+DEBUG 2019-10-13 17:48:27,613   server.py  Разбор сообщения от клиента - {'action': 'presence', 'time': 1570981707.6132007, 'user': {'account_name': 'test3'}}
+DEBUG 2019-10-13 17:48:27,613   decos.py   Запущена функция send_msg, из модуля common.utils, с параметрами (<socket.socket fd=532, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7877), raddr=('127.0.0.1', 52905)>, {'response': 200}), {}
+DEBUG 2019-10-13 17:48:27,613   server.py  Отправлен ответ клиенту - {'response': 200} 
+
+DEBUG 2019-10-13 17:48:27,613   server.py  Получено сообщение от клиента
+INFO  2019-10-13 17:48:27,628   server.py  Установлено соединение с клиетом - ('127.0.0.1', 52906)
+DEBUG 2019-10-13 17:48:27,628   decos.py   Запущена функция get_msg, из модуля common.utils, с параметрами (<socket.socket fd=536, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7877), raddr=('127.0.0.1', 52906)>,), {}
+DEBUG 2019-10-13 17:48:27,628   decos.py   Запущена функция client_msg, из модуля __main__, с параметрами (<__main__.Server object at 0x000001677A39D7F0>, {'action': 'presence', 'time': 1570981707.6132007, 'user': {'account_name': 'test1'}}, [], <socket.socket fd=536, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7877), raddr=('127.0.0.1', 52906)>, {'test3': <socket.socket fd=532, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7877), raddr=('127.0.0.1', 52905)>}, [<socket.socket fd=532, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7877), raddr=('127.0.0.1', 52905)>, <socket.socket fd=536, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7877), raddr=('127.0.0.1', 52906)>]), {}
+DEBUG 2019-10-13 17:48:27,628   server.py  Разбор сообщения от клиента - {'action': 'presence', 'time': 1570981707.6132007, 'user': {'account_name': 'test1'}}
+DEBUG 2019-10-13 17:48:27,628   decos.py   Запущена функция send_msg, из модуля common.utils, с параметрами (<socket.socket fd=536, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7877), raddr=('127.0.0.1', 52906)>, {'response': 200}), {}
+DEBUG 2019-10-13 17:48:27,628   server.py  Отправлен ответ клиенту - {'response': 200} 
+
+DEBUG 2019-10-13 17:48:27,628   server.py  Получено сообщение от клиента
+INFO  2019-10-13 17:48:27,628   server.py  Установлено соединение с клиетом - ('127.0.0.1', 52907)
+DEBUG 2019-10-13 17:48:27,628   decos.py   Запущена функция get_msg, из модуля common.utils, с параметрами (<socket.socket fd=544, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7877), raddr=('127.0.0.1', 52907)>,), {}
+DEBUG 2019-10-13 17:48:27,628   decos.py   Запущена функция client_msg, из модуля __main__, с параметрами (<__main__.Server object at 0x000001677A39D7F0>, {'action': 'presence', 'time': 1570981707.628829, 'user': {'account_name': 'test2'}}, [], <socket.socket fd=544, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7877), raddr=('127.0.0.1', 52907)>, {'test3': <socket.socket fd=532, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7877), raddr=('127.0.0.1', 52905)>, 'test1': <socket.socket fd=536, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7877), raddr=('127.0.0.1', 52906)>}, [<socket.socket fd=532, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7877), raddr=('127.0.0.1', 52905)>, <socket.socket fd=536, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7877), raddr=('127.0.0.1', 52906)>, <socket.socket fd=544, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7877), raddr=('127.0.0.1', 52907)>]), {}
+DEBUG 2019-10-13 17:48:27,628   server.py  Разбор сообщения от клиента - {'action': 'presence', 'time': 1570981707.628829, 'user': {'account_name': 'test2'}}
+DEBUG 2019-10-13 17:48:27,628   decos.py   Запущена функция send_msg, из модуля common.utils, с параметрами (<socket.socket fd=544, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7877), raddr=('127.0.0.1', 52907)>, {'response': 200}), {}
+DEBUG 2019-10-13 17:48:27,628   server.py  Отправлен ответ клиенту - {'response': 200} 
+
+DEBUG 2019-10-13 17:48:27,628   server.py  Получено сообщение от клиента
+DEBUG 2019-10-13 17:48:57,538   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 17:48:57,538   decos.py   Запущена функция get_args, из модуля __main__, с параметрами (), {}
+INFO  2019-10-13 17:48:57,538   descriptors_server.py Полученны данные address, который слушает сервер - 127.0.0.1
+CRITICAL 2019-10-13 17:48:57,538   descriptors_server.py Неверные значения port (-p)
+DEBUG 2019-10-13 17:52:13,238   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 17:52:13,238   decos.py   Запущена функция get_args, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 17:54:24,200   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 17:54:24,200   decos.py   Запущена функция get_args, из модуля __main__, с параметрами (), {}
+CRITICAL 2019-10-13 17:54:24,200   descriptors_server.py Неверные значения ip (-a)
+DEBUG 2019-10-13 17:54:38,380   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 17:54:38,380   decos.py   Запущена функция get_args, из модуля __main__, с параметрами (), {}
+CRITICAL 2019-10-13 17:54:38,380   descriptors_server.py Неверные значения ip (-a)
+DEBUG 2019-10-13 17:54:45,296   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 17:54:45,296   decos.py   Запущена функция get_args, из модуля __main__, с параметрами (), {}
+INFO  2019-10-13 17:54:45,297   descriptors_server.py Полученны данные address, который слушает сервер - 0.0.0.0
+CRITICAL 2019-10-13 17:54:45,298   descriptors_server.py Неверные значения port (-p)
+DEBUG 2019-10-13 17:54:53,930   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 17:54:53,930   decos.py   Запущена функция get_args, из модуля __main__, с параметрами (), {}
+INFO  2019-10-13 17:54:53,930   descriptors_server.py Полученны данные address, который слушает сервер - 0.0.0.0
+INFO  2019-10-13 17:54:53,930   descriptors_server.py Полученны данные port, который слушает сервер - 7778
+DEBUG 2019-10-13 17:54:53,930   decos.py   Запущена функция start_server, из модуля __main__, с параметрами (<__main__.Server object at 0x00000242DCD44FD0>,), {}
+DEBUG 2019-10-13 17:54:53,930   decos.py   Запущена функция socket_init, из модуля __main__, с параметрами (<__main__.Server object at 0x00000242DCD44FD0>,), {}
+DEBUG 2019-10-13 17:57:58,290   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 17:57:58,290   decos.py   Запущена функция get_args, из модуля __main__, с параметрами (), {}
+CRITICAL 2019-10-13 17:57:58,290   descriptors_server.py Неверные значения ip (-a)
+DEBUG 2019-10-13 18:00:19,032   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 18:00:19,032   decos.py   Запущена функция get_args, из модуля __main__, с параметрами (), {}
+INFO  2019-10-13 18:00:19,032   descriptors_server.py Сервер слушает все адреса
+INFO  2019-10-13 18:00:19,032   descriptors_server.py Полученны данные port, который слушает сервер - 7777
+DEBUG 2019-10-13 18:00:19,032   decos.py   Запущена функция start_server, из модуля __main__, с параметрами (<__main__.Server object at 0x0000020B0D2B9198>,), {}
+DEBUG 2019-10-13 18:00:19,032   decos.py   Запущена функция socket_init, из модуля __main__, с параметрами (<__main__.Server object at 0x0000020B0D2B9198>,), {}
+DEBUG 2019-10-13 18:11:17,277   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 18:11:17,277   decos.py   Запущена функция get_args, из модуля __main__, с параметрами (), {}
+INFO  2019-10-13 18:11:17,277   descriptors.py Сервер слушает все адреса
+INFO  2019-10-13 18:11:17,277   descriptors.py Полученны данные port, который слушает сервер - 7777
+DEBUG 2019-10-13 18:11:17,277   decos.py   Запущена функция start_server, из модуля __main__, с параметрами (<__main__.Server object at 0x000002D24C311C18>,), {}
+DEBUG 2019-10-13 18:11:17,277   decos.py   Запущена функция socket_init, из модуля __main__, с параметрами (<__main__.Server object at 0x000002D24C311C18>,), {}
+CRITICAL 2019-10-13 19:12:19,005   descriptors.py Неверные значения ip (-a)
+CRITICAL 2019-10-13 19:13:33,760   descriptors.py Неверные значения ip (-a)
+CRITICAL 2019-10-13 19:13:53,747   descriptors.py Неверные значения ip (-a)
+CRITICAL 2019-10-13 19:14:30,125   descriptors.py Неверные значения ip (-a)
+CRITICAL 2019-10-13 19:14:45,574   descriptors.py Неверные значения ip (-a)
+CRITICAL 2019-10-13 19:17:53,960   descriptors.py Неверные значения ip (-a)
+CRITICAL 2019-10-13 19:18:14,540   descriptors.py Неверные значения ip (-a)
+CRITICAL 2019-10-13 19:18:42,717   descriptors.py Неверные значения ip (-a)
+CRITICAL 2019-10-13 19:26:17,845   descriptors.py Неверные значения ip (-a)
+CRITICAL 2019-10-13 19:26:20,970   descriptors.py Неверные значения ip (-a)
+CRITICAL 2019-10-13 19:26:41,056   descriptors.py Неверные значения ip (-a)
+CRITICAL 2019-10-13 19:26:47,552   descriptors.py Неверные значения ip (-a)
+INFO  2019-10-13 19:26:47,568   descriptors.py Сервер слушает все адреса
+INFO  2019-10-13 19:26:47,568   descriptors.py Полученны данные port, который слушает сервер - 7777
+CRITICAL 2019-10-13 19:26:54,066   descriptors.py Неверные значения ip (-a)
+INFO  2019-10-13 19:28:20,853   descriptors.py Полученны данные address, который слушает сервер - 127.0.0.0
+INFO  2019-10-13 19:30:55,894   descriptors.py Полученны данные address, который слушает сервер - 127.0.0.0
+INFO  2019-10-13 19:31:21,325   descriptors.py Полученны данные address, который слушает сервер - 127.0.0.0
+INFO  2019-10-13 19:32:10,280   descriptors.py Полученны данные address, который слушает сервер - 127.0.0.0
+CRITICAL 2019-10-13 19:32:10,280   descriptors.py Неверные значения port (-p)
+INFO  2019-10-13 19:32:17,558   descriptors.py Сервер слушает все адреса
+INFO  2019-10-13 19:32:17,558   descriptors.py Полученны данные port, который слушает сервер - 7777
+CRITICAL 2019-10-13 19:33:43,067   descriptors.py Неверные значения ip (-a)
+INFO  2019-10-13 19:33:43,067   descriptors.py Полученны данные address, который слушает сервер - 127.0.0.0
+CRITICAL 2019-10-13 19:33:43,067   descriptors.py Неверные значения port (-p)
+DEBUG 2019-10-13 20:34:51,909   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 20:34:51,909   decos.py   Запущена функция get_args, из модуля __main__, с параметрами (), {}
+INFO  2019-10-13 20:34:51,909   descriptors.py Сервер слушает все адреса
+INFO  2019-10-13 20:34:51,909   descriptors.py Полученны данные port, который слушает сервер - 7777
+DEBUG 2019-10-13 20:34:51,909   decos.py   Запущена функция start_server, из модуля __main__, с параметрами (<__main__.Server object at 0x000002571D426978>,), {}
+DEBUG 2019-10-13 20:56:10,695   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 20:56:30,357   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 20:56:30,357   decos.py   Запущена функция get_args, из модуля __main__, с параметрами (), {}
+INFO  2019-10-13 20:56:30,358   descriptors.py Сервер слушает все адреса
+INFO  2019-10-13 20:56:30,358   descriptors.py Полученны данные port, который слушает сервер - 7777
+DEBUG 2019-10-13 20:56:30,358   decos.py   Запущена функция start_server, из модуля __main__, с параметрами (<__main__.Server object at 0x00000170347AC518>,), {}
+DEBUG 2019-10-13 20:59:46,599   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 20:59:46,599   decos.py   Запущена функция get_args, из модуля __main__, с параметрами (), {}
+INFO  2019-10-13 20:59:46,599   descriptors.py Сервер слушает все адреса
+INFO  2019-10-13 20:59:46,599   descriptors.py Полученны данные port, который слушает сервер - 7777
+DEBUG 2019-10-13 20:59:46,599   decos.py   Запущена функция start_server, из модуля __main__, с параметрами (<__main__.Server object at 0x000002829FA11C50>,), {}
+DEBUG 2019-10-13 21:00:30,947   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 21:00:30,947   decos.py   Запущена функция get_args, из модуля __main__, с параметрами (), {}
+INFO  2019-10-13 21:00:30,947   descriptors.py Сервер слушает все адреса
+INFO  2019-10-13 21:00:30,947   descriptors.py Полученны данные port, который слушает сервер - 7777
+DEBUG 2019-10-13 21:00:30,947   decos.py   Запущена функция start_server, из модуля __main__, с параметрами (<__main__.Server object at 0x000001CA7F84A240>,), {}
+DEBUG 2019-10-13 21:05:45,076   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 21:05:45,076   decos.py   Запущена функция get_args, из модуля __main__, с параметрами (), {}
+INFO  2019-10-13 21:05:45,077   descriptors.py Сервер слушает все адреса
+INFO  2019-10-13 21:05:45,077   descriptors.py Полученны данные port, который слушает сервер - 7777
+DEBUG 2019-10-13 21:05:45,077   decos.py   Запущена функция start_server, из модуля __main__, с параметрами (<__main__.Server object at 0x0000019307A98A90>,), {}
+DEBUG 2019-10-13 21:06:47,101   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 21:06:47,101   decos.py   Запущена функция get_args, из модуля __main__, с параметрами (), {}
+INFO  2019-10-13 21:06:47,102   descriptors.py Сервер слушает все адреса
+INFO  2019-10-13 21:06:47,102   descriptors.py Полученны данные port, который слушает сервер - 7777
+DEBUG 2019-10-13 21:06:47,102   decos.py   Запущена функция start_server, из модуля __main__, с параметрами (<__main__.Server object at 0x0000017A129CB400>,), {}
+DEBUG 2019-10-13 21:06:47,102   decos.py   Запущена функция socket_init, из модуля __main__, с параметрами (<__main__.Server object at 0x0000017A129CB400>,), {}
+DEBUG 2019-10-13 21:18:09,705   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 21:18:09,705   decos.py   Запущена функция get_args, из модуля __main__, с параметрами (), {}
+INFO  2019-10-13 21:18:09,708   descriptors.py Сервер слушает все адреса
+INFO  2019-10-13 21:18:09,708   descriptors.py Полученны данные port, который слушает сервер - 7777
+DEBUG 2019-10-13 21:18:09,709   decos.py   Запущена функция start_server, из модуля __main__, с параметрами (<__main__.Server object at 0x000001A77FF78B70>,), {}
+DEBUG 2019-10-13 21:18:09,709   decos.py   Запущена функция socket_init, из модуля __main__, с параметрами (<__main__.Server object at 0x000001A77FF78B70>,), {}
+DEBUG 2019-10-13 21:19:27,901   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 21:19:27,901   decos.py   Запущена функция get_args, из модуля __main__, с параметрами (), {}
+INFO  2019-10-13 21:19:27,901   descriptors.py Сервер слушает все адреса
+INFO  2019-10-13 21:19:27,902   descriptors.py Полученны данные port, который слушает сервер - 7777
+DEBUG 2019-10-13 21:19:27,902   decos.py   Запущена функция start_server, из модуля __main__, с параметрами (<__main__.Server object at 0x0000021B3CFE4F60>,), {}
+DEBUG 2019-10-13 21:20:20,903   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 21:20:20,903   decos.py   Запущена функция get_args, из модуля __main__, с параметрами (), {}
+INFO  2019-10-13 21:20:20,904   descriptors.py Сервер слушает все адреса
+INFO  2019-10-13 21:20:20,904   descriptors.py Полученны данные port, который слушает сервер - 7777
+DEBUG 2019-10-13 21:20:20,904   decos.py   Запущена функция start_server, из модуля __main__, с параметрами (<__main__.Server object at 0x0000023275217978>,), {}
+DEBUG 2019-10-13 21:23:32,778   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 21:23:32,778   decos.py   Запущена функция get_args, из модуля __main__, с параметрами (), {}
+INFO  2019-10-13 21:23:32,779   descriptors.py Сервер слушает все адреса
+INFO  2019-10-13 21:23:32,779   descriptors.py Полученны данные port, который слушает сервер - 7777
+DEBUG 2019-10-13 21:23:32,780   decos.py   Запущена функция start_server, из модуля __main__, с параметрами (<__main__.Server object at 0x000001CC5AD98940>,), {}
+INFO  2019-10-13 21:23:33,894   server.py  Установлено соединение с клиетом - ('127.0.0.1', 53860)
+DEBUG 2019-10-13 21:23:33,894   decos.py   Запущена функция get_msg, из модуля common.utils, с параметрами (<socket.socket fd=528, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53860)>,), {}
+DEBUG 2019-10-13 21:23:33,895   decos.py   Запущена функция client_msg, из модуля __main__, с параметрами (<__main__.Server object at 0x0000023275217978>, {'action': 'presence', 'time': 1570994613.8946397, 'user': {'account_name': 'test1'}}, [], <socket.socket fd=528, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53860)>, {}, [<socket.socket fd=528, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53860)>]), {}
+DEBUG 2019-10-13 21:23:33,895   server.py  Разбор сообщения от клиента - {'action': 'presence', 'time': 1570994613.8946397, 'user': {'account_name': 'test1'}}
+DEBUG 2019-10-13 21:23:33,895   decos.py   Запущена функция send_msg, из модуля common.utils, с параметрами (<socket.socket fd=528, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53860)>, {'response': 200}), {}
+DEBUG 2019-10-13 21:23:33,895   server.py  Отправлен ответ клиенту - {'response': 200} 
+
+DEBUG 2019-10-13 21:23:33,895   server.py  Получено сообщение от клиента
+INFO  2019-10-13 21:23:33,895   server.py  Установлено соединение с клиетом - ('127.0.0.1', 53861)
+INFO  2019-10-13 21:23:33,896   server.py  Установлено соединение с клиетом - ('127.0.0.1', 53862)
+DEBUG 2019-10-13 21:23:33,896   decos.py   Запущена функция get_msg, из модуля common.utils, с параметрами (<socket.socket fd=524, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53861)>,), {}
+DEBUG 2019-10-13 21:23:33,896   decos.py   Запущена функция client_msg, из модуля __main__, с параметрами (<__main__.Server object at 0x0000023275217978>, {'action': 'presence', 'time': 1570994613.8956356, 'user': {'account_name': 'test3'}}, [], <socket.socket fd=524, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53861)>, {'test1': <socket.socket fd=528, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53860)>}, [<socket.socket fd=528, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53860)>, <socket.socket fd=524, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53861)>, <socket.socket fd=548, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53862)>]), {}
+DEBUG 2019-10-13 21:23:33,896   server.py  Разбор сообщения от клиента - {'action': 'presence', 'time': 1570994613.8956356, 'user': {'account_name': 'test3'}}
+DEBUG 2019-10-13 21:23:33,896   decos.py   Запущена функция send_msg, из модуля common.utils, с параметрами (<socket.socket fd=524, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53861)>, {'response': 200}), {}
+DEBUG 2019-10-13 21:23:33,897   server.py  Отправлен ответ клиенту - {'response': 200} 
+
+DEBUG 2019-10-13 21:23:33,897   server.py  Получено сообщение от клиента
+DEBUG 2019-10-13 21:23:34,397   decos.py   Запущена функция get_msg, из модуля common.utils, с параметрами (<socket.socket fd=548, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53862)>,), {}
+DEBUG 2019-10-13 21:23:34,397   decos.py   Запущена функция client_msg, из модуля __main__, с параметрами (<__main__.Server object at 0x0000023275217978>, {'action': 'presence', 'time': 1570994613.8966336, 'user': {'account_name': 'test2'}}, [], <socket.socket fd=548, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53862)>, {'test1': <socket.socket fd=528, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53860)>, 'test3': <socket.socket fd=524, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53861)>}, [<socket.socket fd=528, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53860)>, <socket.socket fd=524, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53861)>, <socket.socket fd=548, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53862)>]), {}
+DEBUG 2019-10-13 21:23:34,397   server.py  Разбор сообщения от клиента - {'action': 'presence', 'time': 1570994613.8966336, 'user': {'account_name': 'test2'}}
+DEBUG 2019-10-13 21:23:34,397   decos.py   Запущена функция send_msg, из модуля common.utils, с параметрами (<socket.socket fd=548, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53862)>, {'response': 200}), {}
+DEBUG 2019-10-13 21:23:34,397   server.py  Отправлен ответ клиенту - {'response': 200} 
+
+DEBUG 2019-10-13 21:23:34,397   server.py  Получено сообщение от клиента
+DEBUG 2019-10-13 21:23:46,411   decos.py   Запущена функция get_msg, из модуля common.utils, с параметрами (<socket.socket fd=548, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53862)>,), {}
+INFO  2019-10-13 21:23:46,411   server.py  Клиент ('127.0.0.1', 53862) отключился от сервера.
+DEBUG 2019-10-13 21:23:46,912   decos.py   Запущена функция get_msg, из модуля common.utils, с параметрами (<socket.socket fd=528, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53860)>,), {}
+INFO  2019-10-13 21:23:46,912   server.py  Клиент ('127.0.0.1', 53860) отключился от сервера.
+DEBUG 2019-10-13 21:23:47,913   decos.py   Запущена функция get_msg, из модуля common.utils, с параметрами (<socket.socket fd=524, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53861)>,), {}
+INFO  2019-10-13 21:23:47,913   server.py  Клиент ('127.0.0.1', 53861) отключился от сервера.
+INFO  2019-10-13 21:24:35,122   server.py  Установлено соединение с клиетом - ('127.0.0.1', 53863)
+DEBUG 2019-10-13 21:24:35,622   decos.py   Запущена функция get_msg, из модуля common.utils, с параметрами (<socket.socket fd=528, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53863)>,), {}
+DEBUG 2019-10-13 21:24:35,622   decos.py   Запущена функция client_msg, из модуля __main__, с параметрами (<__main__.Server object at 0x0000023275217978>, {'action': 'presence', 'time': 1570994675.1225133, 'user': {'account_name': 'maria'}}, [], <socket.socket fd=528, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53863)>, {'test1': <socket.socket [closed] fd=-1, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0>, 'test3': <socket.socket [closed] fd=-1, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0>, 'test2': <socket.socket [closed] fd=-1, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0>}, [<socket.socket fd=528, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53863)>]), {}
+DEBUG 2019-10-13 21:24:35,622   server.py  Разбор сообщения от клиента - {'action': 'presence', 'time': 1570994675.1225133, 'user': {'account_name': 'maria'}}
+DEBUG 2019-10-13 21:24:35,622   decos.py   Запущена функция send_msg, из модуля common.utils, с параметрами (<socket.socket fd=528, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53863)>, {'response': 200}), {}
+DEBUG 2019-10-13 21:24:35,622   server.py  Отправлен ответ клиенту - {'response': 200} 
+
+DEBUG 2019-10-13 21:24:35,622   server.py  Получено сообщение от клиента
+DEBUG 2019-10-13 21:24:56,643   decos.py   Запущена функция get_msg, из модуля common.utils, с параметрами (<socket.socket fd=528, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53863)>,), {}
+INFO  2019-10-13 21:24:56,643   server.py  Клиент ('127.0.0.1', 53863) отключился от сервера.
+INFO  2019-10-13 21:24:58,402   server.py  Установлено соединение с клиетом - ('127.0.0.1', 53864)
+DEBUG 2019-10-13 21:24:58,904   decos.py   Запущена функция get_msg, из модуля common.utils, с параметрами (<socket.socket fd=524, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53864)>,), {}
+DEBUG 2019-10-13 21:24:58,904   decos.py   Запущена функция client_msg, из модуля __main__, с параметрами (<__main__.Server object at 0x0000023275217978>, {'action': 'presence', 'time': 1570994698.4024656, 'user': {'account_name': 'ji'}}, [], <socket.socket fd=524, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53864)>, {'test1': <socket.socket [closed] fd=-1, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0>, 'test3': <socket.socket [closed] fd=-1, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0>, 'test2': <socket.socket [closed] fd=-1, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0>, 'maria': <socket.socket [closed] fd=-1, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0>}, [<socket.socket fd=524, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53864)>]), {}
+DEBUG 2019-10-13 21:24:58,904   server.py  Разбор сообщения от клиента - {'action': 'presence', 'time': 1570994698.4024656, 'user': {'account_name': 'ji'}}
+DEBUG 2019-10-13 21:24:58,904   decos.py   Запущена функция send_msg, из модуля common.utils, с параметрами (<socket.socket fd=524, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53864)>, {'response': 200}), {}
+DEBUG 2019-10-13 21:24:58,904   server.py  Отправлен ответ клиенту - {'response': 200} 
+
+DEBUG 2019-10-13 21:24:58,904   server.py  Получено сообщение от клиента
+DEBUG 2019-10-13 21:25:29,940   decos.py   Запущена функция get_msg, из модуля common.utils, с параметрами (<socket.socket fd=524, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53864)>,), {}
+INFO  2019-10-13 21:25:29,940   server.py  Клиент ('127.0.0.1', 53864) отключился от сервера.
+INFO  2019-10-13 21:35:19,254   server.py  Установлено соединение с клиетом - ('127.0.0.1', 53959)
+DEBUG 2019-10-13 21:35:19,754   decos.py   Запущена функция get_msg, из модуля common.utils, с параметрами (<socket.socket fd=520, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53959)>,), {}
+DEBUG 2019-10-13 21:35:19,755   decos.py   Запущена функция client_msg, из модуля __main__, с параметрами (<__main__.Server object at 0x0000023275217978>, {'action': 'presence', 'time': 1570995319.2541502, 'user': {'account_name': 'xgf'}}, [], <socket.socket fd=520, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53959)>, {'test1': <socket.socket [closed] fd=-1, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0>, 'test3': <socket.socket [closed] fd=-1, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0>, 'test2': <socket.socket [closed] fd=-1, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0>, 'maria': <socket.socket [closed] fd=-1, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0>, 'ji': <socket.socket [closed] fd=-1, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0>}, [<socket.socket fd=520, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53959)>]), {}
+DEBUG 2019-10-13 21:35:19,756   server.py  Разбор сообщения от клиента - {'action': 'presence', 'time': 1570995319.2541502, 'user': {'account_name': 'xgf'}}
+DEBUG 2019-10-13 21:35:19,756   decos.py   Запущена функция send_msg, из модуля common.utils, с параметрами (<socket.socket fd=520, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53959)>, {'response': 200}), {}
+DEBUG 2019-10-13 21:35:19,757   server.py  Отправлен ответ клиенту - {'response': 200} 
+
+DEBUG 2019-10-13 21:35:19,757   server.py  Получено сообщение от клиента
+DEBUG 2019-10-13 21:35:30,769   decos.py   Запущена функция get_msg, из модуля common.utils, с параметрами (<socket.socket fd=520, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53959)>,), {}
+INFO  2019-10-13 21:35:30,769   server.py  Клиент ('127.0.0.1', 53959) отключился от сервера.
+DEBUG 2019-10-13 21:40:12,356   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 21:40:12,356   decos.py   Запущена функция get_args, из модуля __main__, с параметрами (), {}
+INFO  2019-10-13 21:40:12,356   descriptors.py Сервер слушает все адреса
+INFO  2019-10-13 21:40:12,357   descriptors.py Полученны данные port, который слушает сервер - 7777
+DEBUG 2019-10-13 21:40:12,357   decos.py   Запущена функция start_server, из модуля __main__, с параметрами (<__main__.Server object at 0x000001048E2AC470>,), {}
+INFO  2019-10-13 21:40:13,473   server.py  Установлено соединение с клиетом - ('127.0.0.1', 53966)
+DEBUG 2019-10-13 21:40:13,474   decos.py   Запущена функция get_msg, из модуля common.utils, с параметрами (<socket.socket fd=588, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53966)>,), {}
+DEBUG 2019-10-13 21:40:13,474   decos.py   Запущена функция client_msg, из модуля __main__, с параметрами (<__main__.Server object at 0x000001048E2AC470>, {'action': 'presence', 'time': 1570995613.473839, 'user': {'account_name': 'test2'}}, [], <socket.socket fd=588, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53966)>, {}, [<socket.socket fd=588, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53966)>]), {}
+DEBUG 2019-10-13 21:40:13,474   server.py  Разбор сообщения от клиента - {'action': 'presence', 'time': 1570995613.473839, 'user': {'account_name': 'test2'}}
+DEBUG 2019-10-13 21:40:13,474   decos.py   Запущена функция send_msg, из модуля common.utils, с параметрами (<socket.socket fd=588, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53966)>, {'response': 200}), {}
+DEBUG 2019-10-13 21:40:13,474   server.py  Отправлен ответ клиенту - {'response': 200} 
+
+DEBUG 2019-10-13 21:40:13,474   server.py  Получено сообщение от клиента
+INFO  2019-10-13 21:40:13,474   server.py  Установлено соединение с клиетом - ('127.0.0.1', 53965)
+DEBUG 2019-10-13 21:40:13,476   decos.py   Запущена функция get_msg, из модуля common.utils, с параметрами (<socket.socket fd=584, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53965)>,), {}
+DEBUG 2019-10-13 21:40:13,476   decos.py   Запущена функция client_msg, из модуля __main__, с параметрами (<__main__.Server object at 0x000001048E2AC470>, {'action': 'presence', 'time': 1570995613.473839, 'user': {'account_name': 'test1'}}, [], <socket.socket fd=584, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53965)>, {'test2': <socket.socket fd=588, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53966)>}, [<socket.socket fd=588, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53966)>, <socket.socket fd=584, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53965)>]), {}
+DEBUG 2019-10-13 21:40:13,477   server.py  Разбор сообщения от клиента - {'action': 'presence', 'time': 1570995613.473839, 'user': {'account_name': 'test1'}}
+DEBUG 2019-10-13 21:40:13,477   decos.py   Запущена функция send_msg, из модуля common.utils, с параметрами (<socket.socket fd=584, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53965)>, {'response': 200}), {}
+DEBUG 2019-10-13 21:40:13,477   server.py  Отправлен ответ клиенту - {'response': 200} 
+
+DEBUG 2019-10-13 21:40:13,477   server.py  Получено сообщение от клиента
+INFO  2019-10-13 21:40:13,478   server.py  Установлено соединение с клиетом - ('127.0.0.1', 53967)
+DEBUG 2019-10-13 21:40:13,978   decos.py   Запущена функция get_msg, из модуля common.utils, с параметрами (<socket.socket fd=444, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53967)>,), {}
+DEBUG 2019-10-13 21:40:13,979   decos.py   Запущена функция client_msg, из модуля __main__, с параметрами (<__main__.Server object at 0x000001048E2AC470>, {'action': 'presence', 'time': 1570995613.478838, 'user': {'account_name': 'test3'}}, [], <socket.socket fd=444, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53967)>, {'test2': <socket.socket fd=588, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53966)>, 'test1': <socket.socket fd=584, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53965)>}, [<socket.socket fd=588, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53966)>, <socket.socket fd=584, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53965)>, <socket.socket fd=444, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53967)>]), {}
+DEBUG 2019-10-13 21:40:13,979   server.py  Разбор сообщения от клиента - {'action': 'presence', 'time': 1570995613.478838, 'user': {'account_name': 'test3'}}
+DEBUG 2019-10-13 21:40:13,979   decos.py   Запущена функция send_msg, из модуля common.utils, с параметрами (<socket.socket fd=444, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53967)>, {'response': 200}), {}
+DEBUG 2019-10-13 21:40:13,980   server.py  Отправлен ответ клиенту - {'response': 200} 
+
+DEBUG 2019-10-13 21:40:13,980   server.py  Получено сообщение от клиента
+DEBUG 2019-10-13 21:40:20,989   decos.py   Запущена функция get_msg, из модуля common.utils, с параметрами (<socket.socket fd=588, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53966)>,), {}
+INFO  2019-10-13 21:40:20,990   server.py  Клиент ('127.0.0.1', 53966) отключился от сервера.
+DEBUG 2019-10-13 21:40:21,491   decos.py   Запущена функция get_msg, из модуля common.utils, с параметрами (<socket.socket fd=584, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 53965)>,), {}
+INFO  2019-10-13 21:40:21,491   server.py  Клиент ('127.0.0.1', 53965) отключился от сервера.
+DEBUG 2019-10-13 21:42:59,195   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 21:42:59,195   decos.py   Запущена функция get_args, из модуля __main__, с параметрами (), {}
+INFO  2019-10-13 21:42:59,196   descriptors.py Сервер слушает все адреса
+INFO  2019-10-13 21:42:59,196   descriptors.py Полученны данные port, который слушает сервер - 7777
+DEBUG 2019-10-13 21:42:59,196   decos.py   Запущена функция start_server, из модуля __main__, с параметрами (<__main__.Server object at 0x0000013CED488A90>,), {}
+INFO  2019-10-13 21:59:02,250   server.py  Установлено соединение с клиетом - ('127.0.0.1', 54022)
+DEBUG 2019-10-13 21:59:02,251   decos.py   Запущена функция get_msg, из модуля common.utils, с параметрами (<socket.socket fd=560, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 54022)>,), {}
+DEBUG 2019-10-13 21:59:02,251   decos.py   Запущена функция client_msg, из модуля __main__, с параметрами (<__main__.Server object at 0x0000013CED488A90>, {'action': 'presence', 'time': 1570996742.2503016, 'user': {'account_name': 'tds'}}, [], <socket.socket fd=560, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 54022)>, {}, [<socket.socket fd=560, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 54022)>]), {}
+DEBUG 2019-10-13 21:59:02,251   server.py  Разбор сообщения от клиента - {'action': 'presence', 'time': 1570996742.2503016, 'user': {'account_name': 'tds'}}
+DEBUG 2019-10-13 21:59:02,251   decos.py   Запущена функция send_msg, из модуля common.utils, с параметрами (<socket.socket fd=560, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 54022)>, {'response': 200}), {}
+DEBUG 2019-10-13 21:59:02,252   server.py  Отправлен ответ клиенту - {'response': 200} 
+
+DEBUG 2019-10-13 21:59:02,252   server.py  Получено сообщение от клиента
+DEBUG 2019-10-13 22:10:42,173   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
+DEBUG 2019-10-13 22:10:42,173   decos.py   Запущена функция get_args, из модуля __main__, с параметрами (), {}
+INFO  2019-10-13 22:10:42,173   descriptors.py Сервер слушает все адреса
+INFO  2019-10-13 22:10:42,173   descriptors.py Полученны данные port, который слушает сервер - 7777
+DEBUG 2019-10-13 22:10:42,173   decos.py   Запущена функция start_server, из модуля __main__, с параметрами (<__main__.Server object at 0x000002146BD2F438>,), {}
