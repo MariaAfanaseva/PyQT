@@ -3,3 +3,4 @@
 *.sqlite3
 conf/
 *.db3
+files_log/

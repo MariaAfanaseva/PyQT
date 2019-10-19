@@ -2,8 +2,8 @@ import logging
 import sys
 import os
 
-path_file_log = os.path.dirname(os.path.abspath(__file__))
-path_file_log = os.path.join(path_file_log, 'files_log/client.log')
+# path_file_log = os.path.d(os.path.abspath(__file__))
+path_file_log = os.path.join('../', 'files_log/client.log')
 
 log = logging.getLogger('client')
 
