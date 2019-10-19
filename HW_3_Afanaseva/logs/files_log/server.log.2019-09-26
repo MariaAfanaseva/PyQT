@@ -1,9 +1,0 @@
-DEBUG 2019-09-26 08:52:49,799   decos.py   Запущена функция main, из модуля __main__, с параметрами (), {}
-DEBUG 2019-09-26 08:52:49,799   decos.py   Запущена функция get_addr_port, из модуля __main__, с параметрами (), {}
-INFO  2019-09-26 08:52:49,799   server.py  Полученны данные ip и port, которые слушает сервер- , 7777
-INFO  2019-09-26 08:52:54,205   server.py  Установлено соединение с клиетом - (<socket.socket fd=576, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=0, laddr=('127.0.0.1', 7777), raddr=('127.0.0.1', 60113)>, ('127.0.0.1', 60113))
-DEBUG 2019-09-26 08:52:54,205   server.py  Получено сообщение от клиента
-DEBUG 2019-09-26 08:52:54,205   decos.py   Запущена функция valid_client_msg, из модуля __main__, с параметрами ({'action': 'presence', 'time': 1569480774.205154, 'user': {'account_name': 'Guest'}},), {}
-INFO  2019-09-26 08:52:54,205   server.py  Разбор сообщения от клиента - {'action': 'presence', 'time': 1569480774.205154, 'user': {'account_name': 'Guest'}}
-INFO  2019-09-26 08:52:54,205   server.py  Отправлен ответ клиенту - {'response': 200} 
-
