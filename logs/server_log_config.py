@@ -3,8 +3,8 @@ import logging.handlers
 import sys
 import os
 
-path_file_log = os.path.dirname(os.path.abspath(__file__))
-path_file_log = os.path.join(path_file_log, 'files_log/server.log')
+path_file_log = os.path.abspath(os.path.join(__file__, "../..", 'files_log/client.log'))
+# print(path_file_log)
 
 logger = logging.getLogger('server')
 
