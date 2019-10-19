@@ -12,9 +12,11 @@ def send_msg(socket, msg):
 
 
 def get_msg(client):
-    json_response = client.recv(MAX_PACKAGE_LENGTH).decode(ENCODING)
+    encoded_response = client.recv(MAX_PACKAGE_LENGTH)
+    json_response = encoded_response.decode(ENCODING)
     response = json.loads(json_response)
     if isinstance(response, dict):
         return response
     else:
         raise IncorrectDataNotDictError
+

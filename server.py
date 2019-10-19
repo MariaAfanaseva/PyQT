@@ -117,8 +117,8 @@ class Server(metaclass=ServerCreator):
             try:
                 if self.clients:
                     clients_read_lst, clients_send_lst, err_lst = select.select(self.clients, self.clients, [], 0)
-            except OSError:
-                pass
+            except OSError as err:
+                logger.error(f'Ошибка работы с сокетами: {err}')
 
             #  Получаем сообщение от клиентов
             if clients_read_lst:
@@ -127,7 +127,7 @@ class Server(metaclass=ServerCreator):
                         message =get_msg(client)
                     except IncorrectDataNotDictError:
                         logger.error('Получен не верный формат данных')
-                    except ConnectionResetError:
+                    except (ConnectionResetError, json.decoder.JSONDecodeError):
                         logger.info(f'Клиент {client.getpeername()} отключился от сервера.')
                         for name in self.names:
                             if self.names[name] == client:

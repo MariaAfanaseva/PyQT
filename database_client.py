@@ -24,11 +24,11 @@ class ClientDB:
         id = Column(Integer, primary_key=True)
         contact = Column(String, unique=True)
 
-        def __init__(self, contact_name):
-            self.contact = contact_name
+        def __init__(self, contact):
+            self.contact = contact
 
         def __repr__(self):
-            return "<User(%s)>" % self.contact
+            return "<Contact(%s)>" % self.contact
 
     class HistoryMessages(Base):
         __tablename__ = 'history_messages'

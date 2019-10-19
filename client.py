@@ -113,15 +113,15 @@ class UserConsole(threading.Thread):
             if self.database.check_contact(name_contact):
                 with lock_database:
                     self.database.del_contact(name_contact)
-                with lock_socket:
-                    try:
-                        self._del_contact_server(sock, self.name_client, name_contact)
-                    except ServerError:
-                        logger.error('Не удалось отправить информацию на сервер.')
-                    else:
-                        print(f'Контакт {name_contact}  успешно удален')
+                try:
+                    self._del_contact_server(sock, self.name_client, name_contact)
+                except ServerError:
+                    logger.error('Не удалось отправить информацию на сервер.')
+                else:
+                    print(f'Контакт {name_contact}  успешно удален')
             else:
-                logger.error('Попытка удаления несуществующего контакта.')
+                logger.info('Попытка удаления несуществующего контакта.')
+                print('Данного контакта нет')
 
     @DecorationLogging()
     def _add_contact_server(self, sock, username, contact):
@@ -148,8 +148,9 @@ class UserConsole(threading.Thread):
             USER: username,
             ACCOUNT_NAME: contact
         }
-        send_msg(sock, message)
-        answer = get_msg(sock)
+        with lock_socket:
+            send_msg(sock, message)
+            answer = get_msg(sock)
         if RESPONSE in answer and answer[RESPONSE] == 200:
             logging.debug(f'Удачное удаление контакта {contact} у пользователя {username}')
         else:
