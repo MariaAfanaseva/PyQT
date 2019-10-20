@@ -44,7 +44,7 @@ class UserConsole(threading.Thread):
         super().__init__()
 
     @DecorationLogging()
-    def user_console(self):
+    def run(self):
         self._help_print()
         while True:
             command = input('Введите команду: ')
@@ -124,35 +124,35 @@ class UserConsole(threading.Thread):
                 print('Данного контакта нет')
 
     @DecorationLogging()
-    def _add_contact_server(self, sock, username, contact):
-        logger.debug(f'Создание нового контакта {contact} у пользователя {username}')
+    def _add_contact_server(self, sock, username, connection):
+        logger.debug(f'Создание нового контакта {connection} у пользователя {username}')
         message = {
             ACTION: ADD_CONTACT,
             TIME: time.time(),
             USER: username,
-            ACCOUNT_NAME: contact
+            ACCOUNT_NAME: connection
         }
         with lock_socket:
             send_msg(sock, message)
             answer = get_msg(sock)
         if RESPONSE in answer and answer[RESPONSE] == 200:
-            logging.debug(f'Удачное создание контакта {contact} у пользователя {username}')
+            logging.debug(f'Удачное создание контакта {connection} у пользователя {username}')
         else:
             raise ServerError('Ошибка создания контакта')
 
     @DecorationLogging()
-    def _del_contact_server(self, sock, username, contact):
+    def _del_contact_server(self, sock, username, connection):
         message = {
             ACTION: DELETE_CONTACT,
             TIME: time.time(),
             USER: username,
-            ACCOUNT_NAME: contact
+            ACCOUNT_NAME: connection
         }
         with lock_socket:
             send_msg(sock, message)
             answer = get_msg(sock)
         if RESPONSE in answer and answer[RESPONSE] == 200:
-            logging.debug(f'Удачное удаление контакта {contact} у пользователя {username}')
+            logging.debug(f'Удачное удаление контакта {connection} у пользователя {username}')
         else:
             raise ServerError('Ошибка удаления клиента')
 
@@ -193,14 +193,14 @@ class Client(metaclass=ClientCreator):
     def start_client(self):
         logger.debug(f'Запущена функция start_client')
 
-        contact = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         print(f'Консольный месседжер. Клиентский модуль. Добро пожаловать: {self.name_client}')
         logger.info(
             f'Запущен клиент с парамертами: адрес сервера: {self.ip_server} , порт: {self.port_server}, имя пользователя: {self.name_client}')
         try:
             # Таймаут 1 секунда, необходим для освобождения сокета
-            contact.settimeout(1)
-            contact.connect((self.ip_server, self.port_server))
+            connection.settimeout(1)
+            connection.connect((self.ip_server, self.port_server))
         except ConnectionRefusedError:
             logger.critical('Нелязя установить соединение. Не верные даннные ip или port\n')
             exit(1)
@@ -208,11 +208,11 @@ class Client(metaclass=ClientCreator):
         logger.debug(f'Установлено соединение с сервером')
         msg_to_server = self._create_presence_msg(self.name_client)
         logger.info(f'Сформировано сообщение серверу - {msg_to_server}')
-        send_msg(contact, msg_to_server)
+        send_msg(connection, msg_to_server)
         logger.debug(f'Отпавлено сообщение серверу')
 
         try:
-            answer = self._answer_server_presence(get_msg(contact))
+            answer = self._answer_server_presence(get_msg(connection))
         except json.JSONDecodeError:
             logger.error('Не удалось декодировать полученную Json строку.')
             exit(1)
@@ -232,27 +232,26 @@ class Client(metaclass=ClientCreator):
             print(f'Установлено соединение с сервером')
 
             #  Загружаем данные с сервера в db client
-            self._load_database(contact)
+            self._load_database(connection)
 
             # Запускаем взаимодействие с пользователем
-            user_console = UserConsole(contact, self.name_client, self.database)
+            user_console = UserConsole(connection, self.name_client, self.database)
             user_console.daemon = True
             user_console.start()
-            user_console.user_console()
 
-            self._get_message_from_server(contact, self.name_client)
+            self._get_message_from_server(connection, self.name_client)
 
     @DecorationLogging()
-    def _load_database(self, contact):
+    def _load_database(self, connection):
         try:
-            users_all = self._get_users_all(contact, self.name_client)
+            users_all = self._get_users_all(connection, self.name_client)
         except ServerError:
             logger.error('Ошибка запроса списка известных пользователей.')
         else:
             self.database.add_users_known(users_all)
             print('Список известных пользователь успешно обновлен')
         try:
-            contacts_list = self._get_contacts_all(contact, self.name_client)
+            contacts_list = self._get_contacts_all(connection, self.name_client)
         except ServerError:
             logger.error('Ошибка запроса списка контактов.')
         else:

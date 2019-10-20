@@ -98,10 +98,10 @@ class ServerDB:
         # echo=False - отключение ведение лога (вывод sql-запросов)
         # pool_recycle - По умолчанию соединение с БД через 8 часов простоя обрывается.
         # Чтобы это не случилось нужно добавить опцию pool_recycle = 7200 (переуст-ка соед-я через 2 часа)
-        self.database_engine = create_engine(SERVER_DATABASE, echo=False, pool_recycle=7200)
-        #  Создание всех таблиц
+        self.database_engine = create_engine(SERVER_DATABASE, echo=False, pool_recycle=7200, connect_args={'check_same_thread': False})
+
         Base.metadata.create_all(self.database_engine)
-        #  Создание сессии
+
         Session = sessionmaker(bind=self.database_engine)
         self.session = Session()
 
@@ -109,14 +109,6 @@ class ServerDB:
         # Когда устанавливаем соединение, очищаем таблицу активных пользователей
         self.session.query(self.ActiveUsers).delete()
         self.session.commit()
-
-    def add_user(self):
-        user = self.AllUsers("maria2", "Pypkin", "vasia2000")
-        self.session.add(user)
-        q_user = self.session.query(self.AllUsers).filter_by(login="maria2").first()
-        print('Simple query:', q_user)
-        self.session.commit()
-        print(user.id)
 
     def login_user(self, login, ip_address, port, fullname=None, password=None):
         user = self.session.query(self.AllUsers).filter_by(login=login)

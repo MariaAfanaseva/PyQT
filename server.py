@@ -14,6 +14,7 @@ from descriptors import CheckPort, CheckIP
 from metaclasses import ServerCreator
 from database_server import ServerDB
 from PyQt5.QtWidgets import QApplication
+from server_ui import MainWindow
 
 logger = logging.getLogger('server')
 logger.setLevel(logging.DEBUG)
@@ -31,7 +32,7 @@ def get_args():
     return address, port
 
 
-class Server(metaclass=ServerCreator):
+class Server(threading.Thread, metaclass=ServerCreator):
     # Дескрипторы праверки порта и адреса
     listen_port = CheckPort()
     listen_ip = CheckIP()
@@ -46,6 +47,7 @@ class Server(metaclass=ServerCreator):
         self.messages = []
         #  Имена подключенных клиентов
         self.names = dict()
+        super().__init__()
 
     def socket_init(self):
         # Создаем сокет
@@ -91,7 +93,7 @@ class Server(metaclass=ServerCreator):
                 print('Команда не распознана.')
 
     @DecorationLogging()
-    def start_server(self):
+    def run(self):
         # Вывод информации на сервере в отденьном потоке
         server_info = threading.Thread(target=self.get_information)
         server_info.daemon = True
@@ -250,7 +252,13 @@ def main():
     listen_ip, listen_port = get_args()
     database = ServerDB()
     server = Server(listen_ip, listen_port, database)
-    server.start_server()
+    server.daemon = True
+    server.start()
+
+    app = QApplication(sys.argv)
+    main_window = MainWindow(app, database)
+    main_window.init_ui()
+    app.exec_()
 
 
 if __name__ == '__main__':
