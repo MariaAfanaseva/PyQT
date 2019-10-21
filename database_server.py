@@ -92,13 +92,13 @@ class ServerDB:
             return "<User('%s','%s,'%s')>" % \
                    (self.user_id, self.send, self.accepted)
 
-    def __init__(self):
+    def __init__(self, path):
         # Создаём движок базы данных
         # SERVER_DATABASE - sqlite:///server_base.db3
         # echo=False - отключение ведение лога (вывод sql-запросов)
         # pool_recycle - По умолчанию соединение с БД через 8 часов простоя обрывается.
         # Чтобы это не случилось нужно добавить опцию pool_recycle = 7200 (переуст-ка соед-я через 2 часа)
-        self.database_engine = create_engine(SERVER_DATABASE, echo=False, pool_recycle=7200, connect_args={'check_same_thread': False})
+        self.database_engine = create_engine(f'sqlite:///{path}', echo=False, pool_recycle=7200, connect_args={'check_same_thread': False})
 
         Base.metadata.create_all(self.database_engine)
 

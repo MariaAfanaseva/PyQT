@@ -1,11 +1,5 @@
-DEFAULT_IP_ADDRESS = '127.0.0.1'
-DEFAULT_PORT = 7777
 MAX_CONNECTIONS = 3
 ENCODING = 'utf-8'
-MAX_PACKAGE_LENGTH = 1024
-# База данных для хранения данных сервера:
-SERVER_DATABASE = 'sqlite:///server_base.db3'
-
 
 # JIM поля
 ACTION = 'action'

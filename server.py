@@ -5,6 +5,8 @@ import argparse
 import select
 import time
 import threading
+import configparser
+import os
 from common.variables import *
 from common.utils import *
 from logs import server_log_config
@@ -22,14 +24,28 @@ logger.setLevel(logging.DEBUG)
 
 #  Получаем аргументы при запуске файла
 @DecorationLogging()
-def get_args():
+def get_args(default_ip, default_port):
     parser = argparse.ArgumentParser()
-    parser.add_argument('-p', '--port', default=DEFAULT_PORT, type=int)
-    parser.add_argument('-a', '--addr', default='')
+    parser.add_argument('-p', '--port', default=default_port, type=int)
+    parser.add_argument('-a', '--addr', default=default_ip)
     names = parser.parse_args(sys.argv[1:])
     address = names.addr
     port = names.port
     return address, port
+
+
+def read_config_file():
+    # Загрузка файла конфргурации сервера
+    parser = configparser.ConfigParser()
+    dir_path = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(dir_path, 'config_server.ini')
+    parser.read(file_path)
+    port = parser['SETTINGS']['default_port']
+    ip_addr = parser['SETTINGS']['Listen_Address']
+    db_dir_path = parser['SETTINGS']['Database_path']
+    db_file_name = parser['SETTINGS']['Database_file']
+    db_path = os.path.join(db_dir_path, db_file_name)
+    return ip_addr, port, db_path
 
 
 class Server(threading.Thread, metaclass=ServerCreator):
@@ -207,7 +223,6 @@ class Server(threading.Thread, metaclass=ServerCreator):
             send_msg(client, {RESPONSE: 200})
             logger.debug(f'Удален контакт {message[ACCOUNT_NAME]} у пользователя {message[USER]}')
 
-
         # Если это запрос известных пользователей
         elif ACTION in message and message[ACTION] == USERS_REQUEST and ACCOUNT_NAME in message \
                 and self.names[message[ACCOUNT_NAME]] == client:
@@ -249,12 +264,15 @@ class Server(threading.Thread, metaclass=ServerCreator):
 
 @DecorationLogging()
 def main():
-    listen_ip, listen_port = get_args()
-    database = ServerDB()
+    default_ip, default_port, db_path = read_config_file()
+    listen_ip, listen_port = get_args(default_ip, default_port)
+
+    database = ServerDB(db_path)
     server = Server(listen_ip, listen_port, database)
     server.daemon = True
     server.start()
 
+    # GUI PyQt5
     app = QApplication(sys.argv)
     main_window = MainWindow(app, database)
     main_window.init_ui()
