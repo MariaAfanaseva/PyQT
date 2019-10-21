@@ -1,5 +1,6 @@
 import sys
 import datetime
+from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QWidget, QApplication, QTableView, QMainWindow, \
     QAction, QLabel, QGridLayout, QDialog, QPushButton, QFileDialog, QLineEdit
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
@@ -21,14 +22,17 @@ class MainWindow(QMainWindow):
         self.statusBar()
 
         exit_action = QAction('Close', self)
+        exit_action.setFont(QtGui.QFont('Montserrat', 10))
         exit_action.setShortcut('Ctrl+Q')
         exit_action.triggered.connect(self.app.quit)
 
         update_connected_users_action = QAction('Update connected users', self)
+        update_connected_users_action.setFont(QtGui.QFont('Montserrat', 10))
         update_connected_users_action.triggered.connect(self.update_connected_users_list)
 
         self.settings_window = SettingsWindow()
         server_settings_action = QAction('Settings', self)
+        server_settings_action.setFont(QtGui.QFont('Montserrat', 10))
         server_settings_action.triggered.connect(self.settings_window.init_ui)
 
         self.toolbar = self.addToolBar('MainBar')
@@ -40,7 +44,10 @@ class MainWindow(QMainWindow):
         self.layout = QGridLayout(self.central_widget)
 
         self.connected_users_label = QLabel('Connected users:')
+        self.connected_users_label.setFont(QtGui.QFont('Montserrat', 10))
         self.connected_users_table = QTableView(self)
+
+        self.connected_users_table.setFont(QtGui.QFont('Montserrat', 10))
 
         self.connected_users_list = QStandardItemModel(self)
         self.connected_users_table.setModel(self.connected_users_list)
@@ -69,7 +76,6 @@ class MainWindow(QMainWindow):
 
         self.connected_users_list.clear()
         self.connected_users_list.setHorizontalHeaderLabels(['Name', 'IP', 'Port', 'Connection time'])
-
         for name, ip, port, time in users:
             self.add_connected_user(name, ip, str(port), time.strftime("%m/%d/%Y, %H:%M:%S"))
 
@@ -80,7 +86,7 @@ class SettingsWindow(QDialog):
         # self.init_ui()
 
     def init_ui(self):
-        self.setFixedSize(500, 400)
+        self.setFixedSize(500, 300)
         self.move(600, 400)
 
         self.setWindowTitle('Settings server')
@@ -89,35 +95,41 @@ class SettingsWindow(QDialog):
         self.layout = QGridLayout(self.central_widget)
 
         self.db_path_label = QLabel('Path database: ', self)
+        self.db_path_label.setFont(QtGui.QFont('Montserrat', 10))
         self.db_path_select = QPushButton('Select...', self)
 
         self.db_path_text = QLineEdit(self)
         self.db_path_text.setReadOnly(True)
-        self.db_path_text.setFixedSize(280, 28)
+        self.db_path_text.setFixedSize(300, 28)
+        self.db_path_text.setFont(QtGui.QFont('Montserrat', 10))
 
         # Метка с номером порта
         self.port_label = QLabel('Port number:', self)
+        self.port_label.setFont(QtGui.QFont('Montserrat', 10))
 
         # Поле для ввода номера порта
         self.port = QLineEdit(self)
         self.port.setFixedSize(80, 28)
+        self.port.setFont(QtGui.QFont('Montserrat', 10))
 
         self.ip_label = QLabel('IP address:', self)
+        self.ip_label.setFont(QtGui.QFont('Montserrat', 10))
 
         self.ip = QLineEdit(self)
         self.ip.setFixedSize(120, 28)
+        self.ip.setFont(QtGui.QFont('Montserrat', 10))
 
-        self.ip_label_note = QLabel('Leave this field blank to accept connections from any addresses.', self)
-        self.ip_label_note.setFixedSize(350, 30)
+        self.ip_label_note = QLabel('Leave this field blank\n'
+                                    'to accept connections from any addresses.', self)
+        self.ip_label_note.setFixedSize(350, 50)
+        self.ip_label_note.setFont(QtGui.QFont('Montserrat', 8))
 
         self.save_button = QPushButton('Save', self)
         self.save_button.setFixedSize(100, 30)
-        self.save_button.move(10, 220)
 
         self.close_button = QPushButton('Close', self)
         self.close_button.setFixedSize(100, 30)
         self.close_button.clicked.connect(self.close)
-        self.close_button.move(130, 220)
 
         self.layout.addWidget(self.db_path_label, 0, 0)
         self.layout.addWidget(self.db_path_text, 1, 0)
@@ -127,6 +139,8 @@ class SettingsWindow(QDialog):
         self.layout.addWidget(self.ip_label, 4, 0)
         self.layout.addWidget(self.ip, 5, 0)
         self.layout.addWidget(self.ip_label_note, 6, 0)
+        self.layout.addWidget(self.save_button, 7, 0)
+        self.layout.addWidget(self.close_button, 7, 1)
 
         self.db_path_select.clicked.connect(self.open_file_select)
 
