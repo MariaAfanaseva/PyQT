@@ -38,13 +38,11 @@ def read_config_file():
     # Загрузка файла конфргурации сервера
     parser = configparser.ConfigParser()
     dir_path = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(dir_path, 'config_server.ini')
+    file_path = os.path.join(dir_path, CONFIG_FILE_NAME)
     parser.read(file_path)
     port = parser['SETTINGS']['default_port']
-    ip_addr = parser['SETTINGS']['Listen_Address']
-    db_dir_path = parser['SETTINGS']['Database_path']
-    db_file_name = parser['SETTINGS']['Database_file']
-    db_path = os.path.join(db_dir_path, db_file_name)
+    ip_addr = parser['SETTINGS']['listen_Address']
+    db_path = parser['SETTINGS']['database_path']
     return ip_addr, port, db_path
 
 

@@ -1,8 +1,12 @@
 import sys
 import datetime
+import configparser
+import os
+from ipaddress import ip_address
+from common.variables import *
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QWidget, QApplication, QTableView, QMainWindow, \
-    QAction, QLabel, QGridLayout, QDialog, QPushButton, QFileDialog, QLineEdit, QGroupBox
+    QAction, QLabel, QGridLayout, QDialog, QPushButton, QFileDialog, QLineEdit, QMessageBox
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import QTimer
 
@@ -58,7 +62,7 @@ class MainWindow(QMainWindow):
         self.central_widget.setLayout(self.layout)
         self.setCentralWidget(self.central_widget)
 
-        self.statusBar().showMessage("Window init completed")
+        self.statusBar().showMessage("Server Working")
 
         # self.timer = QTimer(self)
         # self.timer.timeout.connect(self.update_connected_users_list)
@@ -93,8 +97,8 @@ class MainWindow(QMainWindow):
 
 class SettingsWindow(QDialog):
     def __init__(self):
+        self.parser = configparser.ConfigParser()
         super().__init__()
-        # self.init_ui()
 
     def init_ui(self):
         self.setFixedSize(500, 350)
@@ -135,6 +139,7 @@ class SettingsWindow(QDialog):
 
         self.save_button = QPushButton('Save', self)
         self.save_button.setFixedSize(100, 30)
+        self.save_button.clicked.connect(self.save_server_config)
 
         self.close_button = QPushButton('Close', self)
         self.close_button.setFixedSize(100, 30)
@@ -154,13 +159,53 @@ class SettingsWindow(QDialog):
         self.layout.setContentsMargins(20, 30, 0, 0)
         self.db_path_select.clicked.connect(self.open_file_select)
 
+        self.config_file_text_print()
+
         self.show()
 
     def open_file_select(self):
         dialog = QFileDialog(self)
         path = dialog.getOpenFileName()
         path = path[0]
+        self.db_path_text.clear()
         self.db_path_text.insert(path)
+
+    def config_file_text_print(self):
+        dir_path = os.path.dirname(os.path.abspath(__file__))
+        file_path = os.path.join(dir_path, CONFIG_FILE_NAME)
+        self.parser.read(file_path, encoding='utf-8')
+
+        db_path_config = self.parser['SETTINGS']['database_path']
+        config_port = self.parser['SETTINGS']['default_port']
+        config_addr = self.parser['SETTINGS']['listen_Address']
+
+        self.db_path_text.insert(db_path_config)
+        self.port.insert(config_port)
+        self.ip.insert(config_addr)
+
+    def save_server_config(self):
+        message = QMessageBox()
+        self.parser['SETTINGS']['database_path'] = self.db_path_text.text()
+
+        try:
+            port = int(self.port.text())
+            ip_addr = self.ip.text()
+            if ip_addr:
+                try:
+                    str(ip_address(ip_addr))
+                except ValueError:
+                    message.warning(self,'Error', 'Invalid ip format.')
+        except ValueError:
+            message.warning(self, 'Error', 'The port must be a number')
+        else:
+            self.parser['SETTINGS']['listen_Address'] = ip_addr
+            if 1024 < port < 65535:
+                self.parser['SETTINGS']['default_port'] = str(port)
+                with open(CONFIG_FILE_NAME, 'w', encoding='utf-8') as file:
+                    self.parser.write(file)
+                    message.information(self, 'OK', 'Settings saved successfully!')
+            else:
+                message.warning(self, 'Ошибка', 'The port must be between 1024 and 65536')
 
 
 class FakeDatabase:

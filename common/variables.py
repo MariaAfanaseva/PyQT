@@ -1,5 +1,6 @@
 MAX_CONNECTIONS = 3
 ENCODING = 'utf-8'
+CONFIG_FILE_NAME = 'config_server.ini'
 
 # JIM поля
 ACTION = 'action'
