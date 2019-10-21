@@ -2,7 +2,7 @@ import sys
 import datetime
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QWidget, QApplication, QTableView, QMainWindow, \
-    QAction, QLabel, QGridLayout, QDialog, QPushButton, QFileDialog, QLineEdit
+    QAction, QLabel, QGridLayout, QDialog, QPushButton, QFileDialog, QLineEdit, QGroupBox
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import QTimer
 
@@ -14,7 +14,7 @@ class MainWindow(QMainWindow):
         super().__init__()
 
     def init_ui(self):
-        self.resize(600, 600)
+        self.resize(700, 600)
         self.move(500, 300)
 
         self.setWindowTitle('Server')
@@ -60,24 +60,35 @@ class MainWindow(QMainWindow):
 
         self.statusBar().showMessage("Window init completed")
 
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.update_connected_users_list)
-        self.timer.start(2000)
+        # self.timer = QTimer(self)
+        # self.timer.timeout.connect(self.update_connected_users_list)
+        # self.timer.start(2000)
 
         self.update_connected_users_list()
 
         self.show()
 
     def add_connected_user(self, user_name, ip_address, port, connection_time):
-        self.connected_users_list.appendRow([QStandardItem(user_name), QStandardItem(ip_address), QStandardItem(port), QStandardItem(connection_time)])
+        user_name = QStandardItem(user_name)
+        user_name.setEditable(False)  # Зпарет на ввод данных в ячейку
+        ip_address = QStandardItem(ip_address)
+        ip_address.setEditable(False)
+        port = QStandardItem(port)
+        port.setEditable(False)
+        connection_time = QStandardItem(connection_time)
+        connection_time.setEditable(False)
+        self.connected_users_list.appendRow([user_name, ip_address, port, connection_time])
 
     def update_connected_users_list(self):
         users = self.database.users_active_list()
-
         self.connected_users_list.clear()
         self.connected_users_list.setHorizontalHeaderLabels(['Name', 'IP', 'Port', 'Connection time'])
+
         for name, ip, port, time in users:
             self.add_connected_user(name, ip, str(port), time.strftime("%m/%d/%Y, %H:%M:%S"))
+
+        #  Выравнивание колонки с датой
+        self.connected_users_table.resizeColumnToContents(3)
 
 
 class SettingsWindow(QDialog):
@@ -86,14 +97,13 @@ class SettingsWindow(QDialog):
         # self.init_ui()
 
     def init_ui(self):
-        self.setFixedSize(500, 300)
+        self.setFixedSize(500, 350)
         self.move(600, 400)
 
         self.setWindowTitle('Settings server')
 
         self.central_widget = QWidget(self)
         self.layout = QGridLayout(self.central_widget)
-
         self.db_path_label = QLabel('Path database: ', self)
         self.db_path_label.setFont(QtGui.QFont('Montserrat', 10))
         self.db_path_select = QPushButton('Select...', self)
@@ -103,7 +113,6 @@ class SettingsWindow(QDialog):
         self.db_path_text.setFixedSize(300, 28)
         self.db_path_text.setFont(QtGui.QFont('Montserrat', 10))
 
-        # Метка с номером порта
         self.port_label = QLabel('Port number:', self)
         self.port_label.setFont(QtGui.QFont('Montserrat', 10))
 
@@ -139,9 +148,10 @@ class SettingsWindow(QDialog):
         self.layout.addWidget(self.ip_label, 4, 0)
         self.layout.addWidget(self.ip, 5, 0)
         self.layout.addWidget(self.ip_label_note, 6, 0)
-        self.layout.addWidget(self.save_button, 7, 0)
+        self.layout.addWidget(self.save_button, 7, 0, 2, 1)
         self.layout.addWidget(self.close_button, 7, 1)
 
+        self.layout.setContentsMargins(20, 30, 0, 0)
         self.db_path_select.clicked.connect(self.open_file_select)
 
         self.show()
@@ -153,7 +163,7 @@ class SettingsWindow(QDialog):
         self.db_path_text.insert(path)
 
 
-class fake_database:
+class FakeDatabase:
     def __init__(self):
         self.count = 0
 
@@ -166,7 +176,7 @@ class fake_database:
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    main_window = MainWindow(app, fake_database())
+    main_window = MainWindow(app, FakeDatabase())
     main_window.init_ui()
     # main_window.update_connected_users_list()
     app.exec_()
