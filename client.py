@@ -11,7 +11,8 @@ from metaclasses import ClientCreator
 from descriptors import CheckPort, CheckIP, CheckName
 from database_client import ClientDB
 from PyQt5.QtWidgets import QApplication
-from client.ui_start_dialog import UserNameDialog
+from client.gui_start_dialog import UserNameDialog
+from client.gui_main_window import ClientMainWindow
 
 logger = logging.getLogger('client')
 
@@ -175,18 +176,19 @@ class UserConsole(threading.Thread):
         }
 
 
-class Client(metaclass=ClientCreator):
+class Client(threading.Thread, metaclass=ClientCreator):
     port_server = CheckPort()
     ip_server = CheckIP()
     name_client = CheckName()
 
-    def __init__(self, ip_server, port_server, name_client):
+    def __init__(self, ip_server, port_server, name_client, database):
         self.ip_server = ip_server
         self.port_server = port_server
         self.name_client = name_client
-        self.database = ClientDB(name_client)
+        self.database = database
+        super().__init__()
 
-    def start_client(self):
+    def run(self):
         logger.debug(f'Запущена функция start_client')
 
         connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -337,14 +339,13 @@ class Client(metaclass=ClientCreator):
 
 
 @DecorationLogging()
-def start_dialog(client_app, client_name):
+def start_dialog(app, client_name):
     if not client_name:
-        dialog = UserNameDialog(client_app)
+        dialog = UserNameDialog(app)
         dialog.init_ui()
-        client_app.exec_()
+        app.exec_()
         if dialog.ok_clicked:
             client_name = dialog.name_edit.text()
-            del dialog
             return client_name
         else:
             exit(0)
@@ -354,11 +355,20 @@ def start_dialog(client_app, client_name):
 
 @DecorationLogging()
 def main():
-    client_app = QApplication(sys.argv)
+    app = QApplication(sys.argv)
     ip_server, port_server, client_name = get_args()
-    client_name = start_dialog(client_app, client_name)
-    client = Client(ip_server, port_server, client_name)
-    client.start_client()
+    client_name = start_dialog(app, client_name)
+
+    database = ClientDB(client_name)
+
+    client = Client(ip_server, port_server, client_name, database)
+    client.daemon = True
+    client.start()
+
+    #  Запускаем главное окно
+    main_window = ClientMainWindow(app, database)
+    main_window.init_ui()
+    sys.exit(app.exec_())
 
 
 if __name__ == '__main__':
