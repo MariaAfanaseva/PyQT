@@ -39,7 +39,7 @@ def read_config_file():
     parser = configparser.ConfigParser()
     dir_path = os.path.dirname(os.path.abspath(__file__))
     file_path = os.path.join(dir_path, CONFIG_FILE_NAME)
-    parser.read(file_path)
+    parser.read(file_path, encoding='utf-8')
     port = parser['SETTINGS']['default_port']
     ip_addr = parser['SETTINGS']['listen_Address']
     db_path = parser['SETTINGS']['database_path']
@@ -274,7 +274,7 @@ def main():
     app = QApplication(sys.argv)
     main_window = MainWindow(app, database)
     main_window.init_ui()
-    app.exec_()
+    sys.exit(app.exec_())
 
 
 if __name__ == '__main__':

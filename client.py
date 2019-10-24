@@ -1,19 +1,17 @@
 import sys
 import time
-import re
 import socket
 import logging
 import argparse
-import json
 import threading
-from common.variables import *
 from common.utils import *
-from logs import client_log_config
 from common.errors import IncorrectDataNotDictError, FieldMissingError, IncorrectCodeError, ServerError
 from decorators.decos import DecorationLogging
 from metaclasses import ClientCreator
 from descriptors import CheckPort, CheckIP, CheckName
 from database_client import ClientDB
+from PyQt5.QtWidgets import QApplication
+from client.ui_start_dialog import UserNameDialog
 
 logger = logging.getLogger('client')
 
@@ -31,8 +29,6 @@ def get_args():
     ip_server = names.ip
     port_server = names.port
     name_client = names.name
-    if not name_client:
-        name_client = input('Введите имя логин пользователя: ')
     return ip_server, port_server, name_client
 
 
@@ -341,9 +337,27 @@ class Client(metaclass=ClientCreator):
 
 
 @DecorationLogging()
+def start_dialog(client_app, client_name):
+    if not client_name:
+        dialog = UserNameDialog(client_app)
+        dialog.init_ui()
+        client_app.exec_()
+        if dialog.ok_clicked:
+            client_name = dialog.name_edit.text()
+            del dialog
+            return client_name
+        else:
+            exit(0)
+    else:
+        return client_name
+
+
+@DecorationLogging()
 def main():
-    ip_server, port_server, name_client = get_args()
-    client = Client(ip_server, port_server, name_client)
+    client_app = QApplication(sys.argv)
+    ip_server, port_server, client_name = get_args()
+    client_name = start_dialog(client_app, client_name)
+    client = Client(ip_server, port_server, client_name)
     client.start_client()
 
 

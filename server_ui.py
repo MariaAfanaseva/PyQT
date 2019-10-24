@@ -224,4 +224,4 @@ if __name__ == '__main__':
     main_window = MainWindow(app, FakeDatabase())
     main_window.init_ui()
     # main_window.update_connected_users_list()
-    app.exec_()
+    sys.exit(app.exec_())
