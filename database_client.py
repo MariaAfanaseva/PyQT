@@ -36,17 +36,17 @@ class ClientDB:
         contact = Column(String)
         direction = Column(String)
         message = Column(Text)
-        data = Column(DateTime)
+        date = Column(DateTime)
 
-        def __init__(self, contact, direction, message, data):
+        def __init__(self, contact, direction, message, date):
             self.contact = contact
             self.direction = direction
             self.message = message
-            self.data = data
+            self.date = date
 
         def __repr__(self):
             return "<User('%s','%s', '%s, '%s')>" % \
-                   (self.contact, self.direction, self.message, self.data)
+                   (self.contact, self.direction, self.message, self.date)
 
     def __init__(self, login):
         self.database_engine = create_engine(f'sqlite:///client_{login}.db3', echo=False, pool_recycle=7200,
