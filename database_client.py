@@ -33,20 +33,20 @@ class ClientDB:
     class HistoryMessages(Base):
         __tablename__ = 'history_messages'
         id = Column(Integer, primary_key=True)
-        from_user = Column(String)
-        to_user = Column(String)
+        contact = Column(String)
+        direction = Column(String)
         message = Column(Text)
         data = Column(DateTime)
 
-        def __init__(self, from_user, to_user, message, data):
-            self.from_user = from_user
-            self.to_user = to_user
+        def __init__(self, contact, direction, message, data):
+            self.contact = contact
+            self.direction = direction
             self.message = message
             self.data = data
 
         def __repr__(self):
             return "<User('%s','%s', '%s, '%s')>" % \
-                   (self.from_user, self.to_user, self.message, self.data)
+                   (self.contact, self.direction, self.message, self.data)
 
     def __init__(self, login):
         self.database_engine = create_engine(f'sqlite:///client_{login}.db3', echo=False, pool_recycle=7200,
@@ -85,16 +85,28 @@ class ClientDB:
     def get_contacts(self):
         return [user[0] for user in self.session.query(self.Contacts.contact).all()]
 
-    def check_user(self, login):
+    def is_user(self, login):
         if self.session.query(self.UsersKnown).filter_by(login=login).count():
             return True
         return False
 
-    def check_contact(self, contact):
+    def is_contact(self, contact):
         if self.session.query(self.Contacts).filter_by(contact=contact).count():
             return True
         else:
             return False
+
+    # Функция сохраняющяя сообщения
+    def save_message(self, contact, direction, message):
+        message_row = self.HistoryMessages(contact, direction, message, datetime.datetime.now())
+        self.session.add(message_row)
+        self.session.commit()
+
+    # Функция возвращающая историю переписки
+    def get_history(self, contact):
+        query = self.session.query(self.HistoryMessages).filter_by(contact=contact)
+        return [(history_row.contact, history_row.direction, history_row.message, history_row.date)
+                for history_row in query.all()]
 
 
 if __name__ == '__main__':

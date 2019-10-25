@@ -24,13 +24,17 @@ class ClientMainWindow(QMainWindow):
 
         self.user_interface.actionClose.triggered.connect(self.app.quit)
         self.user_interface.addContactButton.clicked.connect(self.add_contact_dialog)
+        self.user_interface.actionAdd_contact.triggered.connect(self.add_contact_dialog)
+        self.user_interface.actionRemove_contact.triggered.connect(self.del_contact_dialog)
         self.user_interface.remContactButton.clicked.connect(self.del_contact_dialog)
+        self.user_interface.sendMessageButton.clicked.connect(self.send_message)
         # Даблклик по листу контактов отправляется в обработчик
         self.user_interface.contactsListView.doubleClicked.connect(self.select_active_user)
         self.update_clients_list()
         self.show()
 
     def field_disable(self):
+        self.user_interface.messageLabel.setText('To select a recipient, double-click it in the contacts window.')
         # Поле ввода и кнопка отправки неактивны до выбора получателя.
         self.user_interface.sendMessageButton.setDisabled(True)
         self.user_interface.clearMessageButton.setDisabled(True)
@@ -65,7 +69,33 @@ class ClientMainWindow(QMainWindow):
             self.del_contact_dialog.show()
             
     def select_active_user(self):
-        pass
+        self.current_chat = self.user_interface.contactsListView.currentIndex().data()
+        self.set_active_user()
+
+    def set_active_user(self):
+        self.user_interface.messageLabel.setText(f'Enter message for {self.current_chat}:')
+        self.user_interface.clearMessageButton.setDisabled(False)
+        self.user_interface.sendMessageButton.setDisabled(False)
+        self.user_interface.messageEdit.setDisabled(False)
+
+        # Заполняем окно историю сообщений
+        # self.history_list_update()
+
+    def send_message(self):
+        message_text = self.user_interface.messageEdit.toPlainText()
+        self.user_interface.messageEdit.clear()
+        if not message_text:
+            return
+        else:
+            is_success = self.client_transport.send_user_message(self.current_chat, message_text)
+            if not is_success:
+                self.message_window.critical(self, 'Error', 'Lost server connection!')
+                self.close()
+            elif is_success is True:
+                # self.history_list_update()
+                self.message_window.warning(self, 'OK', 'Message sent!')
+            else:
+                self.message_window.warning(self, 'Warning', is_success)
 
 
 if __name__ == '__main__':

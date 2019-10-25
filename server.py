@@ -154,13 +154,13 @@ class Server(threading.Thread, metaclass=ServerCreator):
                         self.clients.remove(client)
                     else:
                         logger.debug(f'Получено сообщение от клиента {message}')
-                        self.client_msg(message, self.messages, client, self.names, self.clients)
+                        self.client_msg(message, client)
 
             # Если есть сообщения для отправки и ожидающие клиенты, отправляем им сообщение.
             if self.messages:
                 for msg in self.messages:
                     try:
-                        self.send_messages_users(self.names, clients_send_lst, msg)
+                        self.send_messages_users(clients_send_lst, msg)
                     except (ConnectionResetError, ConnectionError):
                         logger.info(f'Связь с клиентом с именем {msg[TO]} была потеряна')
                         self.clients.remove(self.names[msg[TO]])
@@ -170,15 +170,15 @@ class Server(threading.Thread, metaclass=ServerCreator):
 
     #  Разбираем входящие сообщения
     @DecorationLogging()
-    def client_msg(self, message, messages_lst, client, names, clients):
+    def client_msg(self, message, client):
         logger.debug(f'Разбор сообщения от клиента - {message}')
 
         #  Разбор сообщения RESPONSE от клиента
         if ACTION in message and TIME in message and USER in message \
                 and ACCOUNT_NAME in message[USER] and message[ACTION] == PRESENCE:
             #  Добавляем нового клиента в список names
-            if message[USER][ACCOUNT_NAME] not in names.keys():
-                names[message[USER][ACCOUNT_NAME]] = client
+            if message[USER][ACCOUNT_NAME] not in self.names.keys():
+                self.names[message[USER][ACCOUNT_NAME]] = client
                 msg = {RESPONSE: 200}
                 send_msg(client, msg)
                 logger.debug(f'Отправлен ответ клиенту - {msg} \n')
@@ -191,16 +191,20 @@ class Server(threading.Thread, metaclass=ServerCreator):
                 }
                 send_msg(client, msg)
                 logger.debug(f'Имя пользователя уже занято. Отправлен ответ клиенту - {msg} \n')
-                clients.remove(client)
+                self.clients.remove(client)
                 client.close()
 
         #  Добавляем сообщение в список сообщений
         elif ACTION in message and message[ACTION] == MESSAGE and\
                 TIME in message and MESSAGE_TEXT in message and TO in message and FROM in message:
-            messages_lst.append(message)
+            if message[TO] in self.names:
+                self.messages.append(message)
+                send_msg(client, {RESPONSE: 200})
+            else:
+                send_msg(client, {RESPONSE: 400, ERROR: 'Пользователь не зарегистрирован на сервере.'})
 
         elif ACTION in message and message[ACTION] == GET_CONTACTS and USER in message \
-                and names[message[USER]] == client:
+                and self.names[message[USER]] == client:
             answer = {
                 RESPONSE: 202,
                 LIST_INFO: self.database.get_contacts(message[USER])
@@ -234,9 +238,9 @@ class Server(threading.Thread, metaclass=ServerCreator):
             logger.info(f'Пользователь {message[ACCOUNT_NAME]} отключился')
             user_name = message[ACCOUNT_NAME]
             self.database.user_logout(user_name)
-            clients.remove(names[user_name])
-            names[user_name].close()
-            del names[user_name]
+            self.clients.remove(self.names[user_name])
+            self.names[user_name].close()
+            del self.names[user_name]
 
         else:
             msg = {
@@ -248,12 +252,12 @@ class Server(threading.Thread, metaclass=ServerCreator):
 
     #  Отвечаем пользователям
     @DecorationLogging()
-    def send_messages_users(self, names, clients_send_lst, msg):
-        if msg[TO] in names and names[msg[TO]] in clients_send_lst:
-            send_msg(names[msg[TO]], msg)
+    def send_messages_users(self, clients_send_lst, msg):
+        if msg[TO] in self.names and self.names[msg[TO]] in clients_send_lst:
+            send_msg(self.names[msg[TO]], msg)
             self.database.sending_message(msg[FROM], msg[TO])
             logger.info(f'Отправлено сообщение пользователю {msg[TO]} от пользователя {msg[FROM]}.')
-        elif msg[TO] in names and names[msg[TO]] not in clients_send_lst:
+        elif msg[TO] in self.names and self.names[msg[TO]] not in clients_send_lst:
             raise ConnectionError
         else:
             logger.error(

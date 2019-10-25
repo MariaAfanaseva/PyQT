@@ -33,25 +33,6 @@ def get_args():
     return ip_server, port_server, name_client
 
 
-
-
-
-@DecorationLogging()
-def create_message_user(self, account_name):
-    to = input('Введите имя получателя: ')
-    message = input('Введите сообщение для отправки: ')
-    message = {
-        ACTION: MESSAGE,
-        FROM: account_name,
-        TO: to,
-        TIME: time.time(),
-        MESSAGE_TEXT: message
-    }
-    logger.debug(f'Сформировано сообщение: {message}')
-    return message
-
-
-
 class Client(threading.Thread, metaclass=ClientCreator):
     port_server = CheckPort()
     ip_server = CheckIP()
@@ -103,22 +84,23 @@ class Client(threading.Thread, metaclass=ClientCreator):
             print(f'Установлено соединение с сервером')
 
             #  Загружаем данные с сервера в db client
-            self.load_database(self.connection)
+            self.load_database()
 
+    @DecorationLogging()
     def run(self):
         self.get_message_from_server(self.connection, self.name_client)
 
     @DecorationLogging()
-    def load_database(self, connection):
+    def load_database(self):
         try:
-            users_all = self.get_users_all(connection, self.name_client)
+            users_all = self.get_users_all()
         except ServerError:
             logger.error('Ошибка запроса списка известных пользователей.')
         else:
             self.database.add_users_known(users_all)
             print('Список известных пользователь успешно обновлен')
         try:
-            contacts_list = self.get_contacts_all(connection, self.name_client)
+            contacts_list = self.get_contacts_all()
         except ServerError:
             logger.error('Ошибка запроса списка контактов.')
         else:
@@ -137,31 +119,31 @@ class Client(threading.Thread, metaclass=ClientCreator):
         return msg
 
     @DecorationLogging()
-    def get_users_all(self, sock, username):
-        logger.debug(f'Запрос списка известных пользователей {username}')
+    def get_users_all(self):
+        logger.debug(f'Запрос списка известных пользователей {self.name_client}')
         request = {
             ACTION: USERS_REQUEST,
             TIME: time.time(),
-            ACCOUNT_NAME: username
+            ACCOUNT_NAME: self.name_client
         }
-        send_msg(sock, request)
-        answer = get_msg(sock)
+        send_msg(self.connection, request)
+        answer = get_msg(self.connection)
         if RESPONSE in answer and answer[RESPONSE] == 202:
             return answer[LIST_INFO]
         else:
             raise ServerError('Неверный ответ сервера')
 
     @DecorationLogging()
-    def get_contacts_all(self, sock, username):
-        logger.debug(f'Запрос контакт листа для пользователся {username}')
+    def get_contacts_all(self):
+        logger.debug(f'Запрос контакт листа для пользователся {self.name_client}')
         message = {
             ACTION: GET_CONTACTS,
             TIME: time.time(),
-            USER: username
+            USER: self.name_client
         }
         logger.debug(f'Сформирован запрос {message}')
-        send_msg(sock, message)
-        answer = get_msg(sock)
+        send_msg(self.connection, message)
+        answer = get_msg(self.connection)
         logger.debug(f'Получен ответ {answer}')
         if RESPONSE in answer and answer[RESPONSE] == 202:
             return answer[LIST_INFO]
@@ -203,12 +185,37 @@ class Client(threading.Thread, metaclass=ClientCreator):
                             and MESSAGE_TEXT in message and message[TO] == my_username:
                         print(f'\nПолучено сообщение от пользователя {message[FROM]}:\n{message[MESSAGE_TEXT]}\n')
                         logger.info(f'Получено сообщение от пользователя {message[FROM]}:\n{message[MESSAGE_TEXT]}')
+                        self.database.save_message(message[FROM], 'in', message[MESSAGE_TEXT])
                     else:
                         logger.error(f'Получено некорректное сообщение с сервера: {message}')
-                        
+
+    @DecorationLogging()
+    def send_user_message(self, contact_name, message):
+        message = {
+            ACTION: MESSAGE,
+            FROM: self.name_client,
+            TO: contact_name,
+            TIME: time.time(),
+            MESSAGE_TEXT: message
+        }
+        with lock_socket:
+            try:
+                send_msg(self.connection, message)
+                answer = get_msg(self.connection)
+            except (ConnectionResetError, ConnectionAbortedError, OSError):
+                logger.critical('Потеряно соединение с сервером.')
+                return False
+            else:
+                if answer[RESPONSE] == 400:
+                    logger.info(f'{answer[ERROR]}. Пользователя {contact_name} нет в сети')
+                    return f'User {contact_name} is offline!'
+        logger.debug(f'Отправлено сообщение: {message},от {self.name_client} пользователю {contact_name}')
+        self.database.save_message(message[TO], 'out', message[MESSAGE_TEXT])
+        return True
+
     @DecorationLogging()
     def add_contact(self, new_contact_name):
-        if self.database.check_user(new_contact_name):
+        if self.database.is_user(new_contact_name):
             with lock_database:
                 self.database.add_contact(new_contact_name)
             try:
@@ -242,7 +249,7 @@ class Client(threading.Thread, metaclass=ClientCreator):
 
     @DecorationLogging()
     def del_contact(self, del_contact_name):
-        if self.database.check_contact(del_contact_name):
+        if self.database.is_contact(del_contact_name):
             with lock_database:
                 self.database.del_contact(del_contact_name)
             try:
@@ -279,6 +286,7 @@ class Client(threading.Thread, metaclass=ClientCreator):
             logger.critical('Потеряно соединение с сервером.')
             exit(1)
         logger.info('Завершение работы по команде пользователя\n.')
+        print('Завершение работы по команде пользователя.')
 
     @DecorationLogging()
     def create_exit_message(self, name_client):
