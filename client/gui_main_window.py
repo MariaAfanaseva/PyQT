@@ -1,8 +1,9 @@
 import sys
+import datetime
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QBrush, QColor
 from PyQt5.QtCore import Qt
-from PyQt5 import QtGui
+from PyQt5 import QtGui, QtCore
 from client.main_window_config import Ui_MainWindow
 from client.gui_add_contact import AddContactDialog
 from client.gui_del_contact import DelContactDialog
@@ -30,10 +31,10 @@ class ClientMainWindow(QMainWindow):
         self.user_interface.actionRemove_contact.triggered.connect(self.del_contact_dialog)
         self.user_interface.remContactButton.clicked.connect(self.del_contact_dialog)
         self.user_interface.sendMessageButton.clicked.connect(self.send_message)
+        self.user_interface.clearMessageButton.clicked.connect(self.clear_edit_message)
         # Даблклик по листу контактов отправляется в обработчик
         self.user_interface.contactsListView.doubleClicked.connect(self.select_active_user)
 
-        self.user_interface.messageHistoryEdit.ensureCursorVisible()
         self.user_interface.messageHistoryEdit.fontItalic()
         self.user_interface.messageHistoryEdit.setFont(QtGui.QFont('SansSerif', 10))
         
@@ -85,7 +86,6 @@ class ClientMainWindow(QMainWindow):
         self.user_interface.sendMessageButton.setDisabled(False)
         self.user_interface.messageEdit.setDisabled(False)
 
-        # Заполняем окно историю сообщений
         self.history_list_update()
 
     def send_message(self):
@@ -99,10 +99,17 @@ class ClientMainWindow(QMainWindow):
                 self.message_window.critical(self, 'Error', 'Lost server connection!')
                 self.close()
             elif is_success is True:
-                self.history_list_update()
-                # self.message_window.warning(self, 'OK', 'Message sent!')
+                self.add_message_history(message_text)
             else:
                 self.message_window.warning(self, 'Warning', is_success)
+
+    def add_message_history(self, message):
+        msg = f'Outgoing message from {datetime.datetime.now().replace(microsecond=0)}:\n {message}\n'     
+        self.user_interface.messageHistoryEdit.setTextBackgroundColor(QColor(204, 255, 204))
+        self.user_interface.messageHistoryEdit.setAlignment(Qt.AlignRight)
+        self.user_interface.messageHistoryEdit.append(msg)
+
+        self.user_interface.messageHistoryEdit.ensureCursorVisible()
 
     def history_list_update(self):
         # Sorted date
@@ -118,15 +125,19 @@ class ClientMainWindow(QMainWindow):
         for i in range(start_index, length):
             item = list_messages[i]
             if item[1] == 'in':
-                msg = f'Incoming message from {item[3].replace(microsecond=0)}:\n {item[2]}\n'
-                self.user_interface.messageHistoryEdit.append(msg)
+                msg = f'Incoming message from {item[3].replace(microsecond=0)}:\n {item[2]}\n'            
                 self.user_interface.messageHistoryEdit.setTextBackgroundColor(QColor(255, 213, 213))
                 self.user_interface.messageHistoryEdit.setAlignment(Qt.AlignLeft)
-            else:
-                msg = f'Outgoing message from {item[3].replace(microsecond=0)}:\n {item[2]}\n'
                 self.user_interface.messageHistoryEdit.append(msg)
+            elif item[1] == 'out':
+                msg = f'Outgoing message from {item[3].replace(microsecond=0)}:\n {item[2]}\n'              
                 self.user_interface.messageHistoryEdit.setTextBackgroundColor(QColor(204, 255, 204))
-                self.user_interface.messageHistoryEdit.setAlignment(Qt.AlignRight)    
+                self.user_interface.messageHistoryEdit.setAlignment(Qt.AlignRight)
+                self.user_interface.messageHistoryEdit.append(msg)
+        self.user_interface.messageHistoryEdit.ensureCursorVisible()
+        
+    def clear_edit_message(self):
+        self.user_interface.messageEdit.clear()
 
 
 if __name__ == '__main__':

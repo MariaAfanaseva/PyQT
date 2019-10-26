@@ -143,7 +143,7 @@ class Server(threading.Thread, metaclass=ServerCreator):
                         message =get_msg(client)
                     except IncorrectDataNotDictError:
                         logger.error('Получен не верный формат данных')
-                    except (ConnectionResetError, json.decoder.JSONDecodeError):
+                    except (ConnectionResetError, json.decoder.JSONDecodeError, ConnectionAbortedError):
                         logger.info(f'Клиент {client.getpeername()} отключился от сервера.')
                         for name in self.names:
                             if self.names[name] == client:
