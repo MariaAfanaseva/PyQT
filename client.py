@@ -41,6 +41,7 @@ class Client(threading.Thread, QObject):
 
     # Сигнал новое сообщение
     new_message_signal = pyqtSignal(str)
+    connection_lost_signal = pyqtSignal()
 
     def __init__(self, ip_server, port_server, name_client, database):
         self.ip_server = ip_server
@@ -181,9 +182,11 @@ class Client(threading.Thread, QObject):
                     # print(err.errno)
                     if err.errno:
                         logger.critical(f'Потеряно соединение с сервером.')
+                        self.connection_lost_signal.emit()
                         break
                 except (ConnectionError, ConnectionAbortedError, ConnectionResetError, json.JSONDecodeError):
                     logger.critical(f'Потеряно соединение с сервером.')
+                    self.connection_lost_signal.emit()
                     break
                 else:
                     if ACTION in message and message[ACTION] == MESSAGE and TO in message and FROM in message \

@@ -174,8 +174,14 @@ class ClientMainWindow(QMainWindow):
                     self.current_chat = sender
                     self.set_active_user()
 
+    @pyqtSlot()
+    def connection_lost(self):
+        self.message_window.warning(self, 'Error', 'Lost server connection!')
+        self.close()
+
     def make_connection_with_signals(self, transport_client_obj):
         transport_client_obj.new_message_signal.connect(self.get_message)
+        transport_client_obj.connection_lost_signal.connect(self.connection_lost)
 
 
 if __name__ == '__main__':
