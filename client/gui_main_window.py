@@ -1,8 +1,8 @@
 import sys
 import datetime
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox
-from PyQt5.QtGui import QStandardItemModel, QStandardItem, QBrush, QColor
-from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QStandardItemModel, QStandardItem, QColor
+from PyQt5.QtCore import Qt, pyqtSlot
 from PyQt5 import QtGui, QtCore
 from client.main_window_config import Ui_MainWindow
 from client.gui_add_contact import AddContactDialog
@@ -16,6 +16,7 @@ class ClientMainWindow(QMainWindow):
         self.app = app
         self.client_transport = client_transport
         self.database_client = database_client
+        self.current_chat = None
         self.message_window = QMessageBox()
 
     def init_ui(self):
@@ -54,6 +55,16 @@ class ClientMainWindow(QMainWindow):
         # Update contacts list 
         self.add_contact_window.user_interface.addContactButton.clicked.connect(self.update_clients_list)
         self.add_contact_window.show()
+
+    def add_contact(self, new_contact):
+        if self.client_transport.add_contact(new_contact):
+            item_contact = QStandardItem(new_contact)
+            item_contact.setEditable(False)
+            self.contacts_model.appendRow(item_contact)
+            self.message_window.information(self, 'Success', f'Contact {new_contact} successfully added.')
+        else:
+            self.message_window.information(self, 'Error', 'Lost server connection!')
+            self.close()
 
     def update_clients_list(self):
         self.contacts_list = self.database_client.get_contacts()
@@ -138,6 +149,33 @@ class ClientMainWindow(QMainWindow):
         
     def clear_edit_message(self):
         self.user_interface.messageEdit.clear()
+
+    @pyqtSlot(str)
+    def get_message(self, sender):
+        if sender == self.current_chat:
+            self.history_list_update()
+        else:
+            if self.database_client.is_contact(sender):
+                if self.message_window.question(self, 'New message',
+                                                f'Received a new message from {sender}, '
+                                                f'open chat with him? ',
+                                                QMessageBox.Yes,
+                                                QMessageBox.No) == QMessageBox.Yes:
+                    self.current_chat = sender
+                    self.set_active_user()
+            else:
+                if self.message_window.question(self, 'New message',
+                                                f'Received a new message from {sender}.\n '
+                                                f'This user is not in your contact list.\n '
+                                                f'Add to contacts and open a chat with him?',
+                                                QMessageBox.Yes,
+                                                QMessageBox.No) == QMessageBox.Yes:
+                    self.add_contact(sender)
+                    self.current_chat = sender
+                    self.set_active_user()
+
+    def make_connection_with_signals(self, transport_client_obj):
+        transport_client_obj.new_message_signal.connect(self.get_message)
 
 
 if __name__ == '__main__':

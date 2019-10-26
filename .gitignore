@@ -5,3 +5,4 @@ conf/
 *.db3
 files_log/
 *.db3-journal
+*.ui

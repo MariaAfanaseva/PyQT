@@ -11,6 +11,7 @@ from metaclasses import ClientCreator
 from descriptors import CheckPort, CheckIP, CheckName
 from database_client import ClientDB
 from PyQt5.QtWidgets import QApplication
+from PyQt5.QtCore import pyqtSignal, QObject
 from client.gui_start_dialog import UserNameDialog
 from client.gui_main_window import ClientMainWindow
 
@@ -33,10 +34,13 @@ def get_args():
     return ip_server, port_server, name_client
 
 
-class Client(threading.Thread, metaclass=ClientCreator):
+class Client(threading.Thread, QObject):
     port_server = CheckPort()
     ip_server = CheckIP()
     name_client = CheckName()
+
+    # Сигнал новое сообщение
+    new_message_signal = pyqtSignal(str)
 
     def __init__(self, ip_server, port_server, name_client, database):
         self.ip_server = ip_server
@@ -44,7 +48,8 @@ class Client(threading.Thread, metaclass=ClientCreator):
         self.name_client = name_client
         self.database = database
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        super().__init__()
+        threading.Thread.__init__(self)
+        QObject.__init__(self)
 
         print(f'Консольный месседжер. Клиентский модуль. Добро пожаловать: {self.name_client}')
         logger.info(
@@ -186,6 +191,7 @@ class Client(threading.Thread, metaclass=ClientCreator):
                         print(f'\nПолучено сообщение от пользователя {message[FROM]}:\n{message[MESSAGE_TEXT]}\n')
                         logger.info(f'Получено сообщение от пользователя {message[FROM]}:\n{message[MESSAGE_TEXT]}')
                         self.database.save_message(message[FROM], 'in', message[MESSAGE_TEXT])
+                        self.new_message_signal.emit(message[FROM])
                     else:
                         logger.error(f'Получено некорректное сообщение с сервера: {message}')
 
@@ -327,6 +333,7 @@ def main():
     #  Запускаем главное окно
     main_window = ClientMainWindow(app, client_transport, database)
     main_window.init_ui()
+    main_window.make_connection_with_signals(client_transport)
     main_window.setWindowTitle(f'Chat program. User - {client_name}')
     app.exec_()
 

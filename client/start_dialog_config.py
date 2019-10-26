@@ -12,7 +12,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
-        Dialog.setObjectName("Dialog")
+        Dialog.setObjectName("Welcome")
         Dialog.resize(255, 127)
         self.gridLayout_2 = QtWidgets.QGridLayout(Dialog)
         self.gridLayout_2.setObjectName("gridLayout_2")
@@ -38,7 +38,7 @@ class Ui_Dialog(object):
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
-        self.startButton.setText(_translate("Dialog", "Start"))
-        self.exitButton.setText(_translate("Dialog", "Exit"))
-        self.label.setText(_translate("Dialog", "<html><head/><body><p><span style=\" font-size:10pt;\">Enter your name</span></p></body></html>"))
+        Dialog.setWindowTitle(_translate("Welcome", "Welcome"))
+        self.startButton.setText(_translate("Welcome", "Start"))
+        self.exitButton.setText(_translate("Welcome", "Exit"))
+        self.label.setText(_translate("Welcome", "<html><head/><body><p><span style=\" font-size:10pt;\">Enter your name</span></p></body></html>"))
