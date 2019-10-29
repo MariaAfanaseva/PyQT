@@ -14,13 +14,14 @@ class UserNameDialog(QDialog):
         # Загружаем конфигурацию окна из дизайнера
         self.user_interface = Ui_Dialog()
         self.user_interface.setupUi(self)
-        self.name_edit = self.user_interface.nameLineEdit
+        self.login_edit = self.user_interface.loginLineEdit
+        self.password_edit = self.user_interface.passwordLineEdit
         self.user_interface.exitButton.clicked.connect(self.app.quit)
         self.user_interface.startButton.clicked.connect(self.click_start)
         self.show()
 
     def click_start(self):
-        if self.user_interface.nameLineEdit.text():
+        if self.login_edit.text() and self.password_edit.text():
             self.ok_clicked = True
             self.app.exit()
 

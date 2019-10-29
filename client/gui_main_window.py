@@ -31,7 +31,9 @@ class ClientMainWindow(QMainWindow):
         self.user_interface.actionAdd_contact.triggered.connect(self.add_contact_dialog)
         self.user_interface.actionRemove_contact.triggered.connect(self.del_contact_dialog)
         self.user_interface.remContactButton.clicked.connect(self.del_contact_dialog)
+
         self.user_interface.sendMessageButton.clicked.connect(self.send_message)
+        
         self.user_interface.clearMessageButton.clicked.connect(self.clear_edit_message)
         # Даблклик по листу контактов отправляется в обработчик
         self.user_interface.contactsListView.doubleClicked.connect(self.select_active_user)

@@ -25,13 +25,15 @@ lock_socket = threading.Lock()
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-ip', default=DEFAULT_IP_ADDRESS, nargs='?')
-    parser.add_argument('-p', '--port', default=DEFAULT_PORT, type=int, nargs='?')
+    parser.add_argument('-port', default=DEFAULT_PORT, type=int, nargs='?')
     parser.add_argument('-n', '--name', default=None, nargs='?')
-    names = parser.parse_args(sys.argv[1:])
-    ip_server = names.ip
-    port_server = names.port
-    name_client = names.name
-    return ip_server, port_server, name_client
+    parser.add_argument('-p', '--password', default=None, nargs='?')
+    namespace = parser.parse_args(sys.argv[1:])
+    ip_server = namespace.ip
+    port_server = namespace.port
+    name_client = namespace.name
+    password_client = namespace.password
+    return ip_server, port_server, name_client, password_client
 
 
 class Client(threading.Thread, QObject):
@@ -307,25 +309,26 @@ class Client(threading.Thread, QObject):
 
 
 @DecorationLogging()
-def start_dialog(app, client_name):
-    if not client_name:
+def start_dialog(app, client_name, client_password):
+    if not client_name or not client_password:
         dialog = UserNameDialog(app)
         dialog.init_ui()
         app.exec_()
         if dialog.ok_clicked:
-            client_name = dialog.name_edit.text()
-            return client_name
+            client_name = dialog.login_edit.text()
+            client_password = dialog.password_edit.text()
+            return client_name, client_password
         else:
             exit(0)
     else:
-        return client_name
+        return client_name, client_password
 
 
 @DecorationLogging()
 def main():
     app = QApplication(sys.argv)
-    ip_server, port_server, client_name = get_args()
-    client_name = start_dialog(app, client_name)
+    ip_server, port_server, client_name, client_password = get_args()
+    client_name, client_password = start_dialog(app, client_name, client_password)
 
     database = ClientDB(client_name)
 
