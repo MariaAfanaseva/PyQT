@@ -17,6 +17,9 @@ class UserNameDialog(QDialog):
         self.password_edit = self.user_interface.passwordLineEdit
         self.user_interface.exitButton.clicked.connect(self.app.quit)
         self.user_interface.startButton.clicked.connect(self.click_start)
+
+        self.user_interface.loginLineEdit.setFocus()
+        
         self.show()
 
     def click_start(self):

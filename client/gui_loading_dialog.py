@@ -8,7 +8,7 @@ class LoadingWindow(QDialog):
     def __init__(self, app):
         self.app = app
         self.message_window = QMessageBox()
-        self.progress = 25
+        self.progress = 24
         super().__init__()
 
     def init_ui(self):
@@ -26,7 +26,7 @@ class LoadingWindow(QDialog):
     def change_value(self):
         self.progress += 25
         self.user_interface.loadingProgressBar.setValue(self.progress)
-        if self.progress == 100:
+        if self.progress == 99:
             self.close()
 
     def make_connection_with_signals(self, transport_client_obj):

@@ -30,6 +30,7 @@ class Ui_Dialog(object):
         self.loginLineEdit.setObjectName("loginLineEdit")
         self.gridLayout.addWidget(self.loginLineEdit, 2, 0, 1, 2)
         self.exitButton = QtWidgets.QPushButton(Dialog)
+        self.exitButton.setFocusPolicy(QtCore.Qt.NoFocus)
         self.exitButton.setObjectName("exitButton")
         self.gridLayout.addWidget(self.exitButton, 5, 1, 1, 1)
         self.startButton = QtWidgets.QPushButton(Dialog)
