@@ -178,7 +178,7 @@ class ClientMainWindow(QMainWindow):
 
     @pyqtSlot()
     def connection_lost(self):
-        self.message_window.warning(self, 'Error', 'Lost server connection!')
+        self.message_window.critical(self, 'Error', 'Lost server connection!')
         self.close()
 
     def make_connection_with_signals(self, transport_client_obj):

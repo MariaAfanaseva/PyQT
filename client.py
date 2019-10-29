@@ -15,6 +15,7 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import pyqtSignal, QObject
 from client.gui_start_dialog import UserNameDialog
 from client.gui_main_window import ClientMainWindow
+from client.gui_loading_dialog import LoadingWindow
 from Cryptodome.PublicKey import RSA
 
 logger = logging.getLogger('client')
@@ -43,7 +44,11 @@ class Client(threading.Thread, QObject):
     ip_server = CheckIP()
     client_login = CheckName()
 
-    # Сигнал новое сообщение
+    # Load window signals
+    connection_lack_signal = pyqtSignal()
+    progressbar_signal = pyqtSignal()
+
+    #  Main window signals
     new_message_signal = pyqtSignal(str)
     connection_lost_signal = pyqtSignal()
 
@@ -54,20 +59,38 @@ class Client(threading.Thread, QObject):
         self.client_password = client_password
         self.database = database
         self.key = key
+
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+        self.is_connected = False
+
         threading.Thread.__init__(self)
         QObject.__init__(self)
 
+    @DecorationLogging()
+    def run(self):
         print(f'Консольный месседжер. Клиентский модуль. Добро пожаловать: {self.client_login}')
         logger.info(
             f'Запущен клиент с парамертами: адрес сервера: {self.ip_server} , порт: {self.port_server}, имя пользователя: {self.client_login}')
-        try:
-            # Таймаут 1 секунда, необходим для освобождения сокета
-            self.connection.settimeout(1)
-            self.connection.connect((self.ip_server, self.port_server))
-        except ConnectionRefusedError:
-            logger.critical('Нелязя установить соединение. Не верные даннные ip или port\n')
-            exit(1)
+        # Таймаут 1 секунда, необходим для освобождения сокета
+        self.connection.settimeout(1)
+
+        for i in range(5):
+            logger.info(f'Попытка подключения - {i + 1}')
+            print(f'Попытка подключения - {i + 1}')
+            try:
+                self.connection.connect((self.ip_server, self.port_server))
+            except (OSError, ConnectionRefusedError):
+                pass
+            else:
+                self.is_connected = True
+                break
+            time.sleep(1)
+
+        if not self.is_connected:
+            logger.critical('Нелязя установить соединение. '
+                            'Не верные даннные ip или port или сервер не работает\n')
+            self.connection_lack()
 
         logger.debug(f'Установлено соединение с сервером')
         msg_to_server = self.create_presence_msg(self.client_login)
@@ -79,44 +102,54 @@ class Client(threading.Thread, QObject):
             answer = self.answer_server_presence(get_msg(self.connection))
         except json.JSONDecodeError:
             logger.error('Не удалось декодировать полученную Json строку.')
-            exit(1)
+            self.connection_lack()
         except IncorrectDataNotDictError:
             logger.error('Получен не верный формат данных\n')
-            exit(1)
+            self.connection_lack()
         except FieldMissingError as missing_error:
             logger.error(f'Нет обязательного поля - {missing_error}\n')
-            exit(1)
+            self.connection_lack()
         except IncorrectCodeError as wrong_code:
             logger.error(f'Неверный код в сообщении - {wrong_code}')
-            exit(1)
+            self.connection_lack()
         except ConnectionResetError:
             logger.critical('Не установлена связь с сервером')
+            self.connection_lack()
         else:
             logger.info(f'Получен ответ от сервера - {answer} \n')
             print(f'Установлено соединение с сервером')
+            self.progressbar_signal.emit()
 
             self.load_database()
 
+            self.get_message_from_server(self.connection, self.client_login)
+
     @DecorationLogging()
-    def run(self):
-        self.get_message_from_server(self.connection, self.client_login)
+    def connection_lack(self):
+        self.is_connected = False
+        self.connection_lack_signal.emit()
+        exit(1)
 
     @DecorationLogging()
     def load_database(self):
         try:
             users_all = self.get_users_all()
-        except ServerError:
+        except (ConnectionResetError, ServerError):
             logger.error('Ошибка запроса списка известных пользователей.')
+            self.connection_lack()
         else:
             self.database.add_users_known(users_all)
             print('Список известных пользователь успешно обновлен')
+            self.progressbar_signal.emit()
         try:
             contacts_list = self.get_contacts_all()
-        except ServerError:
+        except (ConnectionResetError, ServerError):
             logger.error('Ошибка запроса списка контактов.')
+            self.connection_lack()
         else:
             self.database.add_contacts(contacts_list)
             print('Список контактов успешно обновлен')
+            self.progressbar_signal.emit()
 
     @DecorationLogging()
     def create_presence_msg(self, account_name):
@@ -343,6 +376,14 @@ def get_key(client_login):
 
 
 @DecorationLogging()
+def loading_window(app, client_transport):
+    loading = LoadingWindow(app)
+    loading.init_ui()
+    loading.make_connection_with_signals(client_transport)
+    app.exec_()
+
+
+@DecorationLogging()
 def main():
     app = QApplication(sys.argv)
     ip_server, port_server, client_login, client_password = get_args()
@@ -356,13 +397,17 @@ def main():
     client_transport.daemon = True
     client_transport.start()
 
-    main_window = ClientMainWindow(app, client_transport, database)
-    main_window.init_ui()
-    main_window.make_connection_with_signals(client_transport)
-    main_window.setWindowTitle(f'Chat program. User - {client_login}')
-    app.exec_()
+    #  Loading window
+    loading_window(app, client_transport)
+    
+    if client_transport.is_connected:
+        main_window = ClientMainWindow(app, client_transport, database)
+        main_window.init_ui()
+        main_window.make_connection_with_signals(client_transport)
+        main_window.setWindowTitle(f'Chat program. User - {client_login}')
+        app.exec_()
 
-    client_transport.exit_client()
+        client_transport.exit_client()
 
 
 if __name__ == '__main__':
