@@ -1,4 +1,5 @@
 import sys
+import os
 import time
 import socket
 import logging
@@ -14,6 +15,7 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import pyqtSignal, QObject
 from client.gui_start_dialog import UserNameDialog
 from client.gui_main_window import ClientMainWindow
+from Cryptodome.PublicKey import RSA
 
 logger = logging.getLogger('client')
 
@@ -31,32 +33,34 @@ def get_args():
     namespace = parser.parse_args(sys.argv[1:])
     ip_server = namespace.ip
     port_server = namespace.port
-    name_client = namespace.name
+    login_client = namespace.name
     password_client = namespace.password
-    return ip_server, port_server, name_client, password_client
+    return ip_server, port_server, login_client, password_client
 
 
 class Client(threading.Thread, QObject):
     port_server = CheckPort()
     ip_server = CheckIP()
-    name_client = CheckName()
+    client_login = CheckName()
 
     # Сигнал новое сообщение
     new_message_signal = pyqtSignal(str)
     connection_lost_signal = pyqtSignal()
 
-    def __init__(self, ip_server, port_server, name_client, database):
+    def __init__(self, ip_server, port_server, client_login,  client_password, database, key):
         self.ip_server = ip_server
         self.port_server = port_server
-        self.name_client = name_client
+        self.client_login = client_login
+        self.client_password = client_password
         self.database = database
+        self.key = key
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         threading.Thread.__init__(self)
         QObject.__init__(self)
 
-        print(f'Консольный месседжер. Клиентский модуль. Добро пожаловать: {self.name_client}')
+        print(f'Консольный месседжер. Клиентский модуль. Добро пожаловать: {self.client_login}')
         logger.info(
-            f'Запущен клиент с парамертами: адрес сервера: {self.ip_server} , порт: {self.port_server}, имя пользователя: {self.name_client}')
+            f'Запущен клиент с парамертами: адрес сервера: {self.ip_server} , порт: {self.port_server}, имя пользователя: {self.client_login}')
         try:
             # Таймаут 1 секунда, необходим для освобождения сокета
             self.connection.settimeout(1)
@@ -66,7 +70,7 @@ class Client(threading.Thread, QObject):
             exit(1)
 
         logger.debug(f'Установлено соединение с сервером')
-        msg_to_server = self.create_presence_msg(self.name_client)
+        msg_to_server = self.create_presence_msg(self.client_login)
         logger.info(f'Сформировано сообщение серверу - {msg_to_server}')
         send_msg(self.connection, msg_to_server)
         logger.debug(f'Отпавлено сообщение серверу')
@@ -91,12 +95,11 @@ class Client(threading.Thread, QObject):
             logger.info(f'Получен ответ от сервера - {answer} \n')
             print(f'Установлено соединение с сервером')
 
-            #  Загружаем данные с сервера в db client
             self.load_database()
 
     @DecorationLogging()
     def run(self):
-        self.get_message_from_server(self.connection, self.name_client)
+        self.get_message_from_server(self.connection, self.client_login)
 
     @DecorationLogging()
     def load_database(self):
@@ -128,11 +131,11 @@ class Client(threading.Thread, QObject):
 
     @DecorationLogging()
     def get_users_all(self):
-        logger.debug(f'Запрос списка известных пользователей {self.name_client}')
+        logger.debug(f'Запрос списка известных пользователей {self.client_login}')
         request = {
             ACTION: USERS_REQUEST,
             TIME: time.time(),
-            ACCOUNT_NAME: self.name_client
+            ACCOUNT_NAME: self.client_login
         }
         send_msg(self.connection, request)
         answer = get_msg(self.connection)
@@ -143,11 +146,11 @@ class Client(threading.Thread, QObject):
 
     @DecorationLogging()
     def get_contacts_all(self):
-        logger.debug(f'Запрос контакт листа для пользователся {self.name_client}')
+        logger.debug(f'Запрос контакт листа для пользователся {self.client_login}')
         message = {
             ACTION: GET_CONTACTS,
             TIME: time.time(),
-            USER: self.name_client
+            USER: self.client_login
         }
         logger.debug(f'Сформирован запрос {message}')
         send_msg(self.connection, message)
@@ -204,7 +207,7 @@ class Client(threading.Thread, QObject):
     def send_user_message(self, contact_name, message):
         message = {
             ACTION: MESSAGE,
-            FROM: self.name_client,
+            FROM: self.client_login,
             TO: contact_name,
             TIME: time.time(),
             MESSAGE_TEXT: message
@@ -220,7 +223,7 @@ class Client(threading.Thread, QObject):
                 if answer[RESPONSE] == 400:
                     logger.info(f'{answer[ERROR]}. Пользователя {contact_name} нет в сети')
                     return f'User {contact_name} is offline!'
-        logger.debug(f'Отправлено сообщение: {message},от {self.name_client} пользователю {contact_name}')
+        logger.debug(f'Отправлено сообщение: {message},от {self.client_login} пользователю {contact_name}')
         self.database.save_message(message[TO], 'out', message[MESSAGE_TEXT])
         return True
 
@@ -236,25 +239,25 @@ class Client(threading.Thread, QObject):
             except ConnectionResetError:
                 logger.error('Связь с сервером потеряна')
             else:
-                logger.info(f'Добавлен новый контакт {new_contact_name} у пользователя {self.name_client}')
+                logger.info(f'Добавлен новый контакт {new_contact_name} у пользователя {self.client_login}')
                 return True
         else:
             logger.error('Данный пользователь не зарегистрирован.')
 
     @DecorationLogging()
     def add_contact_server(self, new_contact_name):
-        logger.debug(f'Создание нового контакта {new_contact_name} у пользователя {self.name_client}')
+        logger.debug(f'Создание нового контакта {new_contact_name} у пользователя {self.client_login}')
         message = {
             ACTION: ADD_CONTACT,
             TIME: time.time(),
-            USER: self.name_client,
+            USER: self.client_login,
             ACCOUNT_NAME: new_contact_name
         }
         with lock_socket:
             send_msg(self.connection, message)
             answer = get_msg(self.connection)
         if RESPONSE in answer and answer[RESPONSE] == 200:
-            logging.debug(f'Удачное создание контакта {new_contact_name} у пользователя {self.name_client}')
+            logging.debug(f'Удачное создание контакта {new_contact_name} у пользователя {self.client_login}')
         else:
             raise ServerError('Ошибка создания контакта')
 
@@ -278,21 +281,21 @@ class Client(threading.Thread, QObject):
         message = {
             ACTION: DELETE_CONTACT,
             TIME: time.time(),
-            USER: self.name_client,
+            USER: self.client_login,
             ACCOUNT_NAME: del_contact_name
         }
         with lock_socket:
             send_msg(self.connection, message)
             answer = get_msg(self.connection)
         if RESPONSE in answer and answer[RESPONSE] == 200:
-            logging.debug(f'Удачное удаление контакта {del_contact_name} у пользователя {self.name_client}')
+            logging.debug(f'Удачное удаление контакта {del_contact_name} у пользователя {self.client_login}')
         else:
             raise ServerError('Ошибка удаления клиента')
 
     @DecorationLogging()
     def exit_client(self):
         try:
-            send_msg(self.connection, self.create_exit_message(self.name_client))
+            send_msg(self.connection, self.create_exit_message(self.client_login))
         except ConnectionResetError:
             logger.critical('Потеряно соединение с сервером.')
             exit(1)
@@ -300,47 +303,63 @@ class Client(threading.Thread, QObject):
         print('Завершение работы по команде пользователя.')
 
     @DecorationLogging()
-    def create_exit_message(self, name_client):
+    def create_exit_message(self, client_login):
         return {
             ACTION: EXIT,
             TIME: time.time(),
-            ACCOUNT_NAME: name_client
+            ACCOUNT_NAME: client_login
         }
 
 
 @DecorationLogging()
-def start_dialog(app, client_name, client_password):
-    if not client_name or not client_password:
+def start_dialog(app, client_login, client_password):
+    if not client_login or not client_password:
         dialog = UserNameDialog(app)
         dialog.init_ui()
         app.exec_()
         if dialog.ok_clicked:
-            client_name = dialog.login_edit.text()
+            client_login = dialog.login_edit.text()
             client_password = dialog.password_edit.text()
-            return client_name, client_password
+            return client_login, client_password
         else:
             exit(0)
     else:
-        return client_name, client_password
+        return client_login, client_password
+
+
+@DecorationLogging()
+def get_key(client_login):
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    file_path = os.path.join(dir_path, f'{client_login}.key')
+    if not os.path.exists(file_path):
+        key = RSA.generate(2048, os.urandom)
+        with open(file_path, 'wb') as file:
+            file.write(key.export_key())
+    else:
+        with open(file_path, 'rb') as file:
+            key = RSA.import_key(file.read())
+    key.publickey().export_key()
+    return key
 
 
 @DecorationLogging()
 def main():
     app = QApplication(sys.argv)
-    ip_server, port_server, client_name, client_password = get_args()
-    client_name, client_password = start_dialog(app, client_name, client_password)
+    ip_server, port_server, client_login, client_password = get_args()
+    client_login, client_password = start_dialog(app, client_login, client_password)
 
-    database = ClientDB(client_name)
+    database = ClientDB(client_login)
 
-    client_transport = Client(ip_server, port_server, client_name, database)
+    key = get_key(client_login)
+
+    client_transport = Client(ip_server, port_server, client_login, client_password, database, key)
     client_transport.daemon = True
     client_transport.start()
 
-    #  Запускаем главное окно
     main_window = ClientMainWindow(app, client_transport, database)
     main_window.init_ui()
     main_window.make_connection_with_signals(client_transport)
-    main_window.setWindowTitle(f'Chat program. User - {client_name}')
+    main_window.setWindowTitle(f'Chat program. User - {client_login}')
     app.exec_()
 
     client_transport.exit_client()
