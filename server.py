@@ -74,37 +74,37 @@ class Server(threading.Thread, metaclass=ServerCreator):
 
     @DecorationLogging()
     def print_help(self):
-        print('Поддерживаемые комманды:\n'
-              'users - список известных пользователей\n'
-              'connected - список подключенных пользователей\n'
-              'history - история входов пользователя\n'
-              'exit - завершение работы сервера.\n'
-              'help - вывод справки по поддерживаемым командам')
+        print('Supported Commands: \n'
+              'users - list of known users \n'
+              'connected - list of connected users \n'
+              'history - user login history \n'
+              'exit - server shutdown. \n'
+              'help - display help for supported commands')
 
     @DecorationLogging()
     def get_information(self):
         time.sleep(1)
         self.print_help()
         while True:
-            command = input('Введите комманду: ')
+            command = input('Enter command: ')
             if command == 'help':
                 self.print_help()
             elif command == 'exit':
                 break
             elif command == 'users':
                 for user in sorted(self.database.users_all()):
-                    print(f'Пользователь с логином {user[0]}, последний вход: {user[2]}')
+                    print(f'User with login {user [0]}, last login: {user[2]}')
             elif command == 'connected':
                 for user in sorted(self.database.users_active_list()):
-                    print(f'Пользователь с логином {user[0]}, подключен ip - {user[1]} port - {user[2]}, '
-                          f'время установки соединения: {user[3]}')
+                    print(f'The user with the login {user [0]} is connected ip - {user[1]} port - {user[2]}, '
+                          f'connection setup time: {user[3]}')
             elif command == 'history':
                 login = input(
-                    'Введите логин пользователя для просмотра истории. Для вывода всей истории, просто нажмите Enter: ')
+                    'Enter user login to view history. To display the whole story, just press Enter: ')
                 for user in sorted(self.database.history_login(login)):
-                    print(f'Пользователь: {user[0]} время входа: {user[3]}. Вход с: ip - {user[1]} port - {user[2]}')
+                    print(f'User: {user [0]} login time: {user [3]}. Login from: ip - {user[1]} port - {user[2]}')
             else:
-                print('Команда не распознана.')
+                print('Wrong command.')
 
     @DecorationLogging()
     def run(self):
@@ -122,7 +122,7 @@ class Server(threading.Thread, metaclass=ServerCreator):
             except OSError:
                 pass
             else:
-                logger.info(f'Установлено соединение с клиетом - {client_address}')
+                logger.info(f'Connection to client established - {client_address}.')
                 self.clients.append(client)
 
             clients_read_lst = []
@@ -133,7 +133,7 @@ class Server(threading.Thread, metaclass=ServerCreator):
                 if self.clients:
                     clients_read_lst, clients_send_lst, err_lst = select.select(self.clients, self.clients, [], 0)
             except OSError as err:
-                logger.error(f'Ошибка работы с сокетами: {err}')
+                logger.error(f'Error working with sockets: {err}')
 
             # Receive a message from clients
             if clients_read_lst:
@@ -141,11 +141,11 @@ class Server(threading.Thread, metaclass=ServerCreator):
                     try:
                         message = get_msg(client)
                     except IncorrectDataNotDictError:
-                        logger.error('Получен не верный формат данных')
+                        logger.error('Invalid data format received.')
                     except (ConnectionResetError, json.decoder.JSONDecodeError, ConnectionAbortedError):
                         self.remove_client(client)
                     else:
-                        logger.debug(f'Получено сообщение от клиента {message}')
+                        logger.debug(f'Received message from client {message}.')
                         self.client_msg(message, client)
 
             # If there are messages to send and pending clients, send them a message.
@@ -154,7 +154,7 @@ class Server(threading.Thread, metaclass=ServerCreator):
                     try:
                         self.send_messages_users(clients_send_lst, msg)
                     except (ConnectionResetError, ConnectionError):
-                        logger.info(f'Связь с клиентом с именем {msg[TO]} была потеряна')
+                        logger.info(f'Communication with a client named {msg [TO]} has been lost.')
                         self.clients.remove(self.names[msg[TO]])
                         del self.names[msg[TO]]
                         self.database.user_logout(msg[TO])
@@ -223,7 +223,7 @@ class Server(threading.Thread, metaclass=ServerCreator):
 
     @DecorationLogging()       
     def remove_client(self, client):
-        logger.info(f'Клиент {client.getpeername()} отключился от сервера.')
+        logger.info(f'Client {client.getpeername ()} disconnected from server.')
         for name in self.names:
             if self.names[name] == client:
                 self.database.user_logout(name)
@@ -246,7 +246,7 @@ class Server(threading.Thread, metaclass=ServerCreator):
                 self.messages.append(message)
                 send_msg(client, {RESPONSE: 200})
             else:
-                send_msg(client, {RESPONSE: 400, ERROR: 'Пользователь не зарегистрирован на сервере.'})
+                send_msg(client, {RESPONSE: 400, ERROR: 'The user is not registered on the server.'})
 
         elif ACTION in message and message[ACTION] == GET_CONTACTS and USER in message \
                 and self.names[message[USER]] == client:
@@ -255,20 +255,20 @@ class Server(threading.Thread, metaclass=ServerCreator):
                 LIST_INFO: self.database.get_contacts(message[USER])
                 }
             send_msg(client, answer)
-            logger.debug(f'Отправлен список контактов - {answer[LIST_INFO]} клиенту - {message[USER]}\n')
+            logger.debug(f'Contact list sent to {answer [LIST_INFO]} to user - {message[USER]}\n')
 
         elif ACTION in message and message[ACTION] == ADD_CONTACT \
                 and ACCOUNT_NAME in message and USER in message \
                 and self.names[message[USER]] == client:
             self.database.add_contact(message[USER], message[ACCOUNT_NAME])
             send_msg(client, {RESPONSE: 200})
-            logger.debug(f'Добавлен новый контакт {message[ACCOUNT_NAME]} у пользователя {message[USER]}')
+            logger.debug(f'New contact added {message[ACCOUNT_NAME]} ay the user {message[USER]}.')
 
         elif ACTION in message and message[ACTION] == DELETE_CONTACT and ACCOUNT_NAME in message and USER in message \
                 and self.names[message[USER]] == client:
             self.database.delete_contact(message[USER], message[ACCOUNT_NAME])
             send_msg(client, {RESPONSE: 200})
-            logger.debug(f'Удален контакт {message[ACCOUNT_NAME]} у пользователя {message[USER]}')
+            logger.debug(f'Deleted contact {message [ACCOUNT_NAME]} at the user {message [USER]}')
 
         elif ACTION in message and message[ACTION] == USERS_REQUEST and ACCOUNT_NAME in message \
                 and self.names[message[ACCOUNT_NAME]] == client:
@@ -279,7 +279,7 @@ class Server(threading.Thread, metaclass=ServerCreator):
             send_msg(client, answer)
 
         elif ACTION in message and message[ACTION] == EXIT and ACCOUNT_NAME in message:
-            logger.info(f'Пользователь {message[ACCOUNT_NAME]} отключился')
+            logger.info(f'User {message [ACCOUNT_NAME]} has disconnected.')
             user_name = message[ACCOUNT_NAME]
             self.database.user_logout(user_name)
             self.clients.remove(self.names[user_name])
@@ -292,7 +292,7 @@ class Server(threading.Thread, metaclass=ServerCreator):
                 ERROR: 'Bad Request'
             }
             send_msg(client, msg)
-            logger.info(f'Отправлены ошибки клиенту - {msg} \n')
+            logger.info(f'Errors sent to client - {msg}.\n')
 
     #  We respond to users
     @DecorationLogging()
@@ -300,12 +300,12 @@ class Server(threading.Thread, metaclass=ServerCreator):
         if msg[TO] in self.names and self.names[msg[TO]] in clients_send_lst:
             send_msg(self.names[msg[TO]], msg)
             self.database.sending_message(msg[FROM], msg[TO])
-            logger.info(f'Отправлено сообщение пользователю {msg[TO]} от пользователя {msg[FROM]}.')
+            logger.info(f'A message was sent to user {msg [TO]} from user {msg [FROM]}.')
         elif msg[TO] in self.names and self.names[msg[TO]] not in clients_send_lst:
             raise ConnectionError
         else:
             logger.error(
-                f'Пользователь {msg[TO]} не зарегистрирован на сервере, отправка сообщения невозможна.')
+                f'User {msg [TO]} is not registered on the server, sending messages is not possible.')
 
 
 @DecorationLogging()

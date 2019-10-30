@@ -73,15 +73,15 @@ class Client(threading.Thread, QObject):
 
     @DecorationLogging()
     def run(self):
-        print(f'Консольный месседжер. Клиентский модуль. Добро пожаловать: {self.client_login}')
+        print(f'Console messenger. Client module. Welcome: {self.client_login}')
         logger.info(
-            f'Запущен клиент с парамертами: адрес сервера: {self.ip_server} , порт: {self.port_server}, имя пользователя: {self.client_login}')
+            f'Launched client with parameters: server address: {self.ip_server} , port: {self.port_server}, username: {self.client_login}')
         # Таймаут 1 секунда, необходим для освобождения сокета
         self.connection.settimeout(1)
 
         for i in range(5):
-            logger.info(f'Попытка подключения - {i + 1}')
-            print(f'Попытка подключения - {i + 1}')
+            logger.info(f'Connection attempt - {i + 1}.')
+            print(f'Connection attempt - {i + 1}.')
             try:
                 self.connection.connect((self.ip_server, self.port_server))
             except (OSError, ConnectionRefusedError):
@@ -92,11 +92,11 @@ class Client(threading.Thread, QObject):
             time.sleep(1)
 
         if not self.is_connected:
-            logger.critical('Нелязя установить соединение. '
-                            'Не верные даннные ip или port или сервер не работает\n')
+            logger.critical('Unable to establish a connection. '
+                            'Invalid ip or port or server is down.\n')
             self.connection_lack()
 
-        logger.debug(f'Установлено соединение с сервером')
+        logger.debug(f'Server connection established.')
 
         self.start_authorization_procedure()
 
@@ -109,33 +109,33 @@ class Client(threading.Thread, QObject):
         pubkey = self.key.publickey().export_key().decode('ascii')
         msg_to_server = self.create_presence_msg(self.client_login, pubkey)
 
-        logger.info(f'Сформировано сообщение серверу - {msg_to_server}')
+        logger.info(f'A message has been generated to the server - {msg_to_server}.')
         try:
             send_msg(self.connection, msg_to_server)
-            logger.debug(f'Отпавлено сообщение серверу')
+            logger.debug(f'Message sent to server.')
 
             answer_all = get_msg(self.connection)
             answer_code = self.answer_server_presence(answer_all)
-            logger.info(f'Получен ответ от сервера - {answer_code} \n')
+            logger.info(f'Received response from server - {answer_code}.\n')
 
             self.send_hash_password(answer_all)
 
             answer_code = self.answer_server_presence(get_msg(self.connection))
 
         except json.JSONDecodeError:
-            logger.error('Не удалось декодировать полученную Json строку.')
+            logger.error('Failed to decode received Json string.')
             self.connection_lack()
         except IncorrectDataNotDictError:
-            logger.error('Получен не верный формат данных\n')
+            logger.error('Invalid data format received.\n')
             self.connection_lack()
         except FieldMissingError as missing_error:
-            logger.error(f'Нет обязательного поля - {missing_error}\n')
+            logger.error(f'No required field - {missing_error}.\n')
             self.connection_lack()
         except IncorrectCodeError as wrong_code:
-            logger.error(f'Неверный код в сообщении - {wrong_code}')
+            logger.error(f'Invalid code in message - {wrong_code}.')
             self.connection_lack()
         except ConnectionResetError:
-            logger.critical('Не установлена связь с сервером')
+            logger.critical('Server connection not established.')
             self.connection_lack()
         except ServerError as er:
             logger.critical(f'{er}')
@@ -143,8 +143,8 @@ class Client(threading.Thread, QObject):
             self.answer_server.emit(f'{er}')
             exit(1)
         else:
-            logger.info(f'Получен ответ от сервера - {answer_code} \n')
-            print(f'Установлено соединение с сервером')
+            logger.info(f'Received response from server - {answer_code}.\n')
+            print(f'Server connection established.')
             self.progressbar_signal.emit()
 
     @DecorationLogging()
@@ -178,20 +178,20 @@ class Client(threading.Thread, QObject):
         try:
             users_all = self.get_users_all()
         except (ConnectionResetError, ServerError):
-            logger.error('Ошибка запроса списка известных пользователей.')
+            logger.error('Error requesting list of known users.')
             self.connection_lack()
         else:
             self.database.add_users_known(users_all)
-            print('Список известных пользователь успешно обновлен')
+            print('List of known users updated successfully.')
             self.progressbar_signal.emit()
         try:
             contacts_list = self.get_contacts_all()
         except (ConnectionResetError, ServerError):
-            logger.error('Ошибка запроса списка контактов.')
+            logger.error('Contact list request error.')
             self.connection_lack()
         else:
             self.database.add_contacts(contacts_list)
-            print('Список контактов успешно обновлен')
+            print('Contact list updated successfully.')
             self.progressbar_signal.emit()
 
     @DecorationLogging()
@@ -208,7 +208,7 @@ class Client(threading.Thread, QObject):
 
     @DecorationLogging()
     def get_users_all(self):
-        logger.debug(f'Запрос списка известных пользователей {self.client_login}')
+        logger.debug(f'Request a list of known users {self.client_login}')
         request = {
             ACTION: USERS_REQUEST,
             TIME: time.time(),
@@ -219,20 +219,20 @@ class Client(threading.Thread, QObject):
         if RESPONSE in answer and answer[RESPONSE] == 202:
             return answer[LIST_INFO]
         else:
-            raise ServerError('Неверный ответ сервера')
+            raise ServerError('Invalid server response.')
 
     @DecorationLogging()
     def get_contacts_all(self):
-        logger.debug(f'Запрос контакт листа для пользователся {self.client_login}')
+        logger.debug(f'Request contact sheet for user {self.client_login}.')
         message = {
             ACTION: GET_CONTACTS,
             TIME: time.time(),
             USER: self.client_login
         }
-        logger.debug(f'Сформирован запрос {message}')
+        logger.debug(f'Formed request {message}')
         send_msg(self.connection, message)
         answer = get_msg(self.connection)
-        logger.debug(f'Получен ответ {answer}')
+        logger.debug(f'Answer received {answer}')
         if RESPONSE in answer and answer[RESPONSE] == 202:
             return answer[LIST_INFO]
         else:
@@ -240,14 +240,14 @@ class Client(threading.Thread, QObject):
 
     @DecorationLogging()
     def answer_server_presence(self, msg):
-        logger.debug(f'Разбор сообщения от сервера - {msg}')
+        logger.debug(f'Parsing a message from the server - {msg}')
         if RESPONSE in msg:
             if msg[RESPONSE] == 511:
                 return 'OK: 511'
             elif msg[RESPONSE] == 200:
                 return 'OK: 200'
             elif msg[RESPONSE] == 400:
-                logger.info(f'400: {msg[ERROR]}')
+                logger.info(f'ERROR 400: {msg[ERROR]}')
                 raise ServerError(f'{msg[ERROR]}')
             else:
                 raise IncorrectCodeError(msg[RESPONSE])
@@ -261,27 +261,27 @@ class Client(threading.Thread, QObject):
                 try:
                     message = get_msg(sock)
                 except IncorrectDataNotDictError:
-                    logger.error(f'Не удалось декодировать полученное сообщение.')
+                    logger.error(f'Failed to decode received message.')
                 # Вышел таймаут соединения если errno = None, иначе обрыв соединения.
                 except OSError as err:
                     # print(err.errno)
                     if err.errno:
-                        logger.critical(f'Потеряно соединение с сервером.')
+                        logger.critical(f'Lost server connection.')
                         self.connection_lost_signal.emit()
                         break
                 except (ConnectionError, ConnectionAbortedError, ConnectionResetError, json.JSONDecodeError):
-                    logger.critical(f'Потеряно соединение с сервером.')
+                    logger.critical(f'Lost server connection.')
                     self.connection_lost_signal.emit()
                     break
                 else:
                     if ACTION in message and message[ACTION] == MESSAGE and TO in message and FROM in message \
                             and MESSAGE_TEXT in message and message[TO] == my_username:
-                        print(f'\nПолучено сообщение от пользователя {message[FROM]}:\n{message[MESSAGE_TEXT]}\n')
-                        logger.info(f'Получено сообщение от пользователя {message[FROM]}:\n{message[MESSAGE_TEXT]}')
+                        print(f'\nReceived message from user{message[FROM]}:\n{message[MESSAGE_TEXT]}.\n')
+                        logger.info(f'Received message from user {message[FROM]}:\n{message[MESSAGE_TEXT]}.')
                         self.database.save_message(message[FROM], 'in', message[MESSAGE_TEXT])
                         self.new_message_signal.emit(message[FROM])
                     else:
-                        logger.error(f'Получено некорректное сообщение с сервера: {message}')
+                        logger.error(f'Invalid message received from server: {message}')
 
     @DecorationLogging()
     def send_user_message(self, contact_name, message):
@@ -297,13 +297,13 @@ class Client(threading.Thread, QObject):
                 send_msg(self.connection, message)
                 answer = get_msg(self.connection)
             except (ConnectionResetError, ConnectionAbortedError, OSError):
-                logger.critical('Потеряно соединение с сервером.')
+                logger.critical('Lost server connection.')
                 return False
             else:
                 if answer[RESPONSE] == 400:
-                    logger.info(f'{answer[ERROR]}. Пользователя {contact_name} нет в сети')
+                    logger.info(f'{answer[ERROR]}. User {contact_name} is offline.')
                     return f'User {contact_name} is offline!'
-        logger.debug(f'Отправлено сообщение: {message},от {self.client_login} пользователю {contact_name}')
+        logger.debug(f'Message sent: {message},from {self.client_login} username {contact_name}')
         self.database.save_message(message[TO], 'out', message[MESSAGE_TEXT])
         return True
 
@@ -315,18 +315,18 @@ class Client(threading.Thread, QObject):
             try:
                 self.add_contact_server(new_contact_name)
             except ServerError:
-                logger.error('Не удалось отправить информацию на сервер.')
+                logger.error('Failed to send information to server.')
             except ConnectionResetError:
-                logger.error('Связь с сервером потеряна')
+                logger.error('Server connection lost.')
             else:
-                logger.info(f'Добавлен новый контакт {new_contact_name} у пользователя {self.client_login}')
+                logger.info(f'New contact added {new_contact_name} at the user {self.client_login}.')
                 return True
         else:
-            logger.error('Данный пользователь не зарегистрирован.')
+            logger.error('This user is not registered.')
 
     @DecorationLogging()
     def add_contact_server(self, new_contact_name):
-        logger.debug(f'Создание нового контакта {new_contact_name} у пользователя {self.client_login}')
+        logger.debug(f'Create a new contact {new_contact_name} at the user {self.client_login}.')
         message = {
             ACTION: ADD_CONTACT,
             TIME: time.time(),
@@ -337,9 +337,9 @@ class Client(threading.Thread, QObject):
             send_msg(self.connection, message)
             answer = get_msg(self.connection)
         if RESPONSE in answer and answer[RESPONSE] == 200:
-            logging.debug(f'Удачное создание контакта {new_contact_name} у пользователя {self.client_login}')
+            logging.debug(f'Successful contact creation {new_contact_name} at the user {self.client_login}.')
         else:
-            raise ServerError('Ошибка создания контакта')
+            raise ServerError('Error creating contact.')
 
     @DecorationLogging()
     def del_contact(self, del_contact_name):
@@ -349,12 +349,12 @@ class Client(threading.Thread, QObject):
             try:
                 self.del_contact_server(del_contact_name)
             except ServerError:
-                logger.error('Не удалось отправить информацию на сервер.')
+                logger.error('Failed to send information to server.')
             else:
-                print(f'Контакт {del_contact_name}  успешно удален')
+                print(f'Contact {del_contact_name} successfully deleted.')
                 return True
         else:
-            logger.info('Попытка удаления несуществующего контакта.')
+            logger.info('Attempt to delete a nonexistent contact.')
 
     @DecorationLogging()
     def del_contact_server(self, del_contact_name):
@@ -368,19 +368,19 @@ class Client(threading.Thread, QObject):
             send_msg(self.connection, message)
             answer = get_msg(self.connection)
         if RESPONSE in answer and answer[RESPONSE] == 200:
-            logging.debug(f'Удачное удаление контакта {del_contact_name} у пользователя {self.client_login}')
+            logging.debug(f'Successfully delete a contact {del_contact_name} at the user {self.client_login}')
         else:
-            raise ServerError('Ошибка удаления клиента')
+            raise ServerError('Client uninstall error.')
 
     @DecorationLogging()
     def exit_client(self):
         try:
             send_msg(self.connection, self.create_exit_message(self.client_login))
         except ConnectionResetError:
-            logger.critical('Потеряно соединение с сервером.')
+            logger.critical('Lost server connection.')
             exit(1)
-        logger.info('Завершение работы по команде пользователя\n.')
-        print('Завершение работы по команде пользователя.')
+        logger.info('Application shutdown by user command\n.')
+        print('Application shutdown by user command.')
 
     @DecorationLogging()
     def create_exit_message(self, client_login):
