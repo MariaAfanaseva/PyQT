@@ -31,5 +31,3 @@ if __name__ == '__main__':
     log.warning('Debug warning client')
     log.info('Debug info client')
     log.debug('Debug debug client')
-
-

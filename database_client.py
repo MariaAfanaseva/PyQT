@@ -1,7 +1,6 @@
-from sqlalchemy import create_engine, Column, String, Integer, ForeignKey, DateTime, Text
+from sqlalchemy import create_engine, Column, String, Integer, DateTime, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from common.variables import *
 import datetime
 
 Base = declarative_base()
@@ -50,20 +49,20 @@ class ClientDB:
 
     def __init__(self, login):
         self.database_engine = create_engine(f'sqlite:///client_{login}.db3', echo=False, pool_recycle=7200,
-                      connect_args={'check_same_thread': False})
+                                             connect_args={'check_same_thread': False})
         Base.metadata.create_all(self.database_engine)
         Session = sessionmaker(bind=self.database_engine)
         self.session = Session()
 
     def add_contacts(self, contacts_list):
-        #  contacts-list - список контактов из сервера
+        #  contacts-list - contact list from server
         self.session.query(self.Contacts).delete()
         self.session.commit()
         for contact in contacts_list:
             self.add_contact(contact)
 
     def add_users_known(self, users_all):
-        #  users_all - Получаем с сервера
+        #  users_all - from server
         self.session.query(self.UsersKnown).delete()
         for user in users_all:
             user_new = self.UsersKnown(user)
@@ -96,14 +95,14 @@ class ClientDB:
         else:
             return False
 
-    # Функция сохраняющяя сообщения
     def save_message(self, contact, direction, message):
+        # Message save function
         message_row = self.HistoryMessages(contact, direction, message, datetime.datetime.now())
         self.session.add(message_row)
         self.session.commit()
 
-    # Функция возвращающая историю переписки
     def get_history(self, contact):
+        # Function returning correspondence history
         query = self.session.query(self.HistoryMessages).filter_by(contact=contact)
         return [(history_row.contact, history_row.direction, history_row.message, history_row.date)
                 for history_row in query.all()]

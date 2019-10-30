@@ -15,7 +15,8 @@ class Processes:
                 processes.append(subprocess.Popen('python server.py', creationflags=subprocess.CREATE_NEW_CONSOLE))
                 time.sleep(1)
                 for i in range(1, self.clients + 1):
-                    processes.append(subprocess.Popen(f'python client.py -n test{i}', creationflags=subprocess.CREATE_NEW_CONSOLE))
+                    processes.append(subprocess.Popen(f'python client.py -n test{i}',
+                                                      creationflags=subprocess.CREATE_NEW_CONSOLE))
             elif action == 'close':
                 while processes:
                     client = processes.pop()

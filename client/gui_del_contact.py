@@ -21,7 +21,7 @@ class DelContactDialog(QDialog):
             f'Are you sure you want to remove {self.del_contact_name} from your contact list?')
         self.user_interface.label.setFont(QtGui.QFont('SansSerif', 10))
         self.show()
-        
+
     def del_contact(self):
         if self.client_transport.del_contact(self.del_contact_name):
             self.message_window.information(self, 'Success', 'Contact successfully removed.')

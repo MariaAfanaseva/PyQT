@@ -7,7 +7,7 @@
 # WARNING! All changes made in this file will be lost!
 
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtWidgets
 
 
 class Ui_Dialog(object):
@@ -37,4 +37,8 @@ class Ui_Dialog(object):
         Dialog.setWindowTitle(_translate('Remove contact', 'Remove contact'))
         self.removeButton.setText(_translate('Remove contact', "Remove"))
         self.cancelButton.setText(_translate('Remove contact', "Cancel"))
-        self.label.setText(_translate('Remove contact', "<html><head/><body><p align=\"center\"><span style=\" font-size:10pt;\">Are you sure you want to remove from your contact list?</span></p></body></html>"))
+        self.label.setText(_translate(
+            'Remove contact', "<html><head/><body><p align=\"center\">"
+                              "<span style=\" font-size:10pt;\">"
+                              "Are you sure you want to remove from your contact list?"
+                              "</span></p></body></html>"))

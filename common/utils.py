@@ -1,5 +1,5 @@
 import json
-from common.variables import *
+from common.variables import ENCODING, MAX_PACKAGE_LENGTH
 from common.errors import IncorrectDataNotDictError
 from decorators.decos import DecorationLogging
 
@@ -19,4 +19,3 @@ def get_msg(client):
         return response
     else:
         raise IncorrectDataNotDictError
-

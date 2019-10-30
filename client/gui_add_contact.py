@@ -21,7 +21,7 @@ class AddContactDialog(QDialog):
         self.user_interface.addContactButton.clicked.connect(self.add_contact)
         self.update_users_all()
         self.show()
-     
+
     def update_users_all(self):
         users_list = self.database_client.get_users_known()
         self.users_model = QStandardItemModel(self)

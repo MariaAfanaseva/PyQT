@@ -1,9 +1,5 @@
 import logging
 import sys
-import os
-# sys.path.append(os.path.join(os.getcwd(), '..'))
-import logs.client_log_config
-import logs.server_log_config
 
 if sys.argv[0].find('server') == -1:
     log = logging.getLogger('client')
@@ -18,4 +14,3 @@ class DecorationLogging:
             result = func(*args, **kwargs)
             return result
         return wrapper
-

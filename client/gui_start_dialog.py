@@ -19,7 +19,7 @@ class UserNameDialog(QDialog):
         self.user_interface.startButton.clicked.connect(self.click_start)
 
         self.user_interface.loginLineEdit.setFocus()
-        
+
         self.show()
 
     def click_start(self):

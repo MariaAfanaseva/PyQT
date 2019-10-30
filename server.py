@@ -7,9 +7,14 @@ import time
 import threading
 import configparser
 import os
+import json
 import binascii
 import hmac
-from common.utils import *
+from common.utils import get_msg, send_msg
+from common.variables import CONFIG_FILE_NAME, MAX_CONNECTIONS, TO, USER, ACCOUNT_NAME, \
+    RESPONSE_200, RESPONSE_400, RESPONSE_511, ERROR, DATA, RESPONSE, TIME, PRESENCE, FROM, \
+    EXIT, GET_CONTACTS, PUBLIC_KEY, ACTION, MESSAGE_TEXT, MESSAGE, LIST_INFO, ADD_CONTACT, \
+    DELETE_CONTACT, USERS_REQUEST
 from common.errors import IncorrectDataNotDictError
 from decorators.decos import DecorationLogging
 from descriptors import CheckPort, CheckIP
@@ -106,7 +111,6 @@ class Server(threading.Thread, metaclass=ServerCreator):
             else:
                 print('Wrong command.')
 
-    @DecorationLogging()
     def run(self):
         # Information output on the server in a separate stream
         server_info = threading.Thread(target=self.get_information)
@@ -135,33 +139,41 @@ class Server(threading.Thread, metaclass=ServerCreator):
             except OSError as err:
                 logger.error(f'Error working with sockets: {err}')
 
-            # Receive a message from clients
-            if clients_read_lst:
-                for client in clients_read_lst:
-                    try:
-                        message = get_msg(client)
-                    except IncorrectDataNotDictError:
-                        logger.error('Invalid data format received.')
-                    except (ConnectionResetError, json.decoder.JSONDecodeError, ConnectionAbortedError):
-                        self.remove_client(client)
-                    else:
-                        logger.debug(f'Received message from client {message}.')
-                        self.client_msg(message, client)
+            self.get_messages_clients(clients_read_lst)
 
-            # If there are messages to send and pending clients, send them a message.
-            if self.messages:
-                for msg in self.messages:
-                    try:
-                        self.send_messages_users(clients_send_lst, msg)
-                    except (ConnectionResetError, ConnectionError):
-                        logger.info(f'Communication with a client named {msg [TO]} has been lost.')
-                        self.clients.remove(self.names[msg[TO]])
-                        del self.names[msg[TO]]
-                        self.database.user_logout(msg[TO])
-                self.messages.clear()
-                
+            self.send_messages(clients_send_lst)
+
     @DecorationLogging()
-    def client_authorization(self, client, message):
+    def get_messages_clients(self, clients_read_lst):
+        # Receive a message from clients
+        if clients_read_lst:
+            for client in clients_read_lst:
+                try:
+                    message = get_msg(client)
+                except IncorrectDataNotDictError:
+                    logger.error('Invalid data format received.')
+                except (ConnectionResetError, json.decoder.JSONDecodeError, ConnectionAbortedError):
+                    self.remove_client(client)
+                else:
+                    logger.debug(f'Received message from client {message}.')
+                    self.client_msg(message, client)
+
+    @DecorationLogging()
+    def send_messages(self, clients_send_lst):
+        # If there are messages to send and pending clients, send them a message.
+        if self.messages:
+            for msg in self.messages:
+                try:
+                    self.send_message_user(clients_send_lst, msg)
+                except (ConnectionResetError, ConnectionError):
+                    logger.info(f'Communication with a client named {msg[TO]} has been lost.')
+                    self.clients.remove(self.names[msg[TO]])
+                    del self.names[msg[TO]]
+                    self.database.user_logout(msg[TO])
+            self.messages.clear()
+
+    @DecorationLogging()
+    def checking_new_client(self, client, message):
         if message[USER][ACCOUNT_NAME] in self.names.keys():
             response = RESPONSE_400
             response[ERROR] = 'Login already taken.'
@@ -183,45 +195,48 @@ class Server(threading.Thread, metaclass=ServerCreator):
             client.close()
             logger.debug(f'The user is not registered. Response sent to client - {response} \n')
         else:
-            message_auth = RESPONSE_511
-            random_str = binascii.hexlify(os.urandom(64))
-            # Bytes cannot be in the dictionary, decode (json.dumps -> TypeError)
-            message_auth[DATA] = random_str.decode('ascii')
-            password_hash = self.database.get_hash(message[USER][ACCOUNT_NAME])
-            hash = hmac.new(password_hash, random_str)
-            server_digest = hash.digest()
-            
+            self.start_client_authorization(client, message)
+
+    @DecorationLogging()
+    def start_client_authorization(self, client, message):
+        message_auth = RESPONSE_511
+        random_str = binascii.hexlify(os.urandom(64))
+        # Bytes cannot be in the dictionary, decode (json.dumps -> TypeError)
+        message_auth[DATA] = random_str.decode('ascii')
+        password_hash = self.database.get_hash(message[USER][ACCOUNT_NAME])
+        hash = hmac.new(password_hash, random_str)
+        server_digest = hash.digest()
+
+        try:
+            send_msg(client, message_auth)
+            answer = get_msg(client)
+        except OSError:
+            client.close()
+            return
+
+        client_digest = binascii.a2b_base64(answer[DATA])
+
+        if RESPONSE in answer and answer[RESPONSE] == 511 and hmac.compare_digest(server_digest, client_digest):
+            self.names[message[USER][ACCOUNT_NAME]] = client
+            client_ip, client_port = client.getpeername()
             try:
-                send_msg(client, message_auth)
-                answer = get_msg(client)
+                send_msg(client, RESPONSE_200)
             except OSError:
-                client.close()
-                return
-            
-            client_digest = binascii.a2b_base64(answer[DATA])
-            
-            # If the client’s answer is correct, then save it to the list of users.
-            if RESPONSE in answer and answer[RESPONSE] == 511 and hmac.compare_digest(server_digest, client_digest):
-                self.names[message[USER][ACCOUNT_NAME]] = client
-                client_ip, client_port = client.getpeername()
-                try:
-                    send_msg(client, RESPONSE_200)
-                except OSError:
-                    self.remove_client(message[USER][ACCOUNT_NAME])
+                self.remove_client(message[USER][ACCOUNT_NAME])
 
-                self.database.login_user(message[USER][ACCOUNT_NAME],
-                                         client_ip, client_port, message[USER][PUBLIC_KEY])
-            else:
-                response = RESPONSE_400
-                response[ERROR] = 'Wrong password.'
-                try:
-                    send_msg(client, response)
-                except OSError:
-                    pass
-                self.clients.remove(client)
-                client.close()
+            self.database.login_user(message[USER][ACCOUNT_NAME],
+                                     client_ip, client_port, message[USER][PUBLIC_KEY])
+        else:
+            response = RESPONSE_400
+            response[ERROR] = 'Wrong password.'
+            try:
+                send_msg(client, response)
+            except OSError:
+                pass
+            self.clients.remove(client)
+            client.close()
 
-    @DecorationLogging()       
+    @DecorationLogging()
     def remove_client(self, client):
         logger.info(f'Client {client.getpeername ()} disconnected from server.')
         for name in self.names:
@@ -231,14 +246,14 @@ class Server(threading.Thread, metaclass=ServerCreator):
                 break
         self.clients.remove(client)
         client.close()
-        
+
     @DecorationLogging()
     def client_msg(self, message, client):
         logger.debug(f'Parsing a message from a client - {message}')
 
         if ACTION in message and TIME in message and USER in message \
                 and ACCOUNT_NAME in message[USER] and message[ACTION] == PRESENCE:
-            self.client_authorization(client, message)
+            self.checking_new_client(client, message)
 
         elif ACTION in message and message[ACTION] == MESSAGE and\
                 TIME in message and MESSAGE_TEXT in message and TO in message and FROM in message:
@@ -296,7 +311,7 @@ class Server(threading.Thread, metaclass=ServerCreator):
 
     #  We respond to users
     @DecorationLogging()
-    def send_messages_users(self, clients_send_lst, msg):
+    def send_message_user(self, clients_send_lst, msg):
         if msg[TO] in self.names and self.names[msg[TO]] in clients_send_lst:
             send_msg(self.names[msg[TO]], msg)
             self.database.sending_message(msg[FROM], msg[TO])

@@ -2,10 +2,11 @@ import unittest
 import sys
 import os
 import json
-sys.path.append(os.path.join(os.getcwd(), '..'))
 from common.utils import send_msg, get_msg
-from common.variables import *
-from common.errors import IncorrectDataNotDictError, FieldMissingError
+from common.variables import ENCODING, ACTION, PRESENCE, TIME, USER, \
+    ACCOUNT_NAME, RESPONSE, ERROR
+from common.errors import IncorrectDataNotDictError
+sys.path.append(os.path.join(os.getcwd(), '..'))
 
 
 class TestSocket:

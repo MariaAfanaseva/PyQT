@@ -7,7 +7,7 @@
 # WARNING! All changes made in this file will be lost!
 
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtWidgets
 
 
 class Ui_Dialog(object):
@@ -52,5 +52,9 @@ class Ui_Dialog(object):
         Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
         self.exitButton.setText(_translate("Dialog", "Exit"))
         self.startButton.setText(_translate("Dialog", "Start"))
-        self.loginLabel.setText(_translate("Dialog", "<html><head/><body><p><span style=\" font-size:10pt;\">Enter your login:</span></p></body></html>"))
-        self.passwordLabel.setText(_translate("Dialog", "<html><head/><body><p><span style=\" font-size:10pt;\">Enter your password:</span></p></body></html>"))
+        self.loginLabel.setText(_translate(
+            "Dialog", "<html><head/><body><p><span style=\" font-size:10pt;\">"
+                      "Enter your login:</span></p></body></html>"))
+        self.passwordLabel.setText(_translate(
+            "Dialog", "<html><head/><body><p><span style=\" font-size:10pt;\">"
+                      "Enter your password:</span></p></body></html>"))

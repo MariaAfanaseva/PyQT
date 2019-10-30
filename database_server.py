@@ -1,7 +1,6 @@
 from sqlalchemy import create_engine, Column, String, Integer, ForeignKey, DateTime, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from common.variables import *
 import datetime
 
 Base = declarative_base()
@@ -255,4 +254,3 @@ if __name__ == '__main__':
     # server.delete_contact('maria2', 'maria1')
     # print(server.get_contacts('maria2'))
     # server.sending_message('maria5', 'maria3')
-

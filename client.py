@@ -8,10 +8,14 @@ import threading
 import hashlib
 import hmac
 import binascii
-from common.utils import *
+import json
+from common.utils import get_msg, send_msg
+from common.variables import DEFAULT_IP_ADDRESS, DEFAULT_PORT,  TO, USER, ACCOUNT_NAME, \
+    RESPONSE_511, ERROR, DATA, RESPONSE, TIME, PRESENCE, FROM, \
+    EXIT, GET_CONTACTS, PUBLIC_KEY, ACTION, MESSAGE_TEXT, MESSAGE, LIST_INFO, ADD_CONTACT, \
+    DELETE_CONTACT, USERS_REQUEST
 from common.errors import IncorrectDataNotDictError, FieldMissingError, IncorrectCodeError, ServerError
 from decorators.decos import DecorationLogging
-from metaclasses import ClientCreator
 from descriptors import CheckPort, CheckIP, CheckName
 from database_client import ClientDB
 from PyQt5.QtWidgets import QApplication
@@ -56,7 +60,7 @@ class Client(threading.Thread, QObject):
     new_message_signal = pyqtSignal(str)
     connection_lost_signal = pyqtSignal()
 
-    def __init__(self, ip_server, port_server, client_login,  client_password, database, key):
+    def __init__(self, ip_server, port_server, client_login, client_password, database, key):
         self.ip_server = ip_server
         self.port_server = port_server
         self.client_login = client_login
@@ -75,8 +79,9 @@ class Client(threading.Thread, QObject):
     def run(self):
         print(f'Console messenger. Client module. Welcome: {self.client_login}')
         logger.info(
-            f'Launched client with parameters: server address: {self.ip_server} , port: {self.port_server}, username: {self.client_login}')
-        # Таймаут 1 секунда, необходим для освобождения сокета
+            f'Launched client with parameters: server address: {self.ip_server} ,'
+            f' port: {self.port_server}, username: {self.client_login}')
+        # Timeout 1 second needed to free socket
         self.connection.settimeout(1)
 
         for i in range(5):
@@ -445,7 +450,7 @@ def main():
 
     #  Loading window
     loading_window(app, client_transport)
-    
+
     if client_transport.is_connected:
         main_window = ClientMainWindow(app, client_transport, database)
         main_window.init_ui()

@@ -7,7 +7,7 @@
 # WARNING! All changes made in this file will be lost!
 
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtWidgets
 
 
 class Ui_Dialog(object):
@@ -75,7 +75,15 @@ class Ui_Dialog(object):
         Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
         self.savePushButton.setText(_translate("Dialog", "Save"))
         self.cancelPushButton_2.setText(_translate("Dialog", "Cancel"))
-        self.enterPasswordLabel.setText(_translate("Dialog", "<html><head/><body><p><span style=\" font-size:10pt;\">Enter password: </span></p></body></html>"))
-        self.enterNameLabel.setText(_translate("Dialog", "<html><head/><body><p><span style=\" font-size:10pt;\">Enter login:</span></p></body></html>"))
-        self.confirmPasswordLabel.setText(_translate("Dialog", "<html><head/><body><p><span style=\" font-size:10pt;\">Confirm password: </span></p></body></html>"))
-        self.fullNameLabel.setText(_translate("Dialog", "<html><head/><body><p><span style=\" font-size:10pt;\">Enter your full name: </span></p></body></html>"))
+        self.enterPasswordLabel.setText(_translate(
+            "Dialog", "<html><head/><body><p><span style=\" font-size:10pt;\">Enter password: "
+                      "</span></p></body></html>"))
+        self.enterNameLabel.setText(_translate(
+            "Dialog", "<html><head/><body><p><span style=\" font-size:10pt;\">Enter login:"
+                      "</span></p></body></html>"))
+        self.confirmPasswordLabel.setText(_translate(
+            "Dialog", "<html><head/><body><p><span style=\" font-size:10pt;\">Confirm password:"
+                      " </span></p></body></html>"))
+        self.fullNameLabel.setText(_translate(
+            "Dialog", "<html><head/><body><p><span style=\" font-size:10pt;\">"
+                      "Enter your full name: </span></p></body></html>"))

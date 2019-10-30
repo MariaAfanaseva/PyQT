@@ -1,11 +1,8 @@
 import sys
-import datetime
-from common.variables import *
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtGui
 from PyQt5.QtWidgets import QWidget, QApplication, QTableView, QMainWindow, \
-    QAction, QLabel, QGridLayout, QDialog, QPushButton, QFileDialog, QLineEdit, QMessageBox
+    QAction, QLabel, QGridLayout
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
-from PyQt5.QtCore import QTimer
 from server.gui_settings_window import SettingsWindow
 from server.gui_registration_user import RegistrationDialog
 
@@ -40,7 +37,7 @@ class MainWindow(QMainWindow):
         add_user.triggered.connect(self.regiastration_dialog.init_ui)
 
         rm_user = QAction('Remove user', self)
-        rm_user.triggered.connect(self.user_remove)
+        # rm_user.triggered.connect(self.user_remove)
 
         self.toolbar = self.addToolBar('MainBar')
         self.toolbar.setFont(QtGui.QFont('Montserrat', 10))
@@ -99,10 +96,6 @@ class MainWindow(QMainWindow):
 
         #  Align Date Column
         self.connected_users_table.resizeColumnToContents(3)
-
-
-    def user_remove(self):
-        pass
 
 
 if __name__ == '__main__':

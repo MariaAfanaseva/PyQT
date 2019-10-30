@@ -7,7 +7,7 @@
 # WARNING! All changes made in this file will be lost!
 
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtWidgets
 
 
 class Ui_Loading(object):
@@ -35,4 +35,7 @@ class Ui_Loading(object):
     def retranslateUi(self, Loading):
         _translate = QtCore.QCoreApplication.translate
         Loading.setWindowTitle(_translate("Loading", "Dialog"))
-        self.waitLabel.setText(_translate("Loading", "<html><head/><body><p align=\"center\"><span style=\" font-size:10pt;\">Loading. Please weit!</span></p></body></html>"))
+        self.waitLabel.setText(_translate(
+            "Loading", "<html><head/><body><p align=\"center\">"
+                       "<span style=\" font-size:10pt;\">"
+                       "Loading. Please weit!</span></p></body></html>"))

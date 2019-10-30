@@ -7,7 +7,7 @@
 # WARNING! All changes made in this file will be lost!
 
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtWidgets
 
 
 class Ui_Dialog(object):
@@ -51,7 +51,9 @@ class Ui_Dialog(object):
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
-        self.allUsersLabel.setText(_translate("Dialog", "<html><head/><body><p><span style=\" font-size:10pt;\">All users list</span></p></body></html>"))
+        self.allUsersLabel.setText(_translate(
+            "Dialog", "<html><head/><body><p><span style=\" font-size:10pt;\">"
+                      "All users list</span></p></body></html>"))
         self.updateAllUsersList.setText(_translate("Dialog", "Update users all list"))
         self.addContactButton.setText(_translate("Dialog", "Add contact"))
         self.closeWindowAddContact.setText(_translate("Dialog", "Close"))

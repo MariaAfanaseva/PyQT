@@ -32,4 +32,3 @@ if __name__ == '__main__':
     logger.warning('Debug warning server')
     logger.info('Debug info server')
     logger.debug('Debug info server')
-
