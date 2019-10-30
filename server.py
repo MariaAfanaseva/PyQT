@@ -7,22 +7,22 @@ import time
 import threading
 import configparser
 import os
-from common.variables import *
+import binascii
+import hmac
 from common.utils import *
-from logs import server_log_config
 from common.errors import IncorrectDataNotDictError
 from decorators.decos import DecorationLogging
 from descriptors import CheckPort, CheckIP
 from metaclasses import ServerCreator
 from database_server import ServerDB
 from PyQt5.QtWidgets import QApplication
-from server_ui import MainWindow
+from server.gui_main_window import MainWindow
 
 logger = logging.getLogger('server')
 logger.setLevel(logging.DEBUG)
 
 
-#  Получаем аргументы при запуске файла
+# Get arguments when starting the file.
 @DecorationLogging()
 def get_args(default_ip, default_port):
     parser = argparse.ArgumentParser()
@@ -35,10 +35,10 @@ def get_args(default_ip, default_port):
 
 
 def read_config_file():
-    # Загрузка файла конфргурации сервера
+    # Download server configuration file
     parser = configparser.ConfigParser()
     dir_path = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(dir_path, CONFIG_FILE_NAME)
+    file_path = os.path.join(dir_path, f'server\\{CONFIG_FILE_NAME}')
     parser.read(file_path, encoding='utf-8')
     port = parser['SETTINGS']['default_port']
     ip_addr = parser['SETTINGS']['listen_Address']
@@ -47,7 +47,7 @@ def read_config_file():
 
 
 class Server(threading.Thread, metaclass=ServerCreator):
-    # Дескрипторы праверки порта и адреса
+    # Port and Address Correction Descriptors
     listen_port = CheckPort()
     listen_ip = CheckIP()
 
@@ -55,16 +55,16 @@ class Server(threading.Thread, metaclass=ServerCreator):
         self.listen_ip = listen_ip
         self.listen_port = listen_port
         self.database = database
-        #  Все клиенты
-        self.clients = []
-        #  Все сообщения
-        self.messages = []
-        #  Имена подключенных клиентов
-        self.names = dict()
+
+        self.clients = []   # All clients
+
+        self.messages = []  # All messages
+
+        self.names = dict()  # Connected Client Names
         super().__init__()
 
     def socket_init(self):
-        # Создаем сокет
+        # Create a socket
         connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # Готовим сокет
         connection.bind((self.listen_ip, self.listen_port))
         connection.settimeout(0.5)
@@ -108,15 +108,14 @@ class Server(threading.Thread, metaclass=ServerCreator):
 
     @DecorationLogging()
     def run(self):
-        # Вывод информации на сервере в отденьном потоке
+        # Information output on the server in a separate stream
         server_info = threading.Thread(target=self.get_information)
         server_info.daemon = True
         server_info.start()
 
-        # Инициализация Сокета
         self.socket_init()
-        # Основной цикл программы сервера
-        # Ждём подключения, если таймаут вышел, ловим исключение.
+        # The main loop of the server program
+        # We are waiting for a connection, if the timeout has expired, we catch an exception.
         while True:
             try:
                 client, client_address = self.connection.accept()
@@ -136,27 +135,20 @@ class Server(threading.Thread, metaclass=ServerCreator):
             except OSError as err:
                 logger.error(f'Ошибка работы с сокетами: {err}')
 
-            #  Получаем сообщение от клиентов
+            # Receive a message from clients
             if clients_read_lst:
                 for client in clients_read_lst:
                     try:
-                        message =get_msg(client)
+                        message = get_msg(client)
                     except IncorrectDataNotDictError:
                         logger.error('Получен не верный формат данных')
                     except (ConnectionResetError, json.decoder.JSONDecodeError, ConnectionAbortedError):
-                        logger.info(f'Клиент {client.getpeername()} отключился от сервера.')
-                        for name in self.names:
-                            if self.names[name] == client:
-                                self.database.user_logout(name)
-                                del self.names[name]
-                                break
-                        client.close()
-                        self.clients.remove(client)
+                        self.remove_client(client)
                     else:
                         logger.debug(f'Получено сообщение от клиента {message}')
                         self.client_msg(message, client)
 
-            # Если есть сообщения для отправки и ожидающие клиенты, отправляем им сообщение.
+            # If there are messages to send and pending clients, send them a message.
             if self.messages:
                 for msg in self.messages:
                     try:
@@ -167,34 +159,87 @@ class Server(threading.Thread, metaclass=ServerCreator):
                         del self.names[msg[TO]]
                         self.database.user_logout(msg[TO])
                 self.messages.clear()
-
-    #  Разбираем входящие сообщения
+                
     @DecorationLogging()
-    def client_msg(self, message, client):
-        logger.debug(f'Разбор сообщения от клиента - {message}')
-
-        #  Разбор сообщения RESPONSE от клиента
-        if ACTION in message and TIME in message and USER in message \
-                and ACCOUNT_NAME in message[USER] and message[ACTION] == PRESENCE:
-            #  Добавляем нового клиента в список names
-            if message[USER][ACCOUNT_NAME] not in self.names.keys():
+    def client_authorization(self, client, message):
+        if message[USER][ACCOUNT_NAME] in self.names.keys():
+            response = RESPONSE_400
+            response[ERROR] = 'Login already taken.'
+            try:
+                send_msg(client, response)
+            except OSError:
+                pass
+            self.clients.remove(client)
+            client.close()
+            logger.debug(f'Username is already taken. Response sent to client - {response} \n')
+        elif not self.database.is_user(message[USER][ACCOUNT_NAME]):
+            response = RESPONSE_400
+            response[ERROR] = 'User not registered.'
+            try:
+                send_msg(client, response)
+            except OSError:
+                pass
+            self.clients.remove(client)
+            client.close()
+            logger.debug(f'The user is not registered. Response sent to client - {response} \n')
+        else:
+            message_auth = RESPONSE_511
+            random_str = binascii.hexlify(os.urandom(64))
+            # Bytes cannot be in the dictionary, decode (json.dumps -> TypeError)
+            message_auth[DATA] = random_str.decode('ascii')
+            password_hash = self.database.get_hash(message[USER][ACCOUNT_NAME])
+            hash = hmac.new(password_hash, random_str)
+            server_digest = hash.digest()
+            
+            try:
+                send_msg(client, message_auth)
+                answer = get_msg(client)
+            except OSError:
+                client.close()
+                return
+            
+            client_digest = binascii.a2b_base64(answer[DATA])
+            
+            # If the client’s answer is correct, then save it to the list of users.
+            if RESPONSE in answer and answer[RESPONSE] == 511 and hmac.compare_digest(server_digest, client_digest):
                 self.names[message[USER][ACCOUNT_NAME]] = client
-                msg = {RESPONSE: 200}
-                send_msg(client, msg)
-                logger.debug(f'Отправлен ответ клиенту - {msg} \n')
                 client_ip, client_port = client.getpeername()
-                self.database.login_user(message[USER][ACCOUNT_NAME], client_ip, client_port)
+                try:
+                    send_msg(client, RESPONSE_200)
+                except OSError:
+                    self.remove_client(message[USER][ACCOUNT_NAME])
+
+                self.database.login_user(message[USER][ACCOUNT_NAME],
+                                         client_ip, client_port, message[USER][PUBLIC_KEY])
             else:
-                msg = {
-                    RESPONSE: 400,
-                    ERROR: 'Wrong name'
-                }
-                send_msg(client, msg)
-                logger.debug(f'Имя пользователя уже занято. Отправлен ответ клиенту - {msg} \n')
+                response = RESPONSE_400
+                response[ERROR] = 'Wrong password.'
+                try:
+                    send_msg(client, response)
+                except OSError:
+                    pass
                 self.clients.remove(client)
                 client.close()
 
-        #  Добавляем сообщение в список сообщений
+    @DecorationLogging()       
+    def remove_client(self, client):
+        logger.info(f'Клиент {client.getpeername()} отключился от сервера.')
+        for name in self.names:
+            if self.names[name] == client:
+                self.database.user_logout(name)
+                del self.names[name]
+                break
+        self.clients.remove(client)
+        client.close()
+        
+    @DecorationLogging()
+    def client_msg(self, message, client):
+        logger.debug(f'Parsing a message from a client - {message}')
+
+        if ACTION in message and TIME in message and USER in message \
+                and ACCOUNT_NAME in message[USER] and message[ACTION] == PRESENCE:
+            self.client_authorization(client, message)
+
         elif ACTION in message and message[ACTION] == MESSAGE and\
                 TIME in message and MESSAGE_TEXT in message and TO in message and FROM in message:
             if message[TO] in self.names:
@@ -225,7 +270,6 @@ class Server(threading.Thread, metaclass=ServerCreator):
             send_msg(client, {RESPONSE: 200})
             logger.debug(f'Удален контакт {message[ACCOUNT_NAME]} у пользователя {message[USER]}')
 
-        # Если это запрос известных пользователей
         elif ACTION in message and message[ACTION] == USERS_REQUEST and ACCOUNT_NAME in message \
                 and self.names[message[ACCOUNT_NAME]] == client:
             answer = {
@@ -250,7 +294,7 @@ class Server(threading.Thread, metaclass=ServerCreator):
             send_msg(client, msg)
             logger.info(f'Отправлены ошибки клиенту - {msg} \n')
 
-    #  Отвечаем пользователям
+    #  We respond to users
     @DecorationLogging()
     def send_messages_users(self, clients_send_lst, msg):
         if msg[TO] in self.names and self.names[msg[TO]] in clients_send_lst:

@@ -10,6 +10,8 @@ ACTION = 'action'
 TIME = 'time'
 USER = 'user'
 ACCOUNT_NAME = 'account_name'
+PUBLIC_KEY = 'pubkey'
+DATA = 'bin'
 RESPONSE = 'response'
 ERROR = 'error'
 ALERT = 'alert'  # текст сообщения ошибки
@@ -41,3 +43,17 @@ ACCEPTED = 202  # подтверждение
 SERVER_ERROR = 500
 WRONG_REQUEST = 400  # неправильный запрос
 
+# 200
+RESPONSE_200 = {RESPONSE: 200}
+
+# 400
+RESPONSE_400 = {
+    RESPONSE: 400,
+    ERROR: None
+}
+
+# 511
+RESPONSE_511 = {
+    RESPONSE: 511,
+    DATA: None
+}

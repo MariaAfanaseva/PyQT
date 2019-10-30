@@ -109,7 +109,7 @@ class ServerDB:
         self.session.query(self.ActiveUsers).delete()
         self.session.commit()
 
-    def login_user(self, login, ip_address, port, password_hash, key, fullname=None):
+    def login_user(self, login, ip_address, port, key):
         user = self.session.query(self.AllUsers).filter_by(login=login)
         if user.count():
             user = user.first()
@@ -127,6 +127,12 @@ class ServerDB:
         new_history = self.HistoryLogin(user.id, now_time, ip_address, port)
         self.session.add(new_history)
         self.session.commit()
+
+    def is_user(self, login):
+        if self.session.query(self.AllUsers).filter_by(login=login).count():
+            return True
+        else:
+            return False
 
     def add_user(self, login, password_hash, fullname=None):
         user = self.AllUsers(login, fullname, password_hash)

@@ -29,9 +29,15 @@ class LoadingWindow(QDialog):
         if self.progress == 99:
             self.close()
 
+    @pyqtSlot(str)
+    def answer_server(self, answer):
+        self.message_window.warning(self, 'Warning', f'{answer}')
+        self.close()
+
     def make_connection_with_signals(self, transport_client_obj):
         transport_client_obj.connection_lack_signal.connect(self.connection_lack)
         transport_client_obj.progressbar_signal.connect(self.change_value)
+        transport_client_obj.answer_server.connect(self.answer_server)
 
 
 if __name__ == '__main__':

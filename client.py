@@ -5,6 +5,9 @@ import socket
 import logging
 import argparse
 import threading
+import hashlib
+import hmac
+import binascii
 from common.utils import *
 from common.errors import IncorrectDataNotDictError, FieldMissingError, IncorrectCodeError, ServerError
 from decorators.decos import DecorationLogging
@@ -47,6 +50,7 @@ class Client(threading.Thread, QObject):
     # Load window signals
     connection_lack_signal = pyqtSignal()
     progressbar_signal = pyqtSignal()
+    answer_server = pyqtSignal(str)
 
     #  Main window signals
     new_message_signal = pyqtSignal(str)
@@ -93,13 +97,31 @@ class Client(threading.Thread, QObject):
             self.connection_lack()
 
         logger.debug(f'Установлено соединение с сервером')
-        msg_to_server = self.create_presence_msg(self.client_login)
-        logger.info(f'Сформировано сообщение серверу - {msg_to_server}')
-        send_msg(self.connection, msg_to_server)
-        logger.debug(f'Отпавлено сообщение серверу')
 
+        self.start_authorization_procedure()
+
+        self.load_database()
+
+        self.get_message_from_server(self.connection, self.client_login)
+
+    @DecorationLogging()
+    def start_authorization_procedure(self):
+        pubkey = self.key.publickey().export_key().decode('ascii')
+        msg_to_server = self.create_presence_msg(self.client_login, pubkey)
+
+        logger.info(f'Сформировано сообщение серверу - {msg_to_server}')
         try:
-            answer = self.answer_server_presence(get_msg(self.connection))
+            send_msg(self.connection, msg_to_server)
+            logger.debug(f'Отпавлено сообщение серверу')
+
+            answer_all = get_msg(self.connection)
+            answer_code = self.answer_server_presence(answer_all)
+            logger.info(f'Получен ответ от сервера - {answer_code} \n')
+
+            self.send_hash_password(answer_all)
+
+            answer_code = self.answer_server_presence(get_msg(self.connection))
+
         except json.JSONDecodeError:
             logger.error('Не удалось декодировать полученную Json строку.')
             self.connection_lack()
@@ -115,14 +137,35 @@ class Client(threading.Thread, QObject):
         except ConnectionResetError:
             logger.critical('Не установлена связь с сервером')
             self.connection_lack()
+        except ServerError as er:
+            logger.critical(f'{er}')
+            self.is_connected = False
+            self.answer_server.emit(f'{er}')
+            exit(1)
         else:
-            logger.info(f'Получен ответ от сервера - {answer} \n')
+            logger.info(f'Получен ответ от сервера - {answer_code} \n')
             print(f'Установлено соединение с сервером')
             self.progressbar_signal.emit()
 
-            self.load_database()
+    @DecorationLogging()
+    def get_hash_password(self):
+        password_bytes = self.client_password.encode('utf-8')
+        salt = self.client_login.lower().encode('utf-8')
+        password_hash = hashlib.pbkdf2_hmac('sha512', password_bytes, salt, 10000)
+        password_hash_string = binascii.hexlify(password_hash)
+        return password_hash_string
 
-            self.get_message_from_server(self.connection, self.client_login)
+    @DecorationLogging()
+    def send_hash_password(self, answer_all):
+        answer_data = answer_all[DATA]
+        password_hash_string = self.get_hash_password()
+
+        hash = hmac.new(password_hash_string, answer_data.encode('utf-8'))
+        digest = hash.digest()
+        my_answer = RESPONSE_511
+        my_answer[DATA] = binascii.b2a_base64(digest).decode('ascii')
+
+        send_msg(self.connection, my_answer)
 
     @DecorationLogging()
     def connection_lack(self):
@@ -152,12 +195,13 @@ class Client(threading.Thread, QObject):
             self.progressbar_signal.emit()
 
     @DecorationLogging()
-    def create_presence_msg(self, account_name):
+    def create_presence_msg(self, account_name, pubkey):
         msg = {
             ACTION: PRESENCE,
             TIME: time.time(),
             USER: {
-                ACCOUNT_NAME: account_name
+                ACCOUNT_NAME: account_name,
+                PUBLIC_KEY: pubkey
             }
         }
         return msg
@@ -198,10 +242,13 @@ class Client(threading.Thread, QObject):
     def answer_server_presence(self, msg):
         logger.debug(f'Разбор сообщения от сервера - {msg}')
         if RESPONSE in msg:
-            if msg[RESPONSE] == 200:
+            if msg[RESPONSE] == 511:
+                return 'OK: 511'
+            elif msg[RESPONSE] == 200:
                 return 'OK: 200'
             elif msg[RESPONSE] == 400:
-                raise ServerError(f'400 : {msg[ERROR]}')
+                logger.info(f'400: {msg[ERROR]}')
+                raise ServerError(f'{msg[ERROR]}')
             else:
                 raise IncorrectCodeError(msg[RESPONSE])
         raise FieldMissingError(RESPONSE)
@@ -371,7 +418,6 @@ def get_key(client_login):
     else:
         with open(file_path, 'rb') as file:
             key = RSA.import_key(file.read())
-    key.publickey().export_key()
     return key
 
 
