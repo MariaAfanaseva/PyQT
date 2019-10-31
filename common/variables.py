@@ -34,6 +34,7 @@ LIST_INFO = 'data_list'
 DELETE_CONTACT = 'del_contact'
 ADD_CONTACT = 'add_contact'
 USERS_REQUEST = 'get_users'
+PUBLIC_KEY_REQUEST = 'get_pubkey'
 
 # code
 BASIC_NOTICE = 100

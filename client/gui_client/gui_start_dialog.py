@@ -1,6 +1,6 @@
 import sys
 from PyQt5.QtWidgets import QDialog, QApplication
-from client.start_dialog_config import Ui_Dialog
+from client.gui_client.start_dialog_config import Ui_Dialog
 
 
 class UserNameDialog(QDialog):

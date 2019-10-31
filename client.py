@@ -1,5 +1,4 @@
 import sys
-import os
 import time
 import socket
 import logging
@@ -9,21 +8,21 @@ import hashlib
 import hmac
 import binascii
 import json
+from PyQt5.QtWidgets import QApplication
+from PyQt5.QtCore import pyqtSignal, QObject
 from common.utils import get_msg, send_msg
 from common.variables import DEFAULT_IP_ADDRESS, DEFAULT_PORT,  TO, USER, ACCOUNT_NAME, \
     RESPONSE_511, ERROR, DATA, RESPONSE, TIME, PRESENCE, FROM, \
     EXIT, GET_CONTACTS, PUBLIC_KEY, ACTION, MESSAGE_TEXT, MESSAGE, LIST_INFO, ADD_CONTACT, \
-    DELETE_CONTACT, USERS_REQUEST
+    DELETE_CONTACT, USERS_REQUEST, PUBLIC_KEY_REQUEST
 from common.errors import IncorrectDataNotDictError, FieldMissingError, IncorrectCodeError, ServerError
 from decorators.decos import DecorationLogging
-from descriptors import CheckPort, CheckIP, CheckName
-from database_client import ClientDB
-from PyQt5.QtWidgets import QApplication
-from PyQt5.QtCore import pyqtSignal, QObject
-from client.gui_start_dialog import UserNameDialog
-from client.gui_main_window import ClientMainWindow
-from client.gui_loading_dialog import LoadingWindow
-from Cryptodome.PublicKey import RSA
+from common.descriptors import CheckPort, CheckIP, CheckName
+from client.database_client import ClientDB
+from client.gui_client.gui_start_dialog import UserNameDialog
+from client.gui_client.gui_main_window import ClientMainWindow
+from client.gui_client.gui_loading_dialog import LoadingWindow
+from client.encrypt_decrypt import EncryptDecrypt
 
 logger = logging.getLogger('client')
 
@@ -60,18 +59,19 @@ class Client(threading.Thread, QObject):
     new_message_signal = pyqtSignal(str)
     connection_lost_signal = pyqtSignal()
 
-    def __init__(self, ip_server, port_server, client_login, client_password, database, key):
+    def __init__(self, ip_server, port_server, client_login, client_password, database, encrypt_decrypt):
         self.ip_server = ip_server
         self.port_server = port_server
         self.client_login = client_login
         self.client_password = client_password
         self.database = database
-        self.key = key
+        self.encrypt_decrypt = encrypt_decrypt
+        self.pubkey = self.encrypt_decrypt.get_pubkey_user()
 
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        self.is_connected = False
-
+        self.is_connected = False     
+ 
         threading.Thread.__init__(self)
         QObject.__init__(self)
 
@@ -111,7 +111,7 @@ class Client(threading.Thread, QObject):
 
     @DecorationLogging()
     def start_authorization_procedure(self):
-        pubkey = self.key.publickey().export_key().decode('ascii')
+        pubkey = self.pubkey.decode('ascii')
         msg_to_server = self.create_presence_msg(self.client_login, pubkey)
 
         logger.info(f'A message has been generated to the server - {msg_to_server}.')
@@ -259,6 +259,37 @@ class Client(threading.Thread, QObject):
         raise FieldMissingError(RESPONSE)
 
     @DecorationLogging()
+    def is_received_pubkey(self, login):
+        current_chat_key = self.pubkey_request(login)
+        if current_chat_key:
+            self.encrypt_decrypt.create_current_encrypt(current_chat_key)
+            return True
+        return False
+
+    @DecorationLogging()
+    def pubkey_request(self, login):
+        """The function of requesting the public key of the client from the server."""
+        logger.debug(f'Public key request for {login}')
+        request = {
+            ACTION: PUBLIC_KEY_REQUEST,
+            TIME: time.time(),
+            ACCOUNT_NAME: login
+        }
+        with lock_socket:
+            try:
+                send_msg(self.connection, request)
+                answer = get_msg(self.connection)
+            except (OSError, json.JSONDecodeError):
+                self.connection_lost_signal.emit()
+                return 
+        if RESPONSE in answer and answer[RESPONSE] == 511:
+            logger.debug(f'Loaded public key for {login}')
+            return answer[DATA]
+        else:
+            logger.error(f'Failed to get the key of the interlocutor {login}. '
+                         f'Answer server {answer}')
+
+    @DecorationLogging()
     def get_message_from_server(self, sock, my_username):
         while True:
             time.sleep(1)
@@ -267,7 +298,7 @@ class Client(threading.Thread, QObject):
                     message = get_msg(sock)
                 except IncorrectDataNotDictError:
                     logger.error(f'Failed to decode received message.')
-                # Вышел таймаут соединения если errno = None, иначе обрыв соединения.
+                # Connection timed out if errno = None, otherwise connection break.
                 except OSError as err:
                     # print(err.errno)
                     if err.errno:
@@ -281,21 +312,26 @@ class Client(threading.Thread, QObject):
                 else:
                     if ACTION in message and message[ACTION] == MESSAGE and TO in message and FROM in message \
                             and MESSAGE_TEXT in message and message[TO] == my_username:
-                        print(f'\nReceived message from user{message[FROM]}:\n{message[MESSAGE_TEXT]}.\n')
-                        logger.info(f'Received message from user {message[FROM]}:\n{message[MESSAGE_TEXT]}.')
-                        self.database.save_message(message[FROM], 'in', message[MESSAGE_TEXT])
-                        self.new_message_signal.emit(message[FROM])
+                        
+                        user_login = message[FROM]
+                        decrypted_message = self.encrypt_decrypt.message_decryption(message[MESSAGE_TEXT])
+                        
+                        print(f'\nReceived message from user{user_login}:\n{decrypted_message}.\n')
+                        logger.info(f'Received message from user {user_login}:\n{decrypted_message}.')
+                        self.database.save_message(user_login, 'in', decrypted_message)
+                        self.new_message_signal.emit(user_login)
                     else:
                         logger.error(f'Invalid message received from server: {message}')
 
     @DecorationLogging()
-    def send_user_message(self, contact_name, message):
+    def send_user_message(self, contact_name, message_text):
+        encrypted_message = self.encrypt_decrypt.message_encryption(message_text)
         message = {
             ACTION: MESSAGE,
             FROM: self.client_login,
             TO: contact_name,
             TIME: time.time(),
-            MESSAGE_TEXT: message
+            MESSAGE_TEXT: encrypted_message
         }
         with lock_socket:
             try:
@@ -309,9 +345,9 @@ class Client(threading.Thread, QObject):
                     logger.info(f'{answer[ERROR]}. User {contact_name} is offline.')
                     return f'User {contact_name} is offline!'
         logger.debug(f'Message sent: {message},from {self.client_login} username {contact_name}')
-        self.database.save_message(message[TO], 'out', message[MESSAGE_TEXT])
+        self.database.save_message(contact_name, 'out', message_text)
         return True
-
+    
     @DecorationLogging()
     def add_contact(self, new_contact_name):
         if self.database.is_user(new_contact_name):
@@ -413,20 +449,6 @@ def start_dialog(app, client_login, client_password):
 
 
 @DecorationLogging()
-def get_key(client_login):
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    file_path = os.path.join(dir_path, f'{client_login}.key')
-    if not os.path.exists(file_path):
-        key = RSA.generate(2048, os.urandom)
-        with open(file_path, 'wb') as file:
-            file.write(key.export_key())
-    else:
-        with open(file_path, 'rb') as file:
-            key = RSA.import_key(file.read())
-    return key
-
-
-@DecorationLogging()
 def loading_window(app, client_transport):
     loading = LoadingWindow(app)
     loading.init_ui()
@@ -442,9 +464,9 @@ def main():
 
     database = ClientDB(client_login)
 
-    key = get_key(client_login)
+    encrypt_decrypt = EncryptDecrypt(client_login)
 
-    client_transport = Client(ip_server, port_server, client_login, client_password, database, key)
+    client_transport = Client(ip_server, port_server, client_login, client_password, database, encrypt_decrypt)
     client_transport.daemon = True
     client_transport.start()
 

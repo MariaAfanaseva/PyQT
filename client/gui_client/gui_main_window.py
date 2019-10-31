@@ -4,10 +4,10 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QColor
 from PyQt5.QtCore import Qt, pyqtSlot
 from PyQt5 import QtGui
-from client.main_window_config import Ui_MainWindow
-from client.gui_add_contact import AddContactDialog
-from client.gui_del_contact import DelContactDialog
-from database_client import ClientDB
+from client.gui_client.main_window_config import Ui_MainWindow
+from client.gui_client.gui_add_contact import AddContactDialog
+from client.gui_client.gui_del_contact import DelContactDialog
+from client.database_client import ClientDB
 
 
 class ClientMainWindow(QMainWindow):
@@ -16,8 +16,10 @@ class ClientMainWindow(QMainWindow):
         self.app = app
         self.client_transport = client_transport
         self.database_client = database_client
-        self.current_chat = None
+
         self.message_window = QMessageBox()
+
+        self.current_chat = None
 
     def init_ui(self):
         # Загружаем конфигурацию окна из дизайнера
@@ -35,7 +37,7 @@ class ClientMainWindow(QMainWindow):
         self.user_interface.sendMessageButton.clicked.connect(self.send_message)
 
         self.user_interface.clearMessageButton.clicked.connect(self.clear_edit_message)
-        # Даблклик по листу контактов отправляется в обработчик
+        # Double-click on the contact list is sent to the handler
         self.user_interface.contactsListView.doubleClicked.connect(self.select_active_user)
 
         self.user_interface.messageHistoryEdit.fontItalic()
@@ -69,6 +71,7 @@ class ClientMainWindow(QMainWindow):
             self.close()
 
     def update_clients_list(self):
+        """"Updating the contact list on the main window."""
         self.contacts_list = self.database_client.get_contacts()
         self.contacts_model = QStandardItemModel()
         for contact in sorted(self.contacts_list):
@@ -78,30 +81,36 @@ class ClientMainWindow(QMainWindow):
         self.user_interface.contactsListView.setModel(self.contacts_model)
 
     def del_contact_dialog(self):
-        # Определяем выбранного контакта
+        """Method for calling the delete contact window."""
         self.del_contact_name = self.user_interface.contactsListView.currentIndex().data()
         if not self.del_contact_name:
             self.message_window.information(self, 'Warning', 'Select a contact to delete!')
         else:
-            #  Создаем диалог с пользователем
             self.del_contact_dialog = DelContactDialog(self.client_transport, self.del_contact_name)
             self.del_contact_dialog.init_ui()
             self.del_contact_dialog.user_interface.removeButton.clicked.connect(self.update_clients_list)
             self.del_contact_dialog.show()
 
     def select_active_user(self):
+        """Interlocutor selection method."""
         self.current_chat = self.user_interface.contactsListView.currentIndex().data()
         self.set_active_user()
 
     def set_active_user(self):
-        self.user_interface.messageLabel.setText(f'Enter message for {self.current_chat}:')
-        self.user_interface.clearMessageButton.setDisabled(False)
-        self.user_interface.sendMessageButton.setDisabled(False)
-        self.user_interface.messageEdit.setDisabled(False)
+        """The method of activating chat with the interlocutor."""
+        if self.client_transport.is_received_pubkey(self.current_chat):
+            self.user_interface.messageLabel.setText(f'Enter message for {self.current_chat}:')
+            self.user_interface.clearMessageButton.setDisabled(False)
+            self.user_interface.sendMessageButton.setDisabled(False)
+            self.user_interface.messageEdit.setDisabled(False)
 
-        self.history_list_update()
+            self.history_list_update()
+        else:
+            self.message_window.warning(
+                self, 'Warning', 'User is not online.')
 
     def send_message(self):
+        """Sending an message to the current user"""
         message_text = self.user_interface.messageEdit.toPlainText()
         self.user_interface.messageEdit.clear()
         if not message_text:
@@ -125,8 +134,9 @@ class ClientMainWindow(QMainWindow):
         self.user_interface.messageHistoryEdit.ensureCursorVisible()
 
     def history_list_update(self):
-        # Sorted date
-        list_messages = sorted(self.database_client.get_history(self.current_chat), key=lambda item: item[3])
+        """Message history update method."""
+        list_messages = sorted(self.database_client.get_history(self.current_chat),
+                               key=lambda item: item[3])  # sort by date
 
         self.user_interface.messageHistoryEdit.clear()
 
@@ -150,10 +160,16 @@ class ClientMainWindow(QMainWindow):
         self.user_interface.messageHistoryEdit.ensureCursorVisible()
 
     def clear_edit_message(self):
+        """Button handler - clear. Clears message input fields."""
         self.user_interface.messageEdit.clear()
 
     @pyqtSlot(str)
     def get_message(self, sender):
+        """
+        Slot handler of incoming messages.
+        Asks the user if a message was received not from the current interlocutor.
+        If necessary, change the interlocutor.
+        """
         if sender == self.current_chat:
             self.history_list_update()
         else:
@@ -178,10 +194,12 @@ class ClientMainWindow(QMainWindow):
 
     @pyqtSlot()
     def connection_lost(self):
+        """Server signal loss processing slot."""
         self.message_window.critical(self, 'Error', 'Lost server connection!')
         self.close()
 
     def make_connection_with_signals(self, transport_client_obj):
+        """Signal connection method."""
         transport_client_obj.new_message_signal.connect(self.get_message)
         transport_client_obj.connection_lost_signal.connect(self.connection_lost)
 

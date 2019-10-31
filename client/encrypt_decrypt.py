@@ -1,0 +1,69 @@
+"""Message encryption module"""
+import os
+import logging
+import base64
+from Cryptodome.PublicKey import RSA
+from Cryptodome.Cipher import PKCS1_OAEP
+from decorators.decos import DecorationLogging
+
+LOGGER = logging.getLogger('client')
+
+
+class EncryptDecrypt:
+    """The class creates keys, encodes and decodes messages"""
+    def __init__(self, user_login):
+        """Get keys, create object - decoder"""
+        self.keys = self._get_keys(user_login)
+        self.decrypter = PKCS1_OAEP.new(self.keys)
+        self.current_encrypt = None
+
+    @DecorationLogging()
+    def _get_keys(self, user_login):
+        """Function create new keys or import from file"""
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        file_path = os.path.join(dir_path, f'keys/{user_login}.key')
+        if not os.path.exists(file_path):
+            keys = RSA.generate(2048, os.urandom)
+            with open(file_path, 'wb') as file:
+                file.write(keys.export_key())
+        else:
+            with open(file_path, 'rb') as file:
+                keys = RSA.import_key(file.read())
+        return keys
+
+    @DecorationLogging()
+    def get_pubkey_user(self):
+        """Function passes the public key"""
+        return self.keys.publickey().export_key()
+
+    @DecorationLogging()
+    def create_current_encrypt(self, current_chat_key):
+        """Create an encryption object."""
+        self.current_encrypt = PKCS1_OAEP.new(RSA.import_key(current_chat_key))
+
+    @DecorationLogging()
+    def message_encryption(self, message_text):
+        """Message encryption before sending."""
+        try:
+            message_text_encrypted = self.current_encrypt.encrypt(
+                message_text.encode('utf8'))
+            message_text_encrypted_base64 = base64.b64encode(
+                message_text_encrypted).decode('ascii')
+        except (ValueError, TypeError):
+            LOGGER.warning(
+                self, 'Error', 'Failed to encode message.')
+            return None
+        return message_text_encrypted_base64
+
+    @DecorationLogging()
+    def message_decryption(self, encrypted_message):
+        """Message decryption function after receiving."""
+        encrypted_message_str = base64.b64decode(encrypted_message)
+        try:
+            decrypted_message = self.decrypter.decrypt(encrypted_message_str)
+            decrypted_message = decrypted_message.decode('utf8')
+        except (ValueError, TypeError):
+            LOGGER.warning(
+                self, 'Error', 'Failed to decode message.')
+            return None
+        return decrypted_message

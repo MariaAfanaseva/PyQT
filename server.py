@@ -10,26 +10,26 @@ import os
 import json
 import binascii
 import hmac
-from common.utils import get_msg, send_msg
 from common.variables import CONFIG_FILE_NAME, MAX_CONNECTIONS, TO, USER, ACCOUNT_NAME, \
     RESPONSE_200, RESPONSE_400, RESPONSE_511, ERROR, DATA, RESPONSE, TIME, PRESENCE, FROM, \
     EXIT, GET_CONTACTS, PUBLIC_KEY, ACTION, MESSAGE_TEXT, MESSAGE, LIST_INFO, ADD_CONTACT, \
-    DELETE_CONTACT, USERS_REQUEST
+    DELETE_CONTACT, USERS_REQUEST, PUBLIC_KEY_REQUEST
+from common.utils import get_msg, send_msg
 from common.errors import IncorrectDataNotDictError
 from decorators.decos import DecorationLogging
-from descriptors import CheckPort, CheckIP
-from metaclasses import ServerCreator
-from database_server import ServerDB
+from common.descriptors import CheckPort, CheckIP
+from common.metaclasses import ServerCreator
+from server.database_server import ServerDB
 from PyQt5.QtWidgets import QApplication
-from server.gui_main_window import MainWindow
+from server.gui_server.gui_main_window import MainWindow
 
-logger = logging.getLogger('server')
-logger.setLevel(logging.DEBUG)
+LOGGER = logging.getLogger('server')
+LOGGER.setLevel(logging.DEBUG)
 
 
-# Get arguments when starting the file.
 @DecorationLogging()
 def get_args(default_ip, default_port):
+    # Get arguments when starting the file.
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', '--port', default=default_port, type=int)
     parser.add_argument('-a', '--addr', default=default_ip)
@@ -126,7 +126,7 @@ class Server(threading.Thread, metaclass=ServerCreator):
             except OSError:
                 pass
             else:
-                logger.info(f'Connection to client established - {client_address}.')
+                LOGGER.info(f'Connection to client established - {client_address}.')
                 self.clients.append(client)
 
             clients_read_lst = []
@@ -137,7 +137,7 @@ class Server(threading.Thread, metaclass=ServerCreator):
                 if self.clients:
                     clients_read_lst, clients_send_lst, err_lst = select.select(self.clients, self.clients, [], 0)
             except OSError as err:
-                logger.error(f'Error working with sockets: {err}')
+                LOGGER.error(f'Error working with sockets: {err}')
 
             self.get_messages_clients(clients_read_lst)
 
@@ -151,11 +151,11 @@ class Server(threading.Thread, metaclass=ServerCreator):
                 try:
                     message = get_msg(client)
                 except IncorrectDataNotDictError:
-                    logger.error('Invalid data format received.')
+                    LOGGER.error('Invalid data format received.')
                 except (ConnectionResetError, json.decoder.JSONDecodeError, ConnectionAbortedError):
                     self.remove_client(client)
                 else:
-                    logger.debug(f'Received message from client {message}.')
+                    LOGGER.debug(f'Received message from client {message}.')
                     self.client_msg(message, client)
 
     @DecorationLogging()
@@ -166,7 +166,7 @@ class Server(threading.Thread, metaclass=ServerCreator):
                 try:
                     self.send_message_user(clients_send_lst, msg)
                 except (ConnectionResetError, ConnectionError):
-                    logger.info(f'Communication with a client named {msg[TO]} has been lost.')
+                    LOGGER.info(f'Communication with a client named {msg[TO]} has been lost.')
                     self.clients.remove(self.names[msg[TO]])
                     del self.names[msg[TO]]
                     self.database.user_logout(msg[TO])
@@ -183,7 +183,7 @@ class Server(threading.Thread, metaclass=ServerCreator):
                 pass
             self.clients.remove(client)
             client.close()
-            logger.debug(f'Username is already taken. Response sent to client - {response} \n')
+            LOGGER.debug(f'Username is already taken. Response sent to client - {response} \n')
         elif not self.database.is_user(message[USER][ACCOUNT_NAME]):
             response = RESPONSE_400
             response[ERROR] = 'User not registered.'
@@ -193,14 +193,14 @@ class Server(threading.Thread, metaclass=ServerCreator):
                 pass
             self.clients.remove(client)
             client.close()
-            logger.debug(f'The user is not registered. Response sent to client - {response} \n')
+            LOGGER.debug(f'The user is not registered. Response sent to client - {response} \n')
         else:
             self.start_client_authorization(client, message)
 
     @DecorationLogging()
     def start_client_authorization(self, client, message):
         message_auth = RESPONSE_511
-        random_str = binascii.hexlify(os.urandom(64))
+        random_str = binascii.hexlify(os.urandom(64))  # The hexadecimal representation of the binary data
         # Bytes cannot be in the dictionary, decode (json.dumps -> TypeError)
         message_auth[DATA] = random_str.decode('ascii')
         password_hash = self.database.get_hash(message[USER][ACCOUNT_NAME])
@@ -238,7 +238,7 @@ class Server(threading.Thread, metaclass=ServerCreator):
 
     @DecorationLogging()
     def remove_client(self, client):
-        logger.info(f'Client {client.getpeername ()} disconnected from server.')
+        LOGGER.info(f'Client {client.getpeername ()} disconnected from server.')
         for name in self.names:
             if self.names[name] == client:
                 self.database.user_logout(name)
@@ -249,7 +249,7 @@ class Server(threading.Thread, metaclass=ServerCreator):
 
     @DecorationLogging()
     def client_msg(self, message, client):
-        logger.debug(f'Parsing a message from a client - {message}')
+        LOGGER.debug(f'Parsing a message from a client - {message}')
 
         if ACTION in message and TIME in message and USER in message \
                 and ACCOUNT_NAME in message[USER] and message[ACTION] == PRESENCE:
@@ -270,20 +270,20 @@ class Server(threading.Thread, metaclass=ServerCreator):
                 LIST_INFO: self.database.get_contacts(message[USER])
                 }
             send_msg(client, answer)
-            logger.debug(f'Contact list sent to {answer [LIST_INFO]} to user - {message[USER]}\n')
+            LOGGER.debug(f'Contact list sent to {answer [LIST_INFO]} to user - {message[USER]}\n')
 
         elif ACTION in message and message[ACTION] == ADD_CONTACT \
                 and ACCOUNT_NAME in message and USER in message \
                 and self.names[message[USER]] == client:
             self.database.add_contact(message[USER], message[ACCOUNT_NAME])
             send_msg(client, {RESPONSE: 200})
-            logger.debug(f'New contact added {message[ACCOUNT_NAME]} ay the user {message[USER]}.')
+            LOGGER.debug(f'New contact added {message[ACCOUNT_NAME]} ay the user {message[USER]}.')
 
         elif ACTION in message and message[ACTION] == DELETE_CONTACT and ACCOUNT_NAME in message and USER in message \
                 and self.names[message[USER]] == client:
             self.database.delete_contact(message[USER], message[ACCOUNT_NAME])
             send_msg(client, {RESPONSE: 200})
-            logger.debug(f'Deleted contact {message [ACCOUNT_NAME]} at the user {message [USER]}')
+            LOGGER.debug(f'Deleted contact {message [ACCOUNT_NAME]} at the user {message [USER]}')
 
         elif ACTION in message and message[ACTION] == USERS_REQUEST and ACCOUNT_NAME in message \
                 and self.names[message[ACCOUNT_NAME]] == client:
@@ -293,8 +293,24 @@ class Server(threading.Thread, metaclass=ServerCreator):
             }
             send_msg(client, answer)
 
+        elif ACTION in message and message[ACTION] == PUBLIC_KEY_REQUEST and ACCOUNT_NAME in message:
+            response = RESPONSE_511
+            response[DATA] = self.database.get_pubkey(message[ACCOUNT_NAME])
+            if response[DATA]:
+                try:
+                    send_msg(client, response)
+                except OSError:
+                    self.remove_client(client)
+            else:
+                response = RESPONSE_400
+                response[ERROR] = 'There is no public key for this user.'
+                try:
+                    send_msg(client, response)
+                except OSError:
+                    self.remove_client(client)
+
         elif ACTION in message and message[ACTION] == EXIT and ACCOUNT_NAME in message:
-            logger.info(f'User {message [ACCOUNT_NAME]} has disconnected.')
+            LOGGER.info(f'User {message [ACCOUNT_NAME]} has disconnected.')
             user_name = message[ACCOUNT_NAME]
             self.database.user_logout(user_name)
             self.clients.remove(self.names[user_name])
@@ -307,7 +323,7 @@ class Server(threading.Thread, metaclass=ServerCreator):
                 ERROR: 'Bad Request'
             }
             send_msg(client, msg)
-            logger.info(f'Errors sent to client - {msg}.\n')
+            LOGGER.info(f'Errors sent to client - {msg}.\n')
 
     #  We respond to users
     @DecorationLogging()
@@ -315,11 +331,11 @@ class Server(threading.Thread, metaclass=ServerCreator):
         if msg[TO] in self.names and self.names[msg[TO]] in clients_send_lst:
             send_msg(self.names[msg[TO]], msg)
             self.database.sending_message(msg[FROM], msg[TO])
-            logger.info(f'A message was sent to user {msg [TO]} from user {msg [FROM]}.')
+            LOGGER.info(f'A message was sent to user {msg [TO]} from user {msg [FROM]}.')
         elif msg[TO] in self.names and self.names[msg[TO]] not in clients_send_lst:
             raise ConnectionError
         else:
-            logger.error(
+            LOGGER.error(
                 f'User {msg [TO]} is not registered on the server, sending messages is not possible.')
 
 
