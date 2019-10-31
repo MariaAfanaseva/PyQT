@@ -1,5 +1,6 @@
 import sys
 from PyQt5 import QtGui
+from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QWidget, QApplication, QTableView, QMainWindow, \
     QAction, QLabel, QGridLayout
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
@@ -67,10 +68,6 @@ class MainWindow(QMainWindow):
 
         self.statusBar().showMessage("Server Working")
 
-        # self.timer = QTimer(self)
-        # self.timer.timeout.connect(self.update_connected_users_list)
-        # self.timer.start(2000)
-
         self.update_connected_users_list()
 
         self.show()
@@ -96,6 +93,16 @@ class MainWindow(QMainWindow):
 
         #  Align Date Column
         self.connected_users_table.resizeColumnToContents(3)
+
+    @pyqtSlot()
+    def update_connected_users_slot(self):
+        """Slot update connected users list on main window"""
+        self.update_connected_users_list()
+
+    def make_connection_signals(self, transport_server_obj):
+        """Signal connection method."""
+        transport_server_obj.new_connected_client.connect(self.update_connected_users_slot)
+        transport_server_obj.disconnected_client.connect(self.update_connected_users_slot)
 
 
 if __name__ == '__main__':

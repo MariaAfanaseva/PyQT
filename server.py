@@ -10,24 +10,25 @@ import os
 import json
 import binascii
 import hmac
+from PyQt5.QtWidgets import QApplication
+from PyQt5.QtCore import pyqtSignal, QObject
 from common.variables import CONFIG_FILE_NAME, MAX_CONNECTIONS, TO, USER, ACCOUNT_NAME, \
     RESPONSE_200, RESPONSE_400, RESPONSE_511, ERROR, DATA, RESPONSE, TIME, PRESENCE, FROM, \
     EXIT, GET_CONTACTS, PUBLIC_KEY, ACTION, MESSAGE_TEXT, MESSAGE, LIST_INFO, ADD_CONTACT, \
     DELETE_CONTACT, USERS_REQUEST, PUBLIC_KEY_REQUEST
 from common.utils import get_msg, send_msg
 from common.errors import IncorrectDataNotDictError
-from decorators.decos import DecorationLogging
+from decorators.decos import Logging
 from common.descriptors import CheckPort, CheckIP
 from common.metaclasses import ServerCreator
 from server.database_server import ServerDB
-from PyQt5.QtWidgets import QApplication
 from server.gui_server.gui_main_window import MainWindow
 
 LOGGER = logging.getLogger('server')
 LOGGER.setLevel(logging.DEBUG)
 
 
-@DecorationLogging()
+@Logging()
 def get_args(default_ip, default_port):
     # Get arguments when starting the file.
     parser = argparse.ArgumentParser()
@@ -51,10 +52,13 @@ def read_config_file():
     return ip_addr, port, db_path
 
 
-class Server(threading.Thread, metaclass=ServerCreator):
+class Server(threading.Thread, QObject):
     # Port and Address Correction Descriptors
     listen_port = CheckPort()
     listen_ip = CheckIP()
+
+    new_connected_client = pyqtSignal()
+    disconnected_client = pyqtSignal()
 
     def __init__(self, listen_ip, listen_port, database):
         self.listen_ip = listen_ip
@@ -66,7 +70,9 @@ class Server(threading.Thread, metaclass=ServerCreator):
         self.messages = []  # All messages
 
         self.names = dict()  # Connected Client Names
-        super().__init__()
+
+        threading.Thread.__init__(self)
+        QObject.__init__(self)
 
     def socket_init(self):
         # Create a socket
@@ -77,7 +83,7 @@ class Server(threading.Thread, metaclass=ServerCreator):
 
         self.connection = connection
 
-    @DecorationLogging()
+    @Logging()
     def print_help(self):
         print('Supported Commands: \n'
               'users - list of known users \n'
@@ -86,7 +92,7 @@ class Server(threading.Thread, metaclass=ServerCreator):
               'exit - server shutdown. \n'
               'help - display help for supported commands')
 
-    @DecorationLogging()
+    @Logging()
     def get_information(self):
         time.sleep(1)
         self.print_help()
@@ -143,7 +149,7 @@ class Server(threading.Thread, metaclass=ServerCreator):
 
             self.send_messages(clients_send_lst)
 
-    @DecorationLogging()
+    @Logging()
     def get_messages_clients(self, clients_read_lst):
         # Receive a message from clients
         if clients_read_lst:
@@ -158,7 +164,7 @@ class Server(threading.Thread, metaclass=ServerCreator):
                     LOGGER.debug(f'Received message from client {message}.')
                     self.client_msg(message, client)
 
-    @DecorationLogging()
+    @Logging()
     def send_messages(self, clients_send_lst):
         # If there are messages to send and pending clients, send them a message.
         if self.messages:
@@ -170,9 +176,10 @@ class Server(threading.Thread, metaclass=ServerCreator):
                     self.clients.remove(self.names[msg[TO]])
                     del self.names[msg[TO]]
                     self.database.user_logout(msg[TO])
+                    self.disconnected_client.emit()
             self.messages.clear()
 
-    @DecorationLogging()
+    @Logging()
     def checking_new_client(self, client, message):
         if message[USER][ACCOUNT_NAME] in self.names.keys():
             response = RESPONSE_400
@@ -197,7 +204,7 @@ class Server(threading.Thread, metaclass=ServerCreator):
         else:
             self.start_client_authorization(client, message)
 
-    @DecorationLogging()
+    @Logging()
     def start_client_authorization(self, client, message):
         message_auth = RESPONSE_511
         random_str = binascii.hexlify(os.urandom(64))  # The hexadecimal representation of the binary data
@@ -226,6 +233,8 @@ class Server(threading.Thread, metaclass=ServerCreator):
 
             self.database.login_user(message[USER][ACCOUNT_NAME],
                                      client_ip, client_port, message[USER][PUBLIC_KEY])
+            LOGGER.info(F'Successful user authentication {message[USER][ACCOUNT_NAME]}')
+            self.new_connected_client.emit()
         else:
             response = RESPONSE_400
             response[ERROR] = 'Wrong password.'
@@ -236,7 +245,7 @@ class Server(threading.Thread, metaclass=ServerCreator):
             self.clients.remove(client)
             client.close()
 
-    @DecorationLogging()
+    @Logging()
     def remove_client(self, client):
         LOGGER.info(f'Client {client.getpeername ()} disconnected from server.')
         for name in self.names:
@@ -246,8 +255,9 @@ class Server(threading.Thread, metaclass=ServerCreator):
                 break
         self.clients.remove(client)
         client.close()
+        self.disconnected_client.emit()
 
-    @DecorationLogging()
+    @Logging()
     def client_msg(self, message, client):
         LOGGER.debug(f'Parsing a message from a client - {message}')
 
@@ -316,6 +326,7 @@ class Server(threading.Thread, metaclass=ServerCreator):
             self.clients.remove(self.names[user_name])
             self.names[user_name].close()
             del self.names[user_name]
+            self.disconnected_client.emit()
 
         else:
             msg = {
@@ -326,7 +337,7 @@ class Server(threading.Thread, metaclass=ServerCreator):
             LOGGER.info(f'Errors sent to client - {msg}.\n')
 
     #  We respond to users
-    @DecorationLogging()
+    @Logging()
     def send_message_user(self, clients_send_lst, msg):
         if msg[TO] in self.names and self.names[msg[TO]] in clients_send_lst:
             send_msg(self.names[msg[TO]], msg)
@@ -339,7 +350,7 @@ class Server(threading.Thread, metaclass=ServerCreator):
                 f'User {msg [TO]} is not registered on the server, sending messages is not possible.')
 
 
-@DecorationLogging()
+@Logging()
 def main():
     default_ip, default_port, db_path = read_config_file()
     listen_ip, listen_port = get_args(default_ip, default_port)
@@ -353,6 +364,7 @@ def main():
     app = QApplication(sys.argv)
     main_window = MainWindow(app, database)
     main_window.init_ui()
+    main_window.make_connection_signals(server)
     sys.exit(app.exec_())
 
 
