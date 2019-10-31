@@ -1,10 +1,10 @@
 import json
 from common.variables import ENCODING, MAX_PACKAGE_LENGTH
 from common.errors import IncorrectDataNotDictError
-from decorators.decos import DecorationLogging
+from decorators.decos import Logging
 
 
-@DecorationLogging()
+@Logging()
 def send_msg(socket, msg):
     json_msg = json.dumps(msg)
     coding_msg = json_msg.encode(ENCODING)

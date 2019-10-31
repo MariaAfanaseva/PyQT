@@ -11,18 +11,17 @@ from client.database_client import ClientDB
 
 
 class ClientMainWindow(QMainWindow):
+    """Class of the main user interaction window."""
     def __init__(self, app, client_transport, database_client):
-        super().__init__()
         self.app = app
         self.client_transport = client_transport
         self.database_client = database_client
-
         self.message_window = QMessageBox()
-
         self.current_chat = None
+        super().__init__()
 
     def init_ui(self):
-        # Загружаем конфигурацию окна из дизайнера
+        """Downloading the window configuration from the designer and subscribing handlers."""
         self.user_interface = Ui_MainWindow()
         self.user_interface.setupUi(self)
 
@@ -47,13 +46,18 @@ class ClientMainWindow(QMainWindow):
         self.show()
 
     def field_disable(self):
-        self.user_interface.messageLabel.setText('To select a recipient, double-click it in the contacts window.')
-        # Поле ввода и кнопка отправки неактивны до выбора получателя.
+        """
+        Blocking function, input field and send button are not active
+        until a recipient is selected.
+        """
+        self.user_interface.messageLabel.setText('To select a recipient, '
+                                                 'double-click it in the contacts window.')
         self.user_interface.sendMessageButton.setDisabled(True)
         self.user_interface.clearMessageButton.setDisabled(True)
         self.user_interface.messageEdit.setDisabled(True)
 
     def add_contact_dialog(self):
+        """Open add contact dialog method"""
         self.add_contact_window = AddContactDialog(self.client_transport, self.database_client)
         self.add_contact_window.init_ui()
         self.add_contact_window.user_interface.addContactButton.clicked.\
@@ -61,11 +65,13 @@ class ClientMainWindow(QMainWindow):
         self.add_contact_window.show()
 
     def add_contact(self, new_contact):
+        """Сontact adding method."""
         if self.client_transport.add_contact(new_contact):
             item_contact = QStandardItem(new_contact)
             item_contact.setEditable(False)
             self.contacts_model.appendRow(item_contact)
-            self.message_window.information(self, 'Success', f'Contact {new_contact} successfully added.')
+            self.message_window.information(self, 'Success',
+                                            f'Contact {new_contact} successfully added.')
         else:
             self.message_window.information(self, 'Error', 'Lost server connection!')
             self.close()
@@ -126,6 +132,7 @@ class ClientMainWindow(QMainWindow):
                 self.message_window.warning(self, 'Warning', is_success)
 
     def add_message_history(self, message):
+        """Add message user in history"""
         msg = f'Outgoing message from {datetime.datetime.now().replace(microsecond=0)}:\n {message}\n'
         self.user_interface.messageHistoryEdit.setTextBackgroundColor(QColor(204, 255, 204))
         self.user_interface.messageHistoryEdit.setAlignment(Qt.AlignRight)

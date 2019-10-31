@@ -4,7 +4,7 @@ import logging
 import base64
 from Cryptodome.PublicKey import RSA
 from Cryptodome.Cipher import PKCS1_OAEP
-from decorators.decos import DecorationLogging
+from decorators.decos import Logging
 
 LOGGER = logging.getLogger('client')
 
@@ -17,7 +17,7 @@ class EncryptDecrypt:
         self.decrypter = PKCS1_OAEP.new(self.keys)
         self.current_encrypt = None
 
-    @DecorationLogging()
+    @Logging()
     def _get_keys(self, user_login):
         """Function create new keys or import from file"""
         dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -31,17 +31,17 @@ class EncryptDecrypt:
                 keys = RSA.import_key(file.read())
         return keys
 
-    @DecorationLogging()
+    @Logging()
     def get_pubkey_user(self):
         """Function passes the public key"""
         return self.keys.publickey().export_key()
 
-    @DecorationLogging()
+    @Logging()
     def create_current_encrypt(self, current_chat_key):
         """Create an encryption object."""
         self.current_encrypt = PKCS1_OAEP.new(RSA.import_key(current_chat_key))
 
-    @DecorationLogging()
+    @Logging()
     def message_encryption(self, message_text):
         """Message encryption before sending."""
         try:
@@ -55,7 +55,7 @@ class EncryptDecrypt:
             return None
         return message_text_encrypted_base64
 
-    @DecorationLogging()
+    @Logging()
     def message_decryption(self, encrypted_message):
         """Message decryption function after receiving."""
         encrypted_message_str = base64.b64decode(encrypted_message)

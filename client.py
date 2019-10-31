@@ -16,7 +16,7 @@ from common.variables import DEFAULT_IP_ADDRESS, DEFAULT_PORT,  TO, USER, ACCOUN
     EXIT, GET_CONTACTS, PUBLIC_KEY, ACTION, MESSAGE_TEXT, MESSAGE, LIST_INFO, ADD_CONTACT, \
     DELETE_CONTACT, USERS_REQUEST, PUBLIC_KEY_REQUEST
 from common.errors import IncorrectDataNotDictError, FieldMissingError, IncorrectCodeError, ServerError
-from decorators.decos import DecorationLogging
+from decorators.decos import Logging
 from common.descriptors import CheckPort, CheckIP, CheckName
 from client.database_client import ClientDB
 from client.gui_client.gui_start_dialog import UserNameDialog
@@ -24,13 +24,13 @@ from client.gui_client.gui_main_window import ClientMainWindow
 from client.gui_client.gui_loading_dialog import LoadingWindow
 from client.encrypt_decrypt import EncryptDecrypt
 
-logger = logging.getLogger('client')
+LOGGER = logging.getLogger('client')
 
-lock_database = threading.Lock()
-lock_socket = threading.Lock()
+LOCK_DATABASE = threading.Lock()
+LOCK_SOCKET = threading.Lock()
 
 
-@DecorationLogging()
+@Logging()
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-ip', default=DEFAULT_IP_ADDRESS, nargs='?')
@@ -70,22 +70,22 @@ class Client(threading.Thread, QObject):
 
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        self.is_connected = False     
- 
+        self.is_connected = False
+
         threading.Thread.__init__(self)
         QObject.__init__(self)
 
-    @DecorationLogging()
+    @Logging()
     def run(self):
         print(f'Console messenger. Client module. Welcome: {self.client_login}')
-        logger.info(
+        LOGGER.info(
             f'Launched client with parameters: server address: {self.ip_server} ,'
             f' port: {self.port_server}, username: {self.client_login}')
         # Timeout 1 second needed to free socket
         self.connection.settimeout(1)
 
         for i in range(5):
-            logger.info(f'Connection attempt - {i + 1}.')
+            LOGGER.info(f'Connection attempt - {i + 1}.')
             print(f'Connection attempt - {i + 1}.')
             try:
                 self.connection.connect((self.ip_server, self.port_server))
@@ -97,11 +97,11 @@ class Client(threading.Thread, QObject):
             time.sleep(1)
 
         if not self.is_connected:
-            logger.critical('Unable to establish a connection. '
+            LOGGER.critical('Unable to establish a connection. '
                             'Invalid ip or port or server is down.\n')
             self.connection_lack()
 
-        logger.debug(f'Server connection established.')
+        LOGGER.debug(f'Server connection established.')
 
         self.start_authorization_procedure()
 
@@ -109,50 +109,50 @@ class Client(threading.Thread, QObject):
 
         self.get_message_from_server(self.connection, self.client_login)
 
-    @DecorationLogging()
+    @Logging()
     def start_authorization_procedure(self):
         pubkey = self.pubkey.decode('ascii')
         msg_to_server = self.create_presence_msg(self.client_login, pubkey)
 
-        logger.info(f'A message has been generated to the server - {msg_to_server}.')
+        LOGGER.info(f'A message has been generated to the server - {msg_to_server}.')
         try:
             send_msg(self.connection, msg_to_server)
-            logger.debug(f'Message sent to server.')
+            LOGGER.debug(f'Message sent to server.')
 
             answer_all = get_msg(self.connection)
             answer_code = self.answer_server_presence(answer_all)
-            logger.info(f'Received response from server - {answer_code}.\n')
+            LOGGER.info(f'Received response from server - {answer_code}.\n')
 
             self.send_hash_password(answer_all)
 
             answer_code = self.answer_server_presence(get_msg(self.connection))
 
         except json.JSONDecodeError:
-            logger.error('Failed to decode received Json string.')
+            LOGGER.error('Failed to decode received Json string.')
             self.connection_lack()
         except IncorrectDataNotDictError:
-            logger.error('Invalid data format received.\n')
+            LOGGER.error('Invalid data format received.\n')
             self.connection_lack()
         except FieldMissingError as missing_error:
-            logger.error(f'No required field - {missing_error}.\n')
+            LOGGER.error(f'No required field - {missing_error}.\n')
             self.connection_lack()
         except IncorrectCodeError as wrong_code:
-            logger.error(f'Invalid code in message - {wrong_code}.')
+            LOGGER.error(f'Invalid code in message - {wrong_code}.')
             self.connection_lack()
         except ConnectionResetError:
-            logger.critical('Server connection not established.')
+            LOGGER.critical('Server connection not established.')
             self.connection_lack()
         except ServerError as er:
-            logger.critical(f'{er}')
+            LOGGER.critical(f'{er}')
             self.is_connected = False
             self.answer_server.emit(f'{er}')
             exit(1)
         else:
-            logger.info(f'Received response from server - {answer_code}.\n')
+            LOGGER.info(f'Received response from server - {answer_code}.\n')
             print(f'Server connection established.')
             self.progressbar_signal.emit()
 
-    @DecorationLogging()
+    @Logging()
     def get_hash_password(self):
         password_bytes = self.client_password.encode('utf-8')
         salt = self.client_login.lower().encode('utf-8')
@@ -160,7 +160,7 @@ class Client(threading.Thread, QObject):
         password_hash_string = binascii.hexlify(password_hash)
         return password_hash_string
 
-    @DecorationLogging()
+    @Logging()
     def send_hash_password(self, answer_all):
         answer_data = answer_all[DATA]
         password_hash_string = self.get_hash_password()
@@ -172,18 +172,18 @@ class Client(threading.Thread, QObject):
 
         send_msg(self.connection, my_answer)
 
-    @DecorationLogging()
+    @Logging()
     def connection_lack(self):
         self.is_connected = False
         self.connection_lack_signal.emit()
         exit(1)
 
-    @DecorationLogging()
+    @Logging()
     def load_database(self):
         try:
             users_all = self.get_users_all()
         except (ConnectionResetError, ServerError):
-            logger.error('Error requesting list of known users.')
+            LOGGER.error('Error requesting list of known users.')
             self.connection_lack()
         else:
             self.database.add_users_known(users_all)
@@ -192,14 +192,14 @@ class Client(threading.Thread, QObject):
         try:
             contacts_list = self.get_contacts_all()
         except (ConnectionResetError, ServerError):
-            logger.error('Contact list request error.')
+            LOGGER.error('Contact list request error.')
             self.connection_lack()
         else:
             self.database.add_contacts(contacts_list)
             print('Contact list updated successfully.')
             self.progressbar_signal.emit()
 
-    @DecorationLogging()
+    @Logging()
     def create_presence_msg(self, account_name, pubkey):
         msg = {
             ACTION: PRESENCE,
@@ -211,9 +211,9 @@ class Client(threading.Thread, QObject):
         }
         return msg
 
-    @DecorationLogging()
+    @Logging()
     def get_users_all(self):
-        logger.debug(f'Request a list of known users {self.client_login}')
+        LOGGER.debug(f'Request a list of known users {self.client_login}')
         request = {
             ACTION: USERS_REQUEST,
             TIME: time.time(),
@@ -226,39 +226,39 @@ class Client(threading.Thread, QObject):
         else:
             raise ServerError('Invalid server response.')
 
-    @DecorationLogging()
+    @Logging()
     def get_contacts_all(self):
-        logger.debug(f'Request contact sheet for user {self.client_login}.')
+        LOGGER.debug(f'Request contact sheet for user {self.client_login}.')
         message = {
             ACTION: GET_CONTACTS,
             TIME: time.time(),
             USER: self.client_login
         }
-        logger.debug(f'Formed request {message}')
+        LOGGER.debug(f'Formed request {message}')
         send_msg(self.connection, message)
         answer = get_msg(self.connection)
-        logger.debug(f'Answer received {answer}')
+        LOGGER.debug(f'Answer received {answer}')
         if RESPONSE in answer and answer[RESPONSE] == 202:
             return answer[LIST_INFO]
         else:
             raise ServerError
 
-    @DecorationLogging()
+    @Logging()
     def answer_server_presence(self, msg):
-        logger.debug(f'Parsing a message from the server - {msg}')
+        LOGGER.debug(f'Parsing a message from the server - {msg}')
         if RESPONSE in msg:
             if msg[RESPONSE] == 511:
                 return 'OK: 511'
             elif msg[RESPONSE] == 200:
                 return 'OK: 200'
             elif msg[RESPONSE] == 400:
-                logger.info(f'ERROR 400: {msg[ERROR]}')
+                LOGGER.info(f'ERROR 400: {msg[ERROR]}')
                 raise ServerError(f'{msg[ERROR]}')
             else:
                 raise IncorrectCodeError(msg[RESPONSE])
         raise FieldMissingError(RESPONSE)
 
-    @DecorationLogging()
+    @Logging()
     def is_received_pubkey(self, login):
         current_chat_key = self.pubkey_request(login)
         if current_chat_key:
@@ -266,64 +266,64 @@ class Client(threading.Thread, QObject):
             return True
         return False
 
-    @DecorationLogging()
+    @Logging()
     def pubkey_request(self, login):
         """The function of requesting the public key of the client from the server."""
-        logger.debug(f'Public key request for {login}')
+        LOGGER.debug(f'Public key request for {login}')
         request = {
             ACTION: PUBLIC_KEY_REQUEST,
             TIME: time.time(),
             ACCOUNT_NAME: login
         }
-        with lock_socket:
+        with LOCK_SOCKET:
             try:
                 send_msg(self.connection, request)
                 answer = get_msg(self.connection)
             except (OSError, json.JSONDecodeError):
                 self.connection_lost_signal.emit()
-                return 
+                return
         if RESPONSE in answer and answer[RESPONSE] == 511:
-            logger.debug(f'Loaded public key for {login}')
+            LOGGER.debug(f'Loaded public key for {login}')
             return answer[DATA]
         else:
-            logger.error(f'Failed to get the key of the interlocutor {login}. '
+            LOGGER.error(f'Failed to get the key of the interlocutor {login}. '
                          f'Answer server {answer}')
 
-    @DecorationLogging()
+    @Logging()
     def get_message_from_server(self, sock, my_username):
         while True:
             time.sleep(1)
-            with lock_socket:
+            with LOCK_SOCKET:
                 try:
                     message = get_msg(sock)
                 except IncorrectDataNotDictError:
-                    logger.error(f'Failed to decode received message.')
+                    LOGGER.error(f'Failed to decode received message.')
                 # Connection timed out if errno = None, otherwise connection break.
                 except OSError as err:
                     # print(err.errno)
                     if err.errno:
-                        logger.critical(f'Lost server connection.')
+                        LOGGER.critical(f'Lost server connection.')
                         self.connection_lost_signal.emit()
                         break
                 except (ConnectionError, ConnectionAbortedError, ConnectionResetError, json.JSONDecodeError):
-                    logger.critical(f'Lost server connection.')
+                    LOGGER.critical(f'Lost server connection.')
                     self.connection_lost_signal.emit()
                     break
                 else:
                     if ACTION in message and message[ACTION] == MESSAGE and TO in message and FROM in message \
                             and MESSAGE_TEXT in message and message[TO] == my_username:
-                        
+
                         user_login = message[FROM]
                         decrypted_message = self.encrypt_decrypt.message_decryption(message[MESSAGE_TEXT])
-                        
+
                         print(f'\nReceived message from user{user_login}:\n{decrypted_message}.\n')
-                        logger.info(f'Received message from user {user_login}:\n{decrypted_message}.')
+                        LOGGER.info(f'Received message from user {user_login}:\n{decrypted_message}.')
                         self.database.save_message(user_login, 'in', decrypted_message)
                         self.new_message_signal.emit(user_login)
                     else:
-                        logger.error(f'Invalid message received from server: {message}')
+                        LOGGER.error(f'Invalid message received from server: {message}')
 
-    @DecorationLogging()
+    @Logging()
     def send_user_message(self, contact_name, message_text):
         encrypted_message = self.encrypt_decrypt.message_encryption(message_text)
         message = {
@@ -333,48 +333,48 @@ class Client(threading.Thread, QObject):
             TIME: time.time(),
             MESSAGE_TEXT: encrypted_message
         }
-        with lock_socket:
+        with LOCK_SOCKET:
             try:
                 send_msg(self.connection, message)
                 answer = get_msg(self.connection)
             except (ConnectionResetError, ConnectionAbortedError, OSError):
-                logger.critical('Lost server connection.')
+                LOGGER.critical('Lost server connection.')
                 return False
             else:
                 if answer[RESPONSE] == 400:
-                    logger.info(f'{answer[ERROR]}. User {contact_name} is offline.')
+                    LOGGER.info(f'{answer[ERROR]}. User {contact_name} is offline.')
                     return f'User {contact_name} is offline!'
-        logger.debug(f'Message sent: {message},from {self.client_login} username {contact_name}')
+        LOGGER.debug(f'Message sent: {message},from {self.client_login} username {contact_name}')
         self.database.save_message(contact_name, 'out', message_text)
         return True
-    
-    @DecorationLogging()
+
+    @Logging()
     def add_contact(self, new_contact_name):
         if self.database.is_user(new_contact_name):
-            with lock_database:
+            with LOCK_DATABASE:
                 self.database.add_contact(new_contact_name)
             try:
                 self.add_contact_server(new_contact_name)
             except ServerError:
-                logger.error('Failed to send information to server.')
+                LOGGER.error('Failed to send information to server.')
             except ConnectionResetError:
-                logger.error('Server connection lost.')
+                LOGGER.error('Server connection lost.')
             else:
-                logger.info(f'New contact added {new_contact_name} at the user {self.client_login}.')
+                LOGGER.info(f'New contact added {new_contact_name} at the user {self.client_login}.')
                 return True
         else:
-            logger.error('This user is not registered.')
+            LOGGER.error('This user is not registered.')
 
-    @DecorationLogging()
+    @Logging()
     def add_contact_server(self, new_contact_name):
-        logger.debug(f'Create a new contact {new_contact_name} at the user {self.client_login}.')
+        LOGGER.debug(f'Create a new contact {new_contact_name} at the user {self.client_login}.')
         message = {
             ACTION: ADD_CONTACT,
             TIME: time.time(),
             USER: self.client_login,
             ACCOUNT_NAME: new_contact_name
         }
-        with lock_socket:
+        with LOCK_SOCKET:
             send_msg(self.connection, message)
             answer = get_msg(self.connection)
         if RESPONSE in answer and answer[RESPONSE] == 200:
@@ -382,22 +382,22 @@ class Client(threading.Thread, QObject):
         else:
             raise ServerError('Error creating contact.')
 
-    @DecorationLogging()
+    @Logging()
     def del_contact(self, del_contact_name):
         if self.database.is_contact(del_contact_name):
-            with lock_database:
+            with LOCK_DATABASE:
                 self.database.del_contact(del_contact_name)
             try:
                 self.del_contact_server(del_contact_name)
             except ServerError:
-                logger.error('Failed to send information to server.')
+                LOGGER.error('Failed to send information to server.')
             else:
                 print(f'Contact {del_contact_name} successfully deleted.')
                 return True
         else:
-            logger.info('Attempt to delete a nonexistent contact.')
+            LOGGER.info('Attempt to delete a nonexistent contact.')
 
-    @DecorationLogging()
+    @Logging()
     def del_contact_server(self, del_contact_name):
         message = {
             ACTION: DELETE_CONTACT,
@@ -405,7 +405,7 @@ class Client(threading.Thread, QObject):
             USER: self.client_login,
             ACCOUNT_NAME: del_contact_name
         }
-        with lock_socket:
+        with LOCK_SOCKET:
             send_msg(self.connection, message)
             answer = get_msg(self.connection)
         if RESPONSE in answer and answer[RESPONSE] == 200:
@@ -413,17 +413,17 @@ class Client(threading.Thread, QObject):
         else:
             raise ServerError('Client uninstall error.')
 
-    @DecorationLogging()
+    @Logging()
     def exit_client(self):
         try:
             send_msg(self.connection, self.create_exit_message(self.client_login))
         except ConnectionResetError:
-            logger.critical('Lost server connection.')
+            LOGGER.critical('Lost server connection.')
             exit(1)
-        logger.info('Application shutdown by user command\n.')
+        LOGGER.info('Application shutdown by user command\n.')
         print('Application shutdown by user command.')
 
-    @DecorationLogging()
+    @Logging()
     def create_exit_message(self, client_login):
         return {
             ACTION: EXIT,
@@ -432,7 +432,7 @@ class Client(threading.Thread, QObject):
         }
 
 
-@DecorationLogging()
+@Logging()
 def start_dialog(app, client_login, client_password):
     if not client_login or not client_password:
         dialog = UserNameDialog(app)
@@ -448,7 +448,7 @@ def start_dialog(app, client_login, client_password):
         return client_login, client_password
 
 
-@DecorationLogging()
+@Logging()
 def loading_window(app, client_transport):
     loading = LoadingWindow(app)
     loading.init_ui()
@@ -456,7 +456,7 @@ def loading_window(app, client_transport):
     app.exec_()
 
 
-@DecorationLogging()
+@Logging()
 def main():
     app = QApplication(sys.argv)
     ip_server, port_server, client_login, client_password = get_args()
@@ -470,7 +470,7 @@ def main():
     client_transport.daemon = True
     client_transport.start()
 
-    #  Loading window
+    #  Open loading window
     loading_window(app, client_transport)
 
     if client_transport.is_connected:

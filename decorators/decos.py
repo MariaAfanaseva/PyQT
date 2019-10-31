@@ -7,7 +7,8 @@ else:
     log = logging.getLogger('server')
 
 
-class DecorationLogging:
+class Logging:
+    """The decorator writes information about the launched function to the log."""
     def __call__(self, func):
         def wrapper(*args, **kwargs):
             log.debug(f'Запущена функция {func.__name__}, из модуля {func.__module__}, с параметрами {args}, {kwargs}')

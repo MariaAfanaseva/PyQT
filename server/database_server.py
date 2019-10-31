@@ -241,7 +241,6 @@ class ServerDB:
 
 if __name__ == '__main__':
     server = ServerDB()
-    # server.add_user()
     server.login_user('maria4', '127.0.0.1', 7777)
     server.login_user('maria5', '127.0.0.1', 7777)
     server.login_user('maria6', '127.0.0.1', 7777)
