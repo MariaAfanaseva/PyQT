@@ -11,11 +11,12 @@ import json
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import pyqtSignal, QObject
 from common.utils import get_msg, send_msg
-from common.variables import DEFAULT_IP_ADDRESS, DEFAULT_PORT,  TO, USER, ACCOUNT_NAME, \
+from common.variables import DEFAULT_IP_ADDRESS, DEFAULT_PORT, TO, USER, ACCOUNT_NAME, \
     RESPONSE_511, ERROR, DATA, RESPONSE, TIME, PRESENCE, FROM, \
     EXIT, GET_CONTACTS, PUBLIC_KEY, ACTION, MESSAGE_TEXT, MESSAGE, LIST_INFO, ADD_CONTACT, \
     DELETE_CONTACT, USERS_REQUEST, PUBLIC_KEY_REQUEST
-from common.errors import IncorrectDataNotDictError, FieldMissingError, IncorrectCodeError, ServerError
+from common.errors import IncorrectDataNotDictError, FieldMissingError, \
+    IncorrectCodeError, ServerError
 from decorators.decos import Logging
 from common.descriptors import CheckPort, CheckIP, CheckName
 from client.database_client import ClientDB
@@ -45,7 +46,7 @@ def get_args():
     return ip_server, port_server, login_client, password_client
 
 
-class Client(threading.Thread, QObject):
+class LoadingClient(threading.Thread, QObject):
     port_server = CheckPort()
     ip_server = CheckIP()
     client_login = CheckName()
@@ -55,20 +56,15 @@ class Client(threading.Thread, QObject):
     progressbar_signal = pyqtSignal()
     answer_server = pyqtSignal(str)
 
-    #  Main window signals
-    new_message_signal = pyqtSignal(str)
-    connection_lost_signal = pyqtSignal()
-
-    def __init__(self, ip_server, port_server, client_login, client_password, database, encrypt_decrypt):
+    def __init__(self, connection, ip_server, port_server, client_login,
+                 client_password, database, encrypt_decrypt):
         self.ip_server = ip_server
         self.port_server = port_server
         self.client_login = client_login
         self.client_password = client_password
         self.database = database
-        self.encrypt_decrypt = encrypt_decrypt
-        self.pubkey = self.encrypt_decrypt.get_pubkey_user()
-
-        self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.connection = connection
+        self.pubkey = encrypt_decrypt.get_pubkey_user()
 
         self.is_connected = False
 
@@ -106,8 +102,6 @@ class Client(threading.Thread, QObject):
         self.start_authorization_procedure()
 
         self.load_database()
-
-        self.get_message_from_server(self.connection, self.client_login)
 
     @Logging()
     def start_authorization_procedure(self):
@@ -258,6 +252,26 @@ class Client(threading.Thread, QObject):
                 raise IncorrectCodeError(msg[RESPONSE])
         raise FieldMissingError(RESPONSE)
 
+
+class Client(threading.Thread, QObject):
+    #  Main window signals
+    new_message_signal = pyqtSignal(str)
+    connection_lost_signal = pyqtSignal()
+
+    def __init__(self, connection, client_login, database, encrypt_decrypt):
+        self.connection = connection
+        self.client_login = client_login
+        self.database = database
+        self.encrypt_decrypt = encrypt_decrypt
+        self.pubkey = self.encrypt_decrypt.get_pubkey_user()
+
+        threading.Thread.__init__(self)
+        QObject.__init__(self)
+
+    @Logging()
+    def run(self):
+        self.get_message_from_server(self.connection, self.client_login)
+
     @Logging()
     def is_received_pubkey(self, login):
         current_chat_key = self.pubkey_request(login)
@@ -305,12 +319,14 @@ class Client(threading.Thread, QObject):
                         LOGGER.critical(f'Lost server connection.')
                         self.connection_lost_signal.emit()
                         break
-                except (ConnectionError, ConnectionAbortedError, ConnectionResetError, json.JSONDecodeError):
+                except (ConnectionError, ConnectionAbortedError, ConnectionResetError,
+                        json.JSONDecodeError):
                     LOGGER.critical(f'Lost server connection.')
                     self.connection_lost_signal.emit()
                     break
                 else:
-                    if ACTION in message and message[ACTION] == MESSAGE and TO in message and FROM in message \
+                    if ACTION in message and message[ACTION] == MESSAGE \
+                            and TO in message and FROM in message \
                             and MESSAGE_TEXT in message and message[TO] == my_username:
 
                         user_login = message[FROM]
@@ -464,16 +480,21 @@ def main():
 
     database = ClientDB(client_login)
 
+    connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     encrypt_decrypt = EncryptDecrypt(client_login)
 
-    client_transport = Client(ip_server, port_server, client_login, client_password, database, encrypt_decrypt)
+    loading_client = LoadingClient(connection, ip_server, port_server, client_login, client_password, database, encrypt_decrypt)
+    loading_client.daemon = True
+    loading_client.start()
+
+    #  Open loading window
+    loading_window(app, loading_client)
+
+    client_transport = Client(connection, client_login, database, encrypt_decrypt)
     client_transport.daemon = True
     client_transport.start()
 
-    #  Open loading window
-    loading_window(app, client_transport)
-
-    if client_transport.is_connected:
+    if loading_client.is_connected:
         main_window = ClientMainWindow(app, client_transport, database)
         main_window.init_ui()
         main_window.make_connection_with_signals(client_transport)

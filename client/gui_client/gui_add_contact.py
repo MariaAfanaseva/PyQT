@@ -23,9 +23,19 @@ class AddContactDialog(QDialog):
         self.show()
 
     def update_users_all(self):
-        users_list = self.database_client.get_users_known()
+        """
+        The method of filling out the list of possible contacts.
+        List all registered users with the exception of those
+        already added to the contacts and himself.
+        """
+        users_all = set(self.database_client.get_users_known())
+        contacts_all = set(self.database_client.get_contacts())
+        new_contacts = users_all - contacts_all
+        print(new_contacts)
+        new_contacts.remove(self.client_transport.client_login)
+        print(new_contacts)
         self.users_model = QStandardItemModel(self)
-        for user in sorted(users_list):
+        for user in sorted(new_contacts):
             item = QStandardItem(user)
             item.setEditable(False)
             self.users_model.appendRow(item)

@@ -20,7 +20,6 @@ from common.utils import get_msg, send_msg
 from common.errors import IncorrectDataNotDictError
 from decorators.decos import Logging
 from common.descriptors import CheckPort, CheckIP
-from common.metaclasses import ServerCreator
 from server.database_server import ServerDB
 from server.gui_server.gui_main_window import MainWindow
 
@@ -336,9 +335,9 @@ class Server(threading.Thread, QObject):
             send_msg(client, msg)
             LOGGER.info(f'Errors sent to client - {msg}.\n')
 
-    #  We respond to users
     @Logging()
     def send_message_user(self, clients_send_lst, msg):
+        """# Function respond to users"""
         if msg[TO] in self.names and self.names[msg[TO]] in clients_send_lst:
             send_msg(self.names[msg[TO]], msg)
             self.database.sending_message(msg[FROM], msg[TO])
