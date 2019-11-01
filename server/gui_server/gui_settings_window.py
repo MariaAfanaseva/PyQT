@@ -7,6 +7,7 @@ from common.variables import CONFIG_FILE_NAME
 
 
 class SettingsWindow(QDialog):
+    """Window settings. Save settings in file .ini"""
     def __init__(self):
         self.parser = configparser.ConfigParser()
         super().__init__()

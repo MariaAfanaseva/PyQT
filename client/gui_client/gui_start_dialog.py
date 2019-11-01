@@ -4,6 +4,7 @@ from client.gui_client.start_dialog_config import Ui_Dialog
 
 
 class UserNameDialog(QDialog):
+    """Create window for entering login and password"""
     def __init__(self, app):
         self.app = app
         self.ok_clicked = False

@@ -18,7 +18,7 @@ from common.variables import CONFIG_FILE_NAME, MAX_CONNECTIONS, TO, USER, ACCOUN
     DELETE_CONTACT, USERS_REQUEST, PUBLIC_KEY_REQUEST
 from common.utils import get_msg, send_msg
 from common.errors import IncorrectDataNotDictError
-from decorators.decos import Logging
+from common.decos import Logging
 from common.descriptors import CheckPort, CheckIP
 from server.database_server import ServerDB
 from server.gui_server.gui_main_window import MainWindow
@@ -52,6 +52,7 @@ def read_config_file():
 
 
 class Server(threading.Thread, QObject):
+    """Main class for connect with client"""
     # Port and Address Correction Descriptors
     listen_port = CheckPort()
     listen_ip = CheckIP()

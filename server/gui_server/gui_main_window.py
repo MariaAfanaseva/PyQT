@@ -9,6 +9,7 @@ from server.gui_server.gui_registration_user import RegistrationDialog
 
 
 class MainWindow(QMainWindow):
+    """Class main window for user. Contains contacts list, text edit and history messages"""
     def __init__(self, app, database):
         self.app = app
         self.database = database

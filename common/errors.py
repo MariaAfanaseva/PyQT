@@ -1,4 +1,5 @@
 class IncorrectDataNotDictError(Exception):
+    """Create error wen data not dict"""
     def __str__(self):
         return 'Data must be a dictionary'
 
@@ -12,6 +13,7 @@ class FieldMissingError(Exception):
 
 
 class IncorrectCodeError(Exception):
+    """Create error wen invalid code in message"""
     def __init__(self, wrong_code):
         self.wrong_code = wrong_code
 
@@ -20,6 +22,7 @@ class IncorrectCodeError(Exception):
 
 
 class ServerError(Exception):
+    """Create error server with text"""
     def __init__(self, text):
         self.text = text
 

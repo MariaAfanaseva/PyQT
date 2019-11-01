@@ -7,6 +7,7 @@ Base = declarative_base()
 
 
 class ServerDB:
+    """Create tables in database. Interacts with the database of this server"""
     class AllUsers(Base):
         __tablename__ = 'users_all'
         id = Column(Integer, primary_key=True)

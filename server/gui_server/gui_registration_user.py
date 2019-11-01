@@ -6,6 +6,12 @@ from server.gui_server.user_registration_config import Ui_Dialog
 
 
 class RegistrationDialog(QDialog):
+    """
+    Window for registration user.
+    Required fields - login, password, confirm password.
+    Save hash password.
+    """
+
     def __init__(self, database):
         self.database = database
         self.message_window = QMessageBox

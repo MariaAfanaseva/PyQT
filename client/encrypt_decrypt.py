@@ -4,7 +4,7 @@ import logging
 import base64
 from Cryptodome.PublicKey import RSA
 from Cryptodome.Cipher import PKCS1_OAEP
-from decorators.decos import Logging
+from common.decos import Logging
 
 LOGGER = logging.getLogger('client')
 

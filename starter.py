@@ -3,20 +3,28 @@ import time
 
 
 class Processes:
+    """Open new server and 4 clients"""
     def __init__(self, clients):
         self.clients = clients
 
     def start_server_clients(self):
         processes = []
         while True:
-            action = input('Введите нужную команду: \nstart - запустить сервер и клиентов,\n'
-                           'close - закрыть все окна,\nexit - выход\n')
-            if action == 'start':
-                processes.append(subprocess.Popen('python server_main.py', creationflags=subprocess.CREATE_NEW_CONSOLE))
-                time.sleep(1)
-                for i in range(1, self.clients + 1):
-                    processes.append(subprocess.Popen(f'python client.py -n test{i}',
-                                                      creationflags=subprocess.CREATE_NEW_CONSOLE))
+            action = input('Enter the necessary command: \nst server - start the server,'
+                           '\nst clients - start clients,\nclose - close all windows, '
+                           '\nexit - exit\n')
+            if action == 'st server':
+                processes.append(subprocess.Popen('python server/server_main.py',
+                                                  creationflags=subprocess.CREATE_NEW_CONSOLE))
+            elif action == 'st clients':
+                print('Make sure that the number of clients with a password of 123 is registered on the server.')
+                clients_count = int(
+                    input('Enter the number of test clients to run: '))
+                for i in range(clients_count):
+                    processes.append(
+                        subprocess.Popen(
+                            f'python clients/client_main.py -n test{i + 1} -p 123',
+                            creationflags=subprocess.CREATE_NEW_CONSOLE))
             elif action == 'close':
                 while processes:
                     client = processes.pop()

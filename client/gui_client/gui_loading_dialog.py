@@ -5,6 +5,7 @@ from client.gui_client.loading_config import Ui_Loading
 
 
 class LoadingWindow(QDialog):
+    """Window that shows the percentage of application load."""
     def __init__(self, app):
         self.app = app
         self.message_window = QMessageBox()

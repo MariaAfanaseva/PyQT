@@ -1,7 +1,7 @@
 import json
 from common.variables import ENCODING, MAX_PACKAGE_LENGTH
 from common.errors import IncorrectDataNotDictError
-from decorators.decos import Logging
+from common.decos import Logging
 
 
 @Logging()

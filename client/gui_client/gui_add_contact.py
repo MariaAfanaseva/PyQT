@@ -6,6 +6,7 @@ from client.database_client import ClientDB
 
 
 class AddContactDialog(QDialog):
+    """Create window for add new contact."""
     def __init__(self, client_transport, database_client):
         self.client_transport = client_transport
         self.database_client = database_client

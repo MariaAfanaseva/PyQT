@@ -6,6 +6,7 @@ from client.database_client import ClientDB
 
 
 class DelContactDialog(QDialog):
+    """Create new window for remove contact."""
     def __init__(self, client_transport, del_contact_name):
         self.client_transport = client_transport
         self.del_contact_name = del_contact_name

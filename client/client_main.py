@@ -17,7 +17,7 @@ from common.variables import DEFAULT_IP_ADDRESS, DEFAULT_PORT, TO, USER, ACCOUNT
     DELETE_CONTACT, USERS_REQUEST, PUBLIC_KEY_REQUEST
 from common.errors import IncorrectDataNotDictError, FieldMissingError, \
     IncorrectCodeError, ServerError
-from decorators.decos import Logging
+from common.decos import Logging
 from common.descriptors import CheckPort, CheckIP, CheckName
 from client.database_client import ClientDB
 from client.gui_client.gui_start_dialog import UserNameDialog
@@ -47,6 +47,7 @@ def get_args():
 
 
 class LoadingClient(threading.Thread, QObject):
+    """Performs initial client connection to the server, updating the database"""
     port_server = CheckPort()
     ip_server = CheckIP()
     client_login = CheckName()
@@ -450,6 +451,7 @@ class Client(threading.Thread, QObject):
 
 @Logging()
 def start_dialog(app, client_login, client_password):
+    """Open window for login and password."""
     if not client_login or not client_password:
         dialog = UserNameDialog(app)
         dialog.init_ui()
@@ -466,6 +468,7 @@ def start_dialog(app, client_login, client_password):
 
 @Logging()
 def loading_window(app, client_transport):
+    """Open window that shows the percentage of application load."""
     loading = LoadingWindow(app)
     loading.init_ui()
     loading.make_connection_with_signals(client_transport)
