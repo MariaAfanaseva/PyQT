@@ -43,7 +43,7 @@ def read_config_file():
     # Download server configuration file
     parser = configparser.ConfigParser()
     dir_path = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(dir_path, f'server\\{CONFIG_FILE_NAME}')
+    file_path = os.path.join(dir_path, f'{CONFIG_FILE_NAME}')
     parser.read(file_path, encoding='utf-8')
     port = parser['SETTINGS']['default_port']
     ip_addr = parser['SETTINGS']['listen_Address']

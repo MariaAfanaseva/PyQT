@@ -84,7 +84,7 @@ class SettingsWindow(QDialog):
     def config_file_text_print(self):
         dir_path = os.path.dirname(os.path.abspath(__file__))
         self.file_path = os.path.join(dir_path, '../', CONFIG_FILE_NAME)
-        print(self.file_path)
+        # print(self.file_path)
         self.parser.read(self.file_path, encoding='utf-8')
 
         db_path_config = self.parser['SETTINGS']['database_path']

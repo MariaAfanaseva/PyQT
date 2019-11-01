@@ -31,9 +31,7 @@ class AddContactDialog(QDialog):
         users_all = set(self.database_client.get_users_known())
         contacts_all = set(self.database_client.get_contacts())
         new_contacts = users_all - contacts_all
-        print(new_contacts)
         new_contacts.remove(self.client_transport.client_login)
-        print(new_contacts)
         self.users_model = QStandardItemModel(self)
         for user in sorted(new_contacts):
             item = QStandardItem(user)

@@ -12,7 +12,7 @@ class Processes:
             action = input('Введите нужную команду: \nstart - запустить сервер и клиентов,\n'
                            'close - закрыть все окна,\nexit - выход\n')
             if action == 'start':
-                processes.append(subprocess.Popen('python server.py', creationflags=subprocess.CREATE_NEW_CONSOLE))
+                processes.append(subprocess.Popen('python server_main.py', creationflags=subprocess.CREATE_NEW_CONSOLE))
                 time.sleep(1)
                 for i in range(1, self.clients + 1):
                     processes.append(subprocess.Popen(f'python client.py -n test{i}',

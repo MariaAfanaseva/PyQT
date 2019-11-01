@@ -96,7 +96,7 @@ class ServerDB:
         # echo=False - disable logging (output sql queries)
         # pool_recycle - By default, the connection to the database is terminated after 8 hours of inactivity.
         # pool_recycle = 7200 - reconnect after 2 hours
-        self.database_engine = create_engine(f'sqlite:///server/{path}', echo=False, pool_recycle=7200,
+        self.database_engine = create_engine(f'sqlite:///{path}', echo=False, pool_recycle=7200,
                                              connect_args={'check_same_thread': False})
 
         Base.metadata.create_all(self.database_engine)

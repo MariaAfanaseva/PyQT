@@ -48,7 +48,7 @@ class ClientDB:
                    (self.contact, self.direction, self.message, self.date)
 
     def __init__(self, login):
-        self.database_engine = create_engine(f'sqlite:///client/databases/client_{login}.db3',
+        self.database_engine = create_engine(f'sqlite:///databases/client_{login}.db3',
                                              echo=False, pool_recycle=7200,
                                              connect_args={'check_same_thread': False})
         Base.metadata.create_all(self.database_engine)
