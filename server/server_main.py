@@ -8,14 +8,15 @@ import threading
 import configparser
 import os
 import json
-import binascii
 import hmac
+import hashlib
+import binascii
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import pyqtSignal, QObject
 from common.variables import CONFIG_FILE_NAME, MAX_CONNECTIONS, TO, USER, ACCOUNT_NAME, \
     RESPONSE_200, RESPONSE_400, RESPONSE_511, ERROR, DATA, RESPONSE, TIME, PRESENCE, FROM, \
     EXIT, GET_CONTACTS, PUBLIC_KEY, ACTION, MESSAGE_TEXT, MESSAGE, LIST_INFO, ADD_CONTACT, \
-    DELETE_CONTACT, USERS_REQUEST, PUBLIC_KEY_REQUEST
+    DELETE_CONTACT, USERS_REQUEST, PUBLIC_KEY_REQUEST, RESPONSE_205
 from common.utils import get_msg, send_msg
 from common.errors import IncorrectDataNotDictError
 from common.decos import Logging
@@ -25,6 +26,8 @@ from gui_server.gui_main_window import MainWindow
 
 LOGGER = logging.getLogger('server')
 LOGGER.setLevel(logging.DEBUG)
+
+LOCK_DATABASE = threading.Lock()
 
 
 @Logging()
@@ -246,6 +249,21 @@ class Server(threading.Thread, QObject):
             client.close()
 
     @Logging()
+    def is_added_new_user(self, password, login_user, fullname):
+        try:
+            password_bytes = password.encode('utf-8')
+            salt = login_user.encode('utf-8')
+            password_hash = hashlib.pbkdf2_hmac('sha512', password_bytes, salt, 10000)
+            password_hash_str = binascii.hexlify(password_hash)
+        except ValueError:
+            return False
+        else:
+            with LOCK_DATABASE:
+                self.database.add_user(login_user, password_hash_str, fullname)
+            self.update_users_list_message()
+            return True
+
+    @Logging()
     def remove_client(self, client):
         LOGGER.info(f'Client {client.getpeername ()} disconnected from server.')
         for name in self.names:
@@ -349,8 +367,8 @@ class Server(threading.Thread, QObject):
             LOGGER.error(
                 f'User {msg [TO]} is not registered on the server, sending messages is not possible.')
 
-    def update_lists(self):
-        '''A method that implements sending a service message to 205 clients.'''
+    def update_users_list_message(self):
+        """A method that implements sending a service message to 205 clients."""
         for client in self.names:
             try:
                 send_msg(self.names[client], RESPONSE_205)
@@ -370,7 +388,7 @@ def main():
 
     # GUI PyQt5
     app = QApplication(sys.argv)
-    main_window = MainWindow(app, database)
+    main_window = MainWindow(app, database, server)
     main_window.init_ui()
     main_window.make_connection_signals(server)
     sys.exit(app.exec_())

@@ -10,9 +10,10 @@ from gui_server.gui_registration_user import RegistrationDialog
 
 class MainWindow(QMainWindow):
     """Class main window for user. Contains contacts list, text edit and history messages"""
-    def __init__(self, app, database):
+    def __init__(self, app, database, server):
         self.app = app
         self.database = database
+        self.server = server
         super().__init__()
 
     def init_ui(self):
@@ -34,7 +35,7 @@ class MainWindow(QMainWindow):
         server_settings_action = QAction('Settings', self)
         server_settings_action.triggered.connect(self.settings_window.init_ui)
 
-        self.regiastration_dialog = RegistrationDialog(self.database)
+        self.regiastration_dialog = RegistrationDialog(self.database, self.server)
         add_user = QAction('Registration user', self)
         add_user.triggered.connect(self.regiastration_dialog.init_ui)
 

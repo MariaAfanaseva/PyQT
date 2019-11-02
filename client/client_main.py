@@ -57,13 +57,14 @@ class Client(threading.Thread, QObject):
     connection_lack_signal = pyqtSignal()
     progressbar_signal = pyqtSignal()
     answer_server = pyqtSignal(str)
+    users_list_update = pyqtSignal()
 
     #  Main window signals
     new_message_signal = pyqtSignal(str)
     connection_lost_signal = pyqtSignal()
 
     def __init__(self, connection, server_ip, server_port, client_login,
-                 client_password, database, encrypt_decrypt, client_transport):
+                 client_password, database, encrypt_decrypt):
         self.server_ip = server_ip
         self.server_port = server_port
         self.client_login = client_login
@@ -71,7 +72,6 @@ class Client(threading.Thread, QObject):
         self.database = database
         self.connection = connection
         self.encrypt_decrypt = encrypt_decrypt
-        self.client_transport = client_transport
         self.pubkey = encrypt_decrypt.get_pubkey_user()
 
         self.is_connected = False
@@ -116,7 +116,7 @@ class Client(threading.Thread, QObject):
     @Logging()
     def start_authorization_procedure(self):
         pubkey = self.pubkey.decode('ascii')
-        msg_to_server = self.client_transport.create_presence_msg(self.client_login, pubkey)
+        msg_to_server = self.create_presence_msg(self.client_login, pubkey)
 
         LOGGER.info(f'A message has been generated to the server - {msg_to_server}.')
         try:
@@ -124,12 +124,12 @@ class Client(threading.Thread, QObject):
             LOGGER.debug(f'Message sent to server.')
 
             answer_all = get_msg(self.connection)
-            answer_code = self.client_transport.answer_server_presence(answer_all)
+            answer_code = self.answer_server_presence(answer_all)
             LOGGER.info(f'Received response from server - {answer_code}.\n')
 
             self.send_hash_password(answer_all)
 
-            answer_code = self.client_transport.answer_server_presence(get_msg(self.connection))
+            answer_code = self.answer_server_presence(get_msg(self.connection))
 
         except json.JSONDecodeError:
             LOGGER.error('Failed to decode received Json string.')
@@ -185,69 +185,25 @@ class Client(threading.Thread, QObject):
     @Logging()
     def load_database(self):
         try:
-            users_all = self.client_transport.get_users_all()
+            users_all = self.get_users_all()
         except (ConnectionResetError, ServerError):
             LOGGER.error('Error requesting list of known users.')
             self.connection_lack()
         else:
-            self.database.add_users_known(users_all)
+            with LOCK_DATABASE:
+                self.database.add_users_known(users_all)
             print('List of known users updated successfully.')
             self.progressbar_signal.emit()
         try:
-            contacts_list = self.client_transport.get_contacts_all()
+            contacts_list = self.get_contacts_all()
         except (ConnectionResetError, ServerError):
             LOGGER.error('Contact list request error.')
             self.connection_lack()
         else:
-            self.database.add_contacts(contacts_list)
+            with LOCK_DATABASE:
+                self.database.add_contacts(contacts_list)
             print('Contact list updated successfully.')
             self.progressbar_signal.emit()
-
-    @Logging()
-    def get_message_from_server(self, sock, my_username):
-        while True:
-            time.sleep(1)
-            with LOCK_SOCKET:
-                try:
-                    message = get_msg(sock)
-                except IncorrectDataNotDictError:
-                    LOGGER.error(f'Failed to decode received message.')
-                # Connection timed out if errno = None, otherwise connection break.
-                except OSError as err:
-                    # print(err.errno)
-                    if err.errno:
-                        LOGGER.critical(f'Lost server connection.')
-                        self.connection_lost_signal.emit()
-                        break
-                except (ConnectionError, ConnectionAbortedError, ConnectionResetError,
-                        json.JSONDecodeError):
-                    LOGGER.critical(f'Lost server connection.')
-                    self.connection_lost_signal.emit()
-                    break
-                else:
-                    if ACTION in message and message[ACTION] == MESSAGE \
-                            and TO in message and FROM in message \
-                            and MESSAGE_TEXT in message and message[TO] == my_username:
-
-                        user_login = message[FROM]
-                        decrypted_message = self.encrypt_decrypt.message_decryption(message[MESSAGE_TEXT])
-
-                        print(f'\nReceived message from user{user_login}:\n{decrypted_message}.\n')
-                        LOGGER.info(f'Received message from user {user_login}:\n{decrypted_message}.')
-                        self.database.save_message(user_login, 'in', decrypted_message)
-                        self.new_message_signal.emit(user_login)
-                    else:
-                        LOGGER.error(f'Invalid message received from server: {message}')
-
-
-class ClientTransport(QObject):
-    def __init__(self, connection, client_login, database, encrypt_decrypt):
-        self.connection = connection
-        self.client_login = client_login
-        self.database = database
-        self.encrypt_decrypt = encrypt_decrypt
-
-        QObject.__init__(self)
 
     @Logging()
     def create_presence_msg(self, account_name, pubkey):
@@ -307,6 +263,55 @@ class ClientTransport(QObject):
             else:
                 raise IncorrectCodeError(msg[RESPONSE])
         raise FieldMissingError(RESPONSE)
+
+    @Logging()
+    def get_message_from_server(self, sock, my_username):
+        while True:
+            time.sleep(1)
+            with LOCK_SOCKET:
+                try:
+                    message = get_msg(sock)
+                except IncorrectDataNotDictError:
+                    LOGGER.error(f'Failed to decode received message.')
+                # Connection timed out if errno = None, otherwise connection break.
+                except OSError as err:
+                    # print(err.errno)
+                    if err.errno:
+                        LOGGER.critical(f'Lost server connection.')
+                        self.connection_lost_signal.emit()
+                        break
+                except (ConnectionError, ConnectionAbortedError, ConnectionResetError,
+                        json.JSONDecodeError):
+                    LOGGER.critical(f'Lost server connection.')
+                    self.connection_lost_signal.emit()
+                    break
+                else:
+                    if ACTION in message and message[ACTION] == MESSAGE \
+                            and TO in message and FROM in message \
+                            and MESSAGE_TEXT in message and message[TO] == my_username:
+
+                        user_login = message[FROM]
+                        decrypted_message = self.encrypt_decrypt.message_decryption(message[MESSAGE_TEXT])
+
+                        print(f'\nReceived message from user{user_login}:\n{decrypted_message}.\n')
+                        LOGGER.info(f'Received message from user {user_login}:\n{decrypted_message}.')
+                        self.database.save_message(user_login, 'in', decrypted_message)
+                        self.new_message_signal.emit(user_login)
+                    elif RESPONSE in message and message[RESPONSE] == 205:
+                        self.load_database()
+                        self.users_list_update.emit()
+                    else:
+                        LOGGER.error(f'Invalid message received from server: {message}')
+
+
+class ClientTransport(QObject):
+    def __init__(self, connection, client_login, database, encrypt_decrypt):
+        self.connection = connection
+        self.client_login = client_login
+        self.database = database
+        self.encrypt_decrypt = encrypt_decrypt
+
+        QObject.__init__(self)
 
     @Logging()
     def is_received_pubkey(self, login):
@@ -490,7 +495,7 @@ def main():
 
     loading_client = Client(connection, server_ip, server_port,
                             client_login, client_password, database,
-                            encrypt_decrypt, client_transport)
+                            encrypt_decrypt)
     loading_client.daemon = True
     loading_client.start()
 

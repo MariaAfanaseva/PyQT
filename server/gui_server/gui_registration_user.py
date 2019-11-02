@@ -1,6 +1,4 @@
 import sys
-import hashlib
-import binascii
 from PyQt5.QtWidgets import QDialog, QApplication, QMessageBox
 from gui_server.user_registration_config import Ui_Dialog
 
@@ -12,8 +10,9 @@ class RegistrationDialog(QDialog):
     Save hash password.
     """
 
-    def __init__(self, database):
+    def __init__(self, database, server):
         self.database = database
+        self.server = server
         self.message_window = QMessageBox
         super().__init__()
 
@@ -38,13 +37,9 @@ class RegistrationDialog(QDialog):
                 self.message_window.critical(self, 'Error', 'User already exists.')
                 return
             else:
-                password_bytes = password.encode('utf-8')
-                salt = login_user.encode('utf-8')
-                password_hash = hashlib.pbkdf2_hmac('sha512', password_bytes, salt, 10000)
-                password_hash_str = binascii.hexlify(password_hash)
-                self.database.add_user(login_user, password_hash_str, fullname)
-                self.message_window.information(self, 'Success', 'User successfully registered.')
-                self.close()
+                if self.server.is_added_new_user(password, login_user, fullname):
+                    self.message_window.information(self, 'Success', 'User successfully registered.')
+                    self.close()
         else:
             self.message_window.information(self, 'Warning', 'Required fields all, but full name.')
 

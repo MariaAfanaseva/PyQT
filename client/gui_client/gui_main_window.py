@@ -205,10 +205,16 @@ class ClientMainWindow(QMainWindow):
         self.message_window.critical(self, 'Error', 'Lost server connection!')
         self.close()
 
-    def make_connection_with_signals(self, transport_client_obj):
+    @pyqtSlot()
+    def update_users_list(self):
+        """Update users list in add and remove contact window."""
+        self.add_contact_window.update_users_all()
+
+    def make_connection_with_signals(self, client_obj):
         """Signal connection method."""
-        transport_client_obj.new_message_signal.connect(self.get_message)
-        transport_client_obj.connection_lost_signal.connect(self.connection_lost)
+        client_obj.new_message_signal.connect(self.get_message)
+        client_obj.connection_lost_signal.connect(self.connection_lost)
+        client_obj.users_list_update.connect(self.update_users_list)
 
 
 if __name__ == '__main__':

@@ -58,3 +58,8 @@ RESPONSE_511 = {
     RESPONSE: 511,
     DATA: None
 }
+
+# 205
+RESPONSE_205 = {
+    RESPONSE: 205
+}
