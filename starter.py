@@ -23,7 +23,7 @@ class Processes:
                 for i in range(clients_count):
                     processes.append(
                         subprocess.Popen(
-                            f'python clients/client_main.py -n test{i + 1} -p 123',
+                            f'python client/client_main.py -n test{i + 1} -p 123',
                             creationflags=subprocess.CREATE_NEW_CONSOLE))
             elif action == 'close':
                 while processes:

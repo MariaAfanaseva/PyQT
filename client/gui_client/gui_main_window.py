@@ -4,10 +4,10 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QColor
 from PyQt5.QtCore import Qt, pyqtSlot
 from PyQt5 import QtGui
-from client.gui_client.main_window_config import Ui_MainWindow
-from client.gui_client.gui_add_contact import AddContactDialog
-from client.gui_client.gui_del_contact import DelContactDialog
-from client.database_client import ClientDB
+from gui_client.main_window_config import Ui_MainWindow
+from gui_client.gui_add_contact import AddContactDialog
+from gui_client.gui_del_contact import DelContactDialog
+from database_client import ClientDB
 
 
 class ClientMainWindow(QMainWindow):

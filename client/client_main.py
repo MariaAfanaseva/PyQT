@@ -19,11 +19,12 @@ from common.errors import IncorrectDataNotDictError, FieldMissingError, \
     IncorrectCodeError, ServerError
 from common.decos import Logging
 from common.descriptors import CheckPort, CheckIP, CheckName
-from client.database_client import ClientDB
-from client.gui_client.gui_start_dialog import UserNameDialog
-from client.gui_client.gui_main_window import ClientMainWindow
-from client.gui_client.gui_loading_dialog import LoadingWindow
-from client.encrypt_decrypt import EncryptDecrypt
+from database_client import ClientDB
+from gui_client.gui_start_dialog import UserNameDialog
+from gui_client.gui_main_window import ClientMainWindow
+from gui_client.gui_loading_dialog import LoadingWindow
+from encrypt_decrypt import EncryptDecrypt
+
 
 LOGGER = logging.getLogger('client')
 
@@ -39,17 +40,17 @@ def get_args():
     parser.add_argument('-n', '--name', default=None, nargs='?')
     parser.add_argument('-p', '--password', default=None, nargs='?')
     namespace = parser.parse_args(sys.argv[1:])
-    ip_server = namespace.ip
-    port_server = namespace.port
+    server_ip = namespace.ip
+    server_port = namespace.port
     login_client = namespace.name
     password_client = namespace.password
-    return ip_server, port_server, login_client, password_client
+    return server_ip, server_port, login_client, password_client
 
 
-class LoadingClient(threading.Thread, QObject):
+class Client(threading.Thread, QObject):
     """Performs initial client connection to the server, updating the database"""
-    port_server = CheckPort()
-    ip_server = CheckIP()
+    server_port = CheckPort()
+    server_ip = CheckIP()
     client_login = CheckName()
 
     # Load window signals
@@ -57,14 +58,20 @@ class LoadingClient(threading.Thread, QObject):
     progressbar_signal = pyqtSignal()
     answer_server = pyqtSignal(str)
 
-    def __init__(self, connection, ip_server, port_server, client_login,
-                 client_password, database, encrypt_decrypt):
-        self.ip_server = ip_server
-        self.port_server = port_server
+    #  Main window signals
+    new_message_signal = pyqtSignal(str)
+    connection_lost_signal = pyqtSignal()
+
+    def __init__(self, connection, server_ip, server_port, client_login,
+                 client_password, database, encrypt_decrypt, client_transport):
+        self.server_ip = server_ip
+        self.server_port = server_port
         self.client_login = client_login
         self.client_password = client_password
         self.database = database
         self.connection = connection
+        self.encrypt_decrypt = encrypt_decrypt
+        self.client_transport = client_transport
         self.pubkey = encrypt_decrypt.get_pubkey_user()
 
         self.is_connected = False
@@ -76,8 +83,8 @@ class LoadingClient(threading.Thread, QObject):
     def run(self):
         print(f'Console messenger. Client module. Welcome: {self.client_login}')
         LOGGER.info(
-            f'Launched client with parameters: server address: {self.ip_server} ,'
-            f' port: {self.port_server}, username: {self.client_login}')
+            f'Launched client with parameters: server address: {self.server_ip} ,'
+            f' port: {self.server_port}, username: {self.client_login}')
         # Timeout 1 second needed to free socket
         self.connection.settimeout(1)
 
@@ -85,7 +92,7 @@ class LoadingClient(threading.Thread, QObject):
             LOGGER.info(f'Connection attempt - {i + 1}.')
             print(f'Connection attempt - {i + 1}.')
             try:
-                self.connection.connect((self.ip_server, self.port_server))
+                self.connection.connect((self.server_ip, self.server_port))
             except (OSError, ConnectionRefusedError):
                 pass
             else:
@@ -104,10 +111,12 @@ class LoadingClient(threading.Thread, QObject):
 
         self.load_database()
 
+        self.get_message_from_server(self.connection, self.client_login)
+
     @Logging()
     def start_authorization_procedure(self):
         pubkey = self.pubkey.decode('ascii')
-        msg_to_server = self.create_presence_msg(self.client_login, pubkey)
+        msg_to_server = self.client_transport.create_presence_msg(self.client_login, pubkey)
 
         LOGGER.info(f'A message has been generated to the server - {msg_to_server}.')
         try:
@@ -115,12 +124,12 @@ class LoadingClient(threading.Thread, QObject):
             LOGGER.debug(f'Message sent to server.')
 
             answer_all = get_msg(self.connection)
-            answer_code = self.answer_server_presence(answer_all)
+            answer_code = self.client_transport.answer_server_presence(answer_all)
             LOGGER.info(f'Received response from server - {answer_code}.\n')
 
             self.send_hash_password(answer_all)
 
-            answer_code = self.answer_server_presence(get_msg(self.connection))
+            answer_code = self.client_transport.answer_server_presence(get_msg(self.connection))
 
         except json.JSONDecodeError:
             LOGGER.error('Failed to decode received Json string.')
@@ -176,7 +185,7 @@ class LoadingClient(threading.Thread, QObject):
     @Logging()
     def load_database(self):
         try:
-            users_all = self.get_users_all()
+            users_all = self.client_transport.get_users_all()
         except (ConnectionResetError, ServerError):
             LOGGER.error('Error requesting list of known users.')
             self.connection_lack()
@@ -185,7 +194,7 @@ class LoadingClient(threading.Thread, QObject):
             print('List of known users updated successfully.')
             self.progressbar_signal.emit()
         try:
-            contacts_list = self.get_contacts_all()
+            contacts_list = self.client_transport.get_contacts_all()
         except (ConnectionResetError, ServerError):
             LOGGER.error('Contact list request error.')
             self.connection_lack()
@@ -193,6 +202,52 @@ class LoadingClient(threading.Thread, QObject):
             self.database.add_contacts(contacts_list)
             print('Contact list updated successfully.')
             self.progressbar_signal.emit()
+
+    @Logging()
+    def get_message_from_server(self, sock, my_username):
+        while True:
+            time.sleep(1)
+            with LOCK_SOCKET:
+                try:
+                    message = get_msg(sock)
+                except IncorrectDataNotDictError:
+                    LOGGER.error(f'Failed to decode received message.')
+                # Connection timed out if errno = None, otherwise connection break.
+                except OSError as err:
+                    # print(err.errno)
+                    if err.errno:
+                        LOGGER.critical(f'Lost server connection.')
+                        self.connection_lost_signal.emit()
+                        break
+                except (ConnectionError, ConnectionAbortedError, ConnectionResetError,
+                        json.JSONDecodeError):
+                    LOGGER.critical(f'Lost server connection.')
+                    self.connection_lost_signal.emit()
+                    break
+                else:
+                    if ACTION in message and message[ACTION] == MESSAGE \
+                            and TO in message and FROM in message \
+                            and MESSAGE_TEXT in message and message[TO] == my_username:
+
+                        user_login = message[FROM]
+                        decrypted_message = self.encrypt_decrypt.message_decryption(message[MESSAGE_TEXT])
+
+                        print(f'\nReceived message from user{user_login}:\n{decrypted_message}.\n')
+                        LOGGER.info(f'Received message from user {user_login}:\n{decrypted_message}.')
+                        self.database.save_message(user_login, 'in', decrypted_message)
+                        self.new_message_signal.emit(user_login)
+                    else:
+                        LOGGER.error(f'Invalid message received from server: {message}')
+
+
+class ClientTransport(QObject):
+    def __init__(self, connection, client_login, database, encrypt_decrypt):
+        self.connection = connection
+        self.client_login = client_login
+        self.database = database
+        self.encrypt_decrypt = encrypt_decrypt
+
+        QObject.__init__(self)
 
     @Logging()
     def create_presence_msg(self, account_name, pubkey):
@@ -253,26 +308,6 @@ class LoadingClient(threading.Thread, QObject):
                 raise IncorrectCodeError(msg[RESPONSE])
         raise FieldMissingError(RESPONSE)
 
-
-class Client(threading.Thread, QObject):
-    #  Main window signals
-    new_message_signal = pyqtSignal(str)
-    connection_lost_signal = pyqtSignal()
-
-    def __init__(self, connection, client_login, database, encrypt_decrypt):
-        self.connection = connection
-        self.client_login = client_login
-        self.database = database
-        self.encrypt_decrypt = encrypt_decrypt
-        self.pubkey = self.encrypt_decrypt.get_pubkey_user()
-
-        threading.Thread.__init__(self)
-        QObject.__init__(self)
-
-    @Logging()
-    def run(self):
-        self.get_message_from_server(self.connection, self.client_login)
-
     @Logging()
     def is_received_pubkey(self, login):
         current_chat_key = self.pubkey_request(login)
@@ -295,7 +330,7 @@ class Client(threading.Thread, QObject):
                 send_msg(self.connection, request)
                 answer = get_msg(self.connection)
             except (OSError, json.JSONDecodeError):
-                self.connection_lost_signal.emit()
+                # self.connection_lost_signal.emit()
                 return
         if RESPONSE in answer and answer[RESPONSE] == 511:
             LOGGER.debug(f'Loaded public key for {login}')
@@ -303,42 +338,6 @@ class Client(threading.Thread, QObject):
         else:
             LOGGER.error(f'Failed to get the key of the interlocutor {login}. '
                          f'Answer server {answer}')
-
-    @Logging()
-    def get_message_from_server(self, sock, my_username):
-        while True:
-            time.sleep(1)
-            with LOCK_SOCKET:
-                try:
-                    message = get_msg(sock)
-                except IncorrectDataNotDictError:
-                    LOGGER.error(f'Failed to decode received message.')
-                # Connection timed out if errno = None, otherwise connection break.
-                except OSError as err:
-                    # print(err.errno)
-                    if err.errno:
-                        LOGGER.critical(f'Lost server connection.')
-                        self.connection_lost_signal.emit()
-                        break
-                except (ConnectionError, ConnectionAbortedError, ConnectionResetError,
-                        json.JSONDecodeError):
-                    LOGGER.critical(f'Lost server connection.')
-                    self.connection_lost_signal.emit()
-                    break
-                else:
-                    if ACTION in message and message[ACTION] == MESSAGE \
-                            and TO in message and FROM in message \
-                            and MESSAGE_TEXT in message and message[TO] == my_username:
-
-                        user_login = message[FROM]
-                        decrypted_message = self.encrypt_decrypt.message_decryption(message[MESSAGE_TEXT])
-
-                        print(f'\nReceived message from user{user_login}:\n{decrypted_message}.\n')
-                        LOGGER.info(f'Received message from user {user_login}:\n{decrypted_message}.')
-                        self.database.save_message(user_login, 'in', decrypted_message)
-                        self.new_message_signal.emit(user_login)
-                    else:
-                        LOGGER.error(f'Invalid message received from server: {message}')
 
     @Logging()
     def send_user_message(self, contact_name, message_text):
@@ -478,7 +477,7 @@ def loading_window(app, client_transport):
 @Logging()
 def main():
     app = QApplication(sys.argv)
-    ip_server, port_server, client_login, client_password = get_args()
+    server_ip, server_port, client_login, client_password = get_args()
     client_login, client_password = start_dialog(app, client_login, client_password)
 
     database = ClientDB(client_login)
@@ -486,21 +485,22 @@ def main():
     connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     encrypt_decrypt = EncryptDecrypt(client_login)
 
-    loading_client = LoadingClient(connection, ip_server, port_server, client_login, client_password, database, encrypt_decrypt)
+    client_transport = ClientTransport(connection, client_login,
+                                       database, encrypt_decrypt)
+
+    loading_client = Client(connection, server_ip, server_port,
+                            client_login, client_password, database,
+                            encrypt_decrypt, client_transport)
     loading_client.daemon = True
     loading_client.start()
 
     #  Open loading window
     loading_window(app, loading_client)
 
-    client_transport = Client(connection, client_login, database, encrypt_decrypt)
-    client_transport.daemon = True
-    client_transport.start()
-
     if loading_client.is_connected:
         main_window = ClientMainWindow(app, client_transport, database)
         main_window.init_ui()
-        main_window.make_connection_with_signals(client_transport)
+        main_window.make_connection_with_signals(loading_client)
         main_window.setWindowTitle(f'Chat program. User - {client_login}')
         app.exec_()
 

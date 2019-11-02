@@ -20,8 +20,8 @@ from common.utils import get_msg, send_msg
 from common.errors import IncorrectDataNotDictError
 from common.decos import Logging
 from common.descriptors import CheckPort, CheckIP
-from server.database_server import ServerDB
-from server.gui_server.gui_main_window import MainWindow
+from database_server import ServerDB
+from gui_server.gui_main_window import MainWindow
 
 LOGGER = logging.getLogger('server')
 LOGGER.setLevel(logging.DEBUG)
@@ -348,6 +348,14 @@ class Server(threading.Thread, QObject):
         else:
             LOGGER.error(
                 f'User {msg [TO]} is not registered on the server, sending messages is not possible.')
+
+    def update_lists(self):
+        '''A method that implements sending a service message to 205 clients.'''
+        for client in self.names:
+            try:
+                send_msg(self.names[client], RESPONSE_205)
+            except OSError:
+                self.remove_client(self.names[client])
 
 
 @Logging()

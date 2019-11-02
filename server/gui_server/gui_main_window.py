@@ -4,8 +4,8 @@ from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QWidget, QApplication, QTableView, QMainWindow, \
     QAction, QLabel, QGridLayout
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
-from server.gui_server.gui_settings_window import SettingsWindow
-from server.gui_server.gui_registration_user import RegistrationDialog
+from gui_server.gui_settings_window import SettingsWindow
+from gui_server.gui_registration_user import RegistrationDialog
 
 
 class MainWindow(QMainWindow):
