@@ -4,7 +4,7 @@ import logging
 import base64
 from Cryptodome.PublicKey import RSA
 from Cryptodome.Cipher import PKCS1_OAEP
-from common.decos import Logging
+from client.common.decos import Logging
 
 LOGGER = logging.getLogger('client')
 
@@ -21,7 +21,7 @@ class EncryptDecrypt:
     def _get_keys(self, user_login):
         """Function create new keys or import from file"""
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        file_path = os.path.join(dir_path, f'keys/{user_login}.key')
+        file_path = os.path.join(dir_path, f'{user_login}.key')
         if not os.path.exists(file_path):
             keys = RSA.generate(2048, os.urandom)
             with open(file_path, 'wb') as file:

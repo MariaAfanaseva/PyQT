@@ -3,7 +3,7 @@ import os
 from ipaddress import ip_address
 from PyQt5 import QtGui
 from PyQt5.QtWidgets import QWidget, QLabel, QGridLayout, QDialog, QPushButton, QFileDialog, QLineEdit, QMessageBox
-from common.variables import CONFIG_FILE_NAME
+from server.common.variables import CONFIG_FILE_NAME
 
 
 class SettingsWindow(QDialog):

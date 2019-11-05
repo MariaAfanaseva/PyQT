@@ -1,6 +1,6 @@
 import sys
 from PyQt5.QtWidgets import QDialog, QApplication, QMessageBox
-from gui_server.user_registration_config import Ui_Dialog
+from server.gui_server.user_registration_config import Ui_Dialog
 
 
 class RegistrationDialog(QDialog):

@@ -10,20 +10,20 @@ import binascii
 import json
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import pyqtSignal, QObject
-from common.utils import get_msg, send_msg
-from common.variables import DEFAULT_IP_ADDRESS, DEFAULT_PORT, TO, USER, ACCOUNT_NAME, \
+from client.common.utils import get_msg, send_msg
+from client.common.variables import DEFAULT_IP_ADDRESS, DEFAULT_PORT, TO, USER, ACCOUNT_NAME, \
     RESPONSE_511, ERROR, DATA, RESPONSE, TIME, PRESENCE, FROM, \
     EXIT, GET_CONTACTS, PUBLIC_KEY, ACTION, MESSAGE_TEXT, MESSAGE, LIST_INFO, ADD_CONTACT, \
     DELETE_CONTACT, USERS_REQUEST, PUBLIC_KEY_REQUEST
-from common.errors import IncorrectDataNotDictError, FieldMissingError, \
+from client.common.errors import IncorrectDataNotDictError, FieldMissingError, \
     IncorrectCodeError, ServerError
-from common.decos import Logging
-from common.descriptors import CheckPort, CheckIP, CheckName
-from database_client import ClientDB
-from gui_client.gui_start_dialog import UserNameDialog
-from gui_client.gui_main_window import ClientMainWindow
-from gui_client.gui_loading_dialog import LoadingWindow
-from encrypt_decrypt import EncryptDecrypt
+from client.common.decos import Logging
+from client.common.descriptors import CheckPort, CheckIP, CheckName
+from client.database_client import ClientDB
+from client.gui_client.gui_start_dialog import UserNameDialog
+from client.gui_client.gui_main_window import ClientMainWindow
+from client.gui_client.gui_loading_dialog import LoadingWindow
+from client.encrypt_decrypt import EncryptDecrypt
 
 
 LOGGER = logging.getLogger('client')
@@ -111,7 +111,7 @@ class Client(threading.Thread, QObject):
 
         self.load_database()
 
-        self.get_message_from_server(self.connection, self.client_login)
+        self.get_message_from_server()
 
     @Logging()
     def start_authorization_procedure(self):
@@ -225,8 +225,9 @@ class Client(threading.Thread, QObject):
             TIME: time.time(),
             ACCOUNT_NAME: self.client_login
         }
-        send_msg(self.connection, request)
-        answer = get_msg(self.connection)
+        with LOCK_SOCKET:
+            send_msg(self.connection, request)
+            answer = get_msg(self.connection)
         if RESPONSE in answer and answer[RESPONSE] == 202:
             return answer[LIST_INFO]
         else:
@@ -241,8 +242,9 @@ class Client(threading.Thread, QObject):
             USER: self.client_login
         }
         LOGGER.debug(f'Formed request {message}')
-        send_msg(self.connection, message)
-        answer = get_msg(self.connection)
+        with LOCK_SOCKET:
+            send_msg(self.connection, message)
+            answer = get_msg(self.connection)
         LOGGER.debug(f'Answer received {answer}')
         if RESPONSE in answer and answer[RESPONSE] == 202:
             return answer[LIST_INFO]
@@ -265,12 +267,12 @@ class Client(threading.Thread, QObject):
         raise FieldMissingError(RESPONSE)
 
     @Logging()
-    def get_message_from_server(self, sock, my_username):
+    def get_message_from_server(self):
         while True:
             time.sleep(1)
             with LOCK_SOCKET:
                 try:
-                    message = get_msg(sock)
+                    message = get_msg(self.connection)
                 except IncorrectDataNotDictError:
                     LOGGER.error(f'Failed to decode received message.')
                 # Connection timed out if errno = None, otherwise connection break.
@@ -288,7 +290,7 @@ class Client(threading.Thread, QObject):
                 else:
                     if ACTION in message and message[ACTION] == MESSAGE \
                             and TO in message and FROM in message \
-                            and MESSAGE_TEXT in message and message[TO] == my_username:
+                            and MESSAGE_TEXT in message and message[TO] == self.client_login:
 
                         user_login = message[FROM]
                         decrypted_message = self.encrypt_decrypt.message_decryption(message[MESSAGE_TEXT])
@@ -304,14 +306,12 @@ class Client(threading.Thread, QObject):
                         LOGGER.error(f'Invalid message received from server: {message}')
 
 
-class ClientTransport(QObject):
+class ClientTransport:
     def __init__(self, connection, client_login, database, encrypt_decrypt):
         self.connection = connection
         self.client_login = client_login
         self.database = database
         self.encrypt_decrypt = encrypt_decrypt
-
-        QObject.__init__(self)
 
     @Logging()
     def is_received_pubkey(self, login):
@@ -488,6 +488,7 @@ def main():
     database = ClientDB(client_login)
 
     connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    
     encrypt_decrypt = EncryptDecrypt(client_login)
 
     client_transport = ClientTransport(connection, client_login,

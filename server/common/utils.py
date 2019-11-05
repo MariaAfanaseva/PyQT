@@ -1,7 +1,7 @@
 import json
-from common.variables import ENCODING, MAX_PACKAGE_LENGTH
-from common.errors import IncorrectDataNotDictError
-from common.decos import Logging
+from server.common.variables import ENCODING, MAX_PACKAGE_LENGTH
+from server.common.errors import IncorrectDataNotDictError
+from server.common.decos import Logging
 
 
 @Logging()

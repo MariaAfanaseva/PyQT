@@ -1,9 +1,8 @@
 import sys
 from PyQt5.QtWidgets import QDialog, QApplication, QMessageBox
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
-from PyQt5.QtCore import pyqtSlot
-from gui_client.add_contact_config import Ui_Dialog
-from database_client import ClientDB
+from client.gui_client.add_contact_config import Ui_Dialog
+from client.database_client import ClientDB
 
 
 class AddContactDialog(QDialog):

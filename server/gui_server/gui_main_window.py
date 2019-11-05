@@ -4,8 +4,8 @@ from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QWidget, QApplication, QTableView, QMainWindow, \
     QAction, QLabel, QGridLayout
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
-from gui_server.gui_settings_window import SettingsWindow
-from gui_server.gui_registration_user import RegistrationDialog
+from server.gui_server.gui_settings_window import SettingsWindow
+from server.gui_server.gui_registration_user import RegistrationDialog
 
 
 class MainWindow(QMainWindow):
@@ -35,9 +35,8 @@ class MainWindow(QMainWindow):
         server_settings_action = QAction('Settings', self)
         server_settings_action.triggered.connect(self.settings_window.init_ui)
 
-        self.regiastration_dialog = RegistrationDialog(self.database, self.server)
         add_user = QAction('Registration user', self)
-        add_user.triggered.connect(self.regiastration_dialog.init_ui)
+        add_user.triggered.connect(self.registration_dialog)
 
         rm_user = QAction('Remove user', self)
         # rm_user.triggered.connect(self.user_remove)
@@ -73,6 +72,10 @@ class MainWindow(QMainWindow):
         self.update_connected_users_list()
 
         self.show()
+
+    def registration_dialog(self):
+        self.registration = RegistrationDialog(self.database, self.server)
+        self.registration.init_ui()
 
     def add_connected_user(self, user_name, ip_address, port, connection_time):
         user_name = QStandardItem(user_name)
