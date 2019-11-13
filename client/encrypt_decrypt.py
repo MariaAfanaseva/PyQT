@@ -1,5 +1,6 @@
 """Message encryption module"""
 import os
+import sys
 import logging
 import base64
 from Cryptodome.PublicKey import RSA
@@ -20,7 +21,13 @@ class EncryptDecrypt:
     @Logging()
     def _get_keys(self, user_login):
         """Function create new keys or import from file"""
-        dir_path = os.path.dirname(os.path.realpath(__file__))
+
+        #  for cx-Freeze - exe file
+        if getattr(sys, 'frozen', False):
+            dir_path = os.path.dirname(sys.executable)
+        else:
+            dir_path = os.path.dirname(os.path.realpath(__file__))
+
         file_path = os.path.join(dir_path, f'{user_login}.key')
         if not os.path.exists(file_path):
             keys = RSA.generate(2048, os.urandom)

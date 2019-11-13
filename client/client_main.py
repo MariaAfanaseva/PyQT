@@ -307,6 +307,7 @@ class Client(threading.Thread, QObject):
 
 
 class ClientTransport:
+    """Сontains functions for interacting with the server."""
     def __init__(self, connection, client_login, database, encrypt_decrypt):
         self.connection = connection
         self.client_login = client_login
@@ -511,6 +512,7 @@ def main():
         app.exec_()
 
         client_transport.exit_client()
+        connection.close()
 
 
 if __name__ == '__main__':

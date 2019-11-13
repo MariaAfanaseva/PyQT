@@ -6,14 +6,16 @@ from PyQt5.QtWidgets import QWidget, QApplication, QTableView, QMainWindow, \
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from server.gui_server.gui_settings_window import SettingsWindow
 from server.gui_server.gui_registration_user import RegistrationDialog
+from server.gui_server.gui_remove_user import RemoveUserDialog
 
 
 class MainWindow(QMainWindow):
     """Class main window for user. Contains contacts list, text edit and history messages"""
-    def __init__(self, app, database, server):
+    def __init__(self, app, database, server, parser):
         self.app = app
         self.database = database
         self.server = server
+        self.parser = parser
         super().__init__()
 
     def init_ui(self):
@@ -31,15 +33,14 @@ class MainWindow(QMainWindow):
         update_connected_users_action = QAction('Update connected users', self)
         update_connected_users_action.triggered.connect(self.update_connected_users_list)
 
-        self.settings_window = SettingsWindow()
         server_settings_action = QAction('Settings', self)
-        server_settings_action.triggered.connect(self.settings_window.init_ui)
+        server_settings_action.triggered.connect(self.settings_window_open)
 
         add_user = QAction('Registration user', self)
-        add_user.triggered.connect(self.registration_dialog)
+        add_user.triggered.connect(self.registration_dialog_open)
 
         rm_user = QAction('Remove user', self)
-        # rm_user.triggered.connect(self.user_remove)
+        rm_user.triggered.connect(self.user_remove)
 
         self.toolbar = self.addToolBar('MainBar')
         self.toolbar.setFont(QtGui.QFont('Montserrat', 10))
@@ -73,9 +74,17 @@ class MainWindow(QMainWindow):
 
         self.show()
 
-    def registration_dialog(self):
+    def registration_dialog_open(self):
         self.registration = RegistrationDialog(self.database, self.server)
         self.registration.init_ui()
+
+    def user_remove(self):
+        self.del_user_window = RemoveUserDialog(self.database, self.server)
+        self.del_user_window.init_ui()
+        
+    def settings_window_open(self):
+        self.settings_window = SettingsWindow(self.parser)
+        self.settings_window.init_ui()
 
     def add_connected_user(self, user_name, ip_address, port, connection_time):
         user_name = QStandardItem(user_name)

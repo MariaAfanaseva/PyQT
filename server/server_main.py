@@ -45,21 +45,23 @@ def get_args(default_ip, default_port):
 def read_config_file():
     # Download server configuration file
     parser = configparser.ConfigParser()
-    dir_path = os.path.dirname(os.path.abspath(__file__))
+    #  for cx-Freeze - exe file
+    if getattr(sys, 'frozen', False):
+        dir_path = os.path.dirname(sys.executable)
+    else:
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+
     file_path = os.path.join(dir_path, f'{CONFIG_FILE_NAME}')
     parser.read(file_path, encoding='utf-8')
     if 'SETTINGS' in parser:
-        return get_config(parser)
+        return parser
     else:
         parser.add_section('SETTINGS')
         parser.set('SETTINGS', 'Default_port', str(DEFAULT_PORT))
         parser.set('SETTINGS', 'Listen_Address', '')
         parser.set('SETTINGS', 'Database_path', 'server_database.db3')
 
-        with open(file_path, 'w', encoding='utf-8') as file:
-            parser.write(file)
-
-        return get_config(parser)
+        return parser
 
 
 def get_config(parser):
@@ -390,10 +392,22 @@ class Server(threading.Thread, QObject):
             except OSError:
                 self.remove_client(self.names[client])
 
+    @Logging()
+    def is_remove_user(self, login):
+        with LOCK_DATABASE:
+            self.database.remove_user(login)
+        self.update_users_list_message()
+        return True
+
+    @Logging()
+    def close_socket(self):
+        self.connection.close()
+
 
 @Logging()
 def main():
-    default_ip, default_port, db_path = read_config_file()
+    parser = read_config_file()
+    default_ip, default_port, db_path = get_config(parser)
     listen_ip, listen_port = get_args(default_ip, default_port)
 
     database = ServerDB(db_path)
@@ -403,10 +417,12 @@ def main():
 
     # GUI PyQt5
     app = QApplication(sys.argv)
-    main_window = MainWindow(app, database, server)
+    main_window = MainWindow(app, database, server, parser)
     main_window.init_ui()
     main_window.make_connection_signals(server)
-    sys.exit(app.exec_())
+    app.exec_()
+
+    server.close_socket()
 
 
 if __name__ == '__main__':

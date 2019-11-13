@@ -8,8 +8,8 @@ from server.common.variables import CONFIG_FILE_NAME
 
 class SettingsWindow(QDialog):
     """Window settings. Save settings in file .ini"""
-    def __init__(self):
-        self.parser = configparser.ConfigParser()
+    def __init__(self, parser):
+        self.parser = parser
         super().__init__()
 
     def init_ui(self):
@@ -83,11 +83,6 @@ class SettingsWindow(QDialog):
         self.db_path_text.insert(path)
 
     def config_file_text_print(self):
-        dir_path = os.path.dirname(os.path.abspath(__file__))
-        self.file_path = os.path.join(dir_path, '../', CONFIG_FILE_NAME)
-        # print(self.file_path)
-        self.parser.read(self.file_path, encoding='utf-8')
-
         db_path_config = self.parser['SETTINGS']['database_path']
         config_port = self.parser['SETTINGS']['default_port']
         config_addr = self.parser['SETTINGS']['listen_Address']
@@ -114,8 +109,13 @@ class SettingsWindow(QDialog):
             self.parser['SETTINGS']['listen_Address'] = ip_addr
             if 1024 < port < 65535:
                 self.parser['SETTINGS']['default_port'] = str(port)
+
+                dir_path = os.path.dirname(os.path.abspath(__file__))
+                self.file_path = os.path.join(dir_path, '../', CONFIG_FILE_NAME)
+
                 with open(self.file_path, 'w', encoding='utf-8') as file:
                     self.parser.write(file)
                     message.information(self, 'OK', 'Settings saved successfully!')
+                    self.close()
             else:
                 message.warning(self, 'Ошибка', 'The port must be between 1024 and 65536')
