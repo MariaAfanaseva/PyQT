@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtWidgets import QDialog, QApplication, QMessageBox
 from PyQt5.QtCore import pyqtSlot
-from client.gui_client.loading_config import Ui_Loading
+from gui_client.loading_config import Ui_Loading
 
 
 class LoadingWindow(QDialog):

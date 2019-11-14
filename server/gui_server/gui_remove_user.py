@@ -2,9 +2,9 @@ import sys
 from PyQt5 import QtGui
 from PyQt5.QtWidgets import QDialog, QApplication, QMessageBox
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
-from server.gui_server.del_user_window_main_config import Ui_Dialog
-from server.database_server import ServerDB
-from server.gui_server.gui_remove_confirmation import DelUserConfirmation
+from gui_server.del_user_window_main_config import Ui_Dialog
+from database_server import ServerDB
+from gui_server.gui_remove_confirmation import DelUserConfirmation
 
 
 class RemoveUserDialog(QDialog):

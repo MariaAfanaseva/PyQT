@@ -2,7 +2,7 @@ import sys
 from PyQt5.QtWidgets import QDialog, QApplication, QMessageBox
 from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
-from server.gui_server.remove_user_convig import Ui_Dialog
+from gui_server.remove_user_convig import Ui_Dialog
 
 
 class DelUserConfirmation(QDialog):

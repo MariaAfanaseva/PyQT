@@ -10,20 +10,20 @@ import binascii
 import json
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import pyqtSignal, QObject
-from client.common.utils import get_msg, send_msg
-from client.common.variables import DEFAULT_IP_ADDRESS, DEFAULT_PORT, TO, USER, ACCOUNT_NAME, \
+from common.utils import get_msg, send_msg
+from common.variables import DEFAULT_IP_ADDRESS, DEFAULT_PORT, TO, USER, ACCOUNT_NAME, \
     RESPONSE_511, ERROR, DATA, RESPONSE, TIME, PRESENCE, FROM, \
     EXIT, GET_CONTACTS, PUBLIC_KEY, ACTION, MESSAGE_TEXT, MESSAGE, LIST_INFO, ADD_CONTACT, \
     DELETE_CONTACT, USERS_REQUEST, PUBLIC_KEY_REQUEST
-from client.common.errors import IncorrectDataNotDictError, FieldMissingError, \
+from common.errors import IncorrectDataNotDictError, FieldMissingError, \
     IncorrectCodeError, ServerError
-from client.common.decos import Logging
-from client.common.descriptors import CheckPort, CheckIP, CheckName
-from client.database_client import ClientDB
-from client.gui_client.gui_start_dialog import UserNameDialog
-from client.gui_client.gui_main_window import ClientMainWindow
-from client.gui_client.gui_loading_dialog import LoadingWindow
-from client.encrypt_decrypt import EncryptDecrypt
+from common.decos import Logging
+from common.descriptors import CheckPort, CheckIP, CheckName
+from database_client import ClientDB
+from gui_client.gui_start_dialog import UserNameDialog
+from gui_client.gui_main_window import ClientMainWindow
+from gui_client.gui_loading_dialog import LoadingWindow
+from encrypt_decrypt import EncryptDecrypt
 
 
 LOGGER = logging.getLogger('client')

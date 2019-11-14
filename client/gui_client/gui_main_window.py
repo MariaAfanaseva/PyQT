@@ -1,13 +1,14 @@
 import sys
 import datetime
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox
-from PyQt5.QtGui import QStandardItemModel, QStandardItem, QColor
+from PyQt5.QtGui import QStandardItemModel, QStandardItem, QColor, QFont
 from PyQt5.QtCore import Qt, pyqtSlot
 from PyQt5 import QtGui
-from client.gui_client.main_window_config import Ui_MainWindow
-from client.gui_client.gui_add_contact import AddContactDialog
-from client.gui_client.gui_del_contact import DelContactDialog
-from client.database_client import ClientDB
+from gui_client.main_window_config import Ui_MainWindow
+from gui_client.gui_add_contact import AddContactDialog
+from gui_client.gui_del_contact import DelContactDialog
+from database_client import ClientDB
+from gui_client.gui_image import ImageAddForm
 
 
 class ClientMainWindow(QMainWindow):
@@ -35,6 +36,24 @@ class ClientMainWindow(QMainWindow):
 
         self.user_interface.sendMessageButton.clicked.connect(self.send_message)
 
+        self.font = 'regular'
+        self.user_interface.boldButton.clicked.connect(self.set_bold_font)
+        self.user_interface.italicButton.clicked.connect(self.set_italic_font)
+        self.user_interface.underlinedButton.clicked.connect(self.set_underline_font)
+        self.user_interface.fotoButton.setText('\U0001F4F7')
+        self.user_interface.fotoButton.setStyleSheet('padding-bottom: 6px;'
+                                                     'padding-right: 3px;')
+        self.user_interface.fotoButton.clicked.connect(self.immage_window)
+        self.user_interface.smileButton.setText('\U0001F600')
+        self.user_interface.smileButton_2.setText('\U0001F610')
+        self.user_interface.smileButton_3.setText('\U0001F612')
+        self.user_interface.smileButton.clicked.\
+            connect(lambda: self.user_interface.messageEdit.insertPlainText('\U0001F600'))
+        self.user_interface.smileButton_2.clicked.\
+            connect(lambda: self.user_interface.messageEdit.insertPlainText('\U0001F610'))
+        self.user_interface.smileButton_3.clicked.\
+            connect(lambda: self.user_interface.messageEdit.insertPlainText('\U0001F612'))
+
         self.user_interface.clearMessageButton.clicked.connect(self.clear_edit_message)
         # Double-click on the contact list is sent to the handler
         self.user_interface.contactsListView.doubleClicked.connect(self.select_active_user)
@@ -52,9 +71,19 @@ class ClientMainWindow(QMainWindow):
         """
         self.user_interface.messageLabel.setText('To select a recipient, '
                                                  'double-click it in the contacts window.')
+
+        self.user_interface.messageLabel.setFont(QtGui.QFont('SansSerif', 10))
+
         self.user_interface.sendMessageButton.setDisabled(True)
         self.user_interface.clearMessageButton.setDisabled(True)
         self.user_interface.messageEdit.setDisabled(True)
+        self.user_interface.boldButton.setDisabled(True)
+        self.user_interface.italicButton.setDisabled(True)
+        self.user_interface.fotoButton.setDisabled(True)
+        self.user_interface.underlinedButton.setDisabled(True)
+        self.user_interface.smileButton.setDisabled(True)
+        self.user_interface.smileButton_2.setDisabled(True)
+        self.user_interface.smileButton_3.setDisabled(True)
 
     def add_contact_dialog(self):
         """Open add contact dialog method"""
@@ -77,7 +106,7 @@ class ClientMainWindow(QMainWindow):
             self.close()
 
     def update_clients_list(self):
-        """"Updating the contact list on the main window."""
+        """'Updating the contact list on the main window."""
         self.contacts_list = self.database_client.get_contacts()
         self.contacts_model = QStandardItemModel()
         for contact in sorted(self.contacts_list):
@@ -109,6 +138,13 @@ class ClientMainWindow(QMainWindow):
             self.user_interface.clearMessageButton.setDisabled(False)
             self.user_interface.sendMessageButton.setDisabled(False)
             self.user_interface.messageEdit.setDisabled(False)
+            self.user_interface.boldButton.setDisabled(False)
+            self.user_interface.italicButton.setDisabled(False)
+            self.user_interface.fotoButton.setDisabled(False)
+            self.user_interface.underlinedButton.setDisabled(False)
+            self.user_interface.smileButton.setDisabled(False)
+            self.user_interface.smileButton_2.setDisabled(False)
+            self.user_interface.smileButton_3.setDisabled(False)
 
             self.history_list_update()
         else:
@@ -169,6 +205,43 @@ class ClientMainWindow(QMainWindow):
     def clear_edit_message(self):
         """Button handler - clear. Clears message input fields."""
         self.user_interface.messageEdit.clear()
+
+    def set_regular_font(self):
+        regular_font = QFont()
+        regular_font.setRawMode(True)
+        self.user_interface.messageEdit.setFont(regular_font)
+        self.font = 'regular'
+
+    def set_bold_font(self):
+        if self.font == 'bold':
+            self.set_regular_font()
+        else:
+            bold_font = QFont()
+            bold_font.setBold(True)
+            self.user_interface.messageEdit.setFont(bold_font)
+            self.font = 'bold'
+
+    def set_italic_font(self):
+        if self.font == 'italic':
+            self.set_regular_font()
+        else:
+            italic_font = QFont()
+            italic_font.setItalic(True)
+            self.user_interface.messageEdit.setFont(italic_font)
+            self.font = 'italic'
+
+    def set_underline_font(self):
+        if self.font == 'underline':
+            self.set_regular_font()
+        else:
+            underline_font = QFont()
+            underline_font.setUnderline(True)
+            self.user_interface.messageEdit.setFont(underline_font)
+            self.font = 'underline'
+
+    def immage_window(self):
+        self.img_window = ImageAddForm()
+        self.img_window.init_ui()
 
     @pyqtSlot(str)
     def get_message(self, sender):

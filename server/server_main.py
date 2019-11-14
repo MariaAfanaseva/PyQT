@@ -13,16 +13,16 @@ import hashlib
 import binascii
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import pyqtSignal, QObject
-from server.common.variables import CONFIG_FILE_NAME, MAX_CONNECTIONS, TO, USER, ACCOUNT_NAME, \
+from common.variables import CONFIG_FILE_NAME, MAX_CONNECTIONS, TO, USER, ACCOUNT_NAME, \
     RESPONSE_200, RESPONSE_400, RESPONSE_511, ERROR, DATA, RESPONSE, TIME, PRESENCE, FROM, \
     EXIT, GET_CONTACTS, PUBLIC_KEY, ACTION, MESSAGE_TEXT, MESSAGE, LIST_INFO, ADD_CONTACT, \
     DELETE_CONTACT, USERS_REQUEST, PUBLIC_KEY_REQUEST, RESPONSE_205, DEFAULT_PORT
-from server.common.utils import get_msg, send_msg
-from server.common.errors import IncorrectDataNotDictError
-from server.common.decos import Logging
-from server.common.descriptors import CheckPort, CheckIP
-from server.database_server import ServerDB
-from server.gui_server.gui_main_window import MainWindow
+from common.utils import get_msg, send_msg
+from common.errors import IncorrectDataNotDictError
+from common.decos import Logging
+from common.descriptors import CheckPort, CheckIP
+from database_server import ServerDB
+from gui_server.gui_main_window import MainWindow
 
 LOGGER = logging.getLogger('server')
 LOGGER.setLevel(logging.DEBUG)
