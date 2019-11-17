@@ -16,19 +16,42 @@ class ImageAddForm(QDialog):
     def init_ui(self):
         self.user_interface = Ui_Form()
         self.user_interface.setupUi(self)
+        self.buttons_blocking()
         self.user_interface.openButton.clicked.\
             connect(self.open_image)
         self.user_interface.sepiaButton.clicked.connect(self.set_sepia)
         self.user_interface.negativeButton.clicked.connect(self.set_negative)
         self.user_interface.grayButton.clicked.connect(self.set_gray)
         self.user_interface.defaultButton.clicked.connect(self.set_default)
+        self.user_interface.bwButton.clicked.connect(self.set_black_white)
         self.show()
+
+    def buttons_unlock(self):
+        self.user_interface.sepiaButton.setDisabled(False)
+        self.user_interface.negativeButton.setDisabled(False)
+        self.user_interface.grayButton.setDisabled(False)
+        self.user_interface.bwButton.setDisabled(False)
+        self.user_interface.defaultButton.setDisabled(False)
+        self.user_interface.cutButton.setDisabled(False)
+        self.user_interface.saveButton.setDisabled(False)
+        self.user_interface.cancelButton.setDisabled(False)
+
+    def buttons_blocking(self):
+        self.user_interface.sepiaButton.setDisabled(True)
+        self.user_interface.negativeButton.setDisabled(True)
+        self.user_interface.grayButton.setDisabled(True)
+        self.user_interface.bwButton.setDisabled(True)
+        self.user_interface.defaultButton.setDisabled(True)
+        self.user_interface.cutButton.setDisabled(True)
+        self.user_interface.saveButton.setDisabled(True)
+        self.user_interface.cancelButton.setDisabled(True)
 
     def open_image(self):
         self.path = QFileDialog.getOpenFileName(self, 'Open file', '/home')[0]
         self.pixmap = QPixmap(self.path)
         self.pixmap_size = self.pixmap.scaled(300, 300, Qt.KeepAspectRatio)
         self.user_interface.imageLabel.setPixmap(self.pixmap_size)
+        self.buttons_unlock()
 
     def convert_img_show(self, image):
         img_tmp = ImageQt(image.convert('RGBA'))
@@ -70,6 +93,13 @@ class ImageAddForm(QDialog):
     def set_gray(self):
         img = Image.open(self.path).convert('LA')
         self.convert_img_show(img)
+
+    def set_black_white(self):
+        img = Image.open(self.path)
+        thresh = 150
+        fn = lambda x: 255 if x > thresh else 0
+        r = img.convert('L').point(fn, mode='1')
+        self.convert_img_show(r)
 
     def set_default(self):
         self.user_interface.imageLabel.setPixmap(self.pixmap_size)
