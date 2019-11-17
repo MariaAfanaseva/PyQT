@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, String, Integer, DateTime, Text
+from sqlalchemy import create_engine, Column, String, Integer, DateTime, Text, BLOB
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import datetime
@@ -48,7 +48,19 @@ class ClientDB:
             return "<User('%s','%s', '%s, '%s')>" % \
                    (self.contact, self.direction, self.message, self.date)
 
+    class Image(Base):
+        __tablename__ = 'image'
+        id = Column(Integer, primary_key=True)
+        path = Column(String)
+
+        def __init__(self, path):
+            self.path = path
+
+        def __repr__(self):
+            return "<Image(%s)>" % self.path
+
     def __init__(self, login):
+        # echo - logging, 7200 - seconds restart connect
         self.database_engine = create_engine(f'sqlite:///client_{login}.db3',
                                              echo=False, pool_recycle=7200,
                                              connect_args={'check_same_thread': False})
@@ -108,6 +120,11 @@ class ClientDB:
         query = self.session.query(self.HistoryMessages).filter_by(contact=contact)
         return [(history_row.contact, history_row.direction, history_row.message, history_row.date)
                 for history_row in query.all()]
+
+    def add_image(self, path):
+        img = self.Image(path)
+        self.session.add(img)
+        self.session.commit()
 
 
 if __name__ == '__main__':

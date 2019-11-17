@@ -1,9 +1,9 @@
 import sys
+import os
 import datetime
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox
-from PyQt5.QtGui import QStandardItemModel, QStandardItem, QColor, QFont
+from PyQt5.QtGui import QStandardItemModel, QStandardItem, QColor, QFont, QPixmap
 from PyQt5.QtCore import Qt, pyqtSlot
-from PyQt5 import QtGui
 from gui_client.main_window_config import Ui_MainWindow
 from gui_client.gui_add_contact import AddContactDialog
 from gui_client.gui_del_contact import DelContactDialog
@@ -43,7 +43,7 @@ class ClientMainWindow(QMainWindow):
         self.user_interface.fotoButton.setText('\U0001F4F7')
         self.user_interface.fotoButton.setStyleSheet('padding-bottom: 6px;'
                                                      'padding-right: 3px;')
-        self.user_interface.fotoButton.clicked.connect(self.immage_window)
+        self.user_interface.fotoButton.clicked.connect(self.image_window)
         self.user_interface.smileButton.setText('\U0001F600')
         self.user_interface.smileButton_2.setText('\U0001F610')
         self.user_interface.smileButton_3.setText('\U0001F612')
@@ -59,9 +59,10 @@ class ClientMainWindow(QMainWindow):
         self.user_interface.contactsListView.doubleClicked.connect(self.select_active_user)
 
         self.user_interface.messageHistoryEdit.fontItalic()
-        self.user_interface.messageHistoryEdit.setFont(QtGui.QFont('SansSerif', 10))
+        self.user_interface.messageHistoryEdit.setFont(QFont('SansSerif', 10))
 
         self.update_clients_list()
+        self.show_avatar()
         self.show()
 
     def field_disable(self):
@@ -72,14 +73,13 @@ class ClientMainWindow(QMainWindow):
         self.user_interface.messageLabel.setText('To select a recipient, '
                                                  'double-click it in the contacts window.')
 
-        self.user_interface.messageLabel.setFont(QtGui.QFont('SansSerif', 10))
+        self.user_interface.messageLabel.setFont(QFont('SansSerif', 10))
 
         self.user_interface.sendMessageButton.setDisabled(True)
         self.user_interface.clearMessageButton.setDisabled(True)
         self.user_interface.messageEdit.setDisabled(True)
         self.user_interface.boldButton.setDisabled(True)
         self.user_interface.italicButton.setDisabled(True)
-        self.user_interface.fotoButton.setDisabled(True)
         self.user_interface.underlinedButton.setDisabled(True)
         self.user_interface.smileButton.setDisabled(True)
         self.user_interface.smileButton_2.setDisabled(True)
@@ -140,7 +140,6 @@ class ClientMainWindow(QMainWindow):
             self.user_interface.messageEdit.setDisabled(False)
             self.user_interface.boldButton.setDisabled(False)
             self.user_interface.italicButton.setDisabled(False)
-            self.user_interface.fotoButton.setDisabled(False)
             self.user_interface.underlinedButton.setDisabled(False)
             self.user_interface.smileButton.setDisabled(False)
             self.user_interface.smileButton_2.setDisabled(False)
@@ -239,9 +238,17 @@ class ClientMainWindow(QMainWindow):
             self.user_interface.messageEdit.setFont(underline_font)
             self.font = 'underline'
 
-    def immage_window(self):
-        self.img_window = ImageAddForm()
+    def image_window(self):
+        self.img_window = ImageAddForm(self.database_client)
         self.img_window.init_ui()
+        self.img_window.user_interface.saveButton.clicked.connect(self.show_avatar)
+
+    def show_avatar(self):
+        path = 'img/my_img.jpg'
+        if os.path.exists(path):
+            pix_img = QPixmap(path)
+            pix_img_size = pix_img.scaled(70, 70, Qt.KeepAspectRatio)
+            self.user_interface.avatarLabel.setPixmap(pix_img_size)
 
     @pyqtSlot(str)
     def get_message(self, sender):
