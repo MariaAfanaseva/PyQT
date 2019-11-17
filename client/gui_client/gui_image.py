@@ -97,9 +97,8 @@ class ImageAddForm(QDialog):
     def set_black_white(self):
         img = Image.open(self.path)
         thresh = 150
-        fn = lambda x: 255 if x > thresh else 0
-        r = img.convert('L').point(fn, mode='1')
-        self.convert_img_show(r)
+        img_convert = img.convert('L').point(lambda x: 255 if x > thresh else 0, mode='1')
+        self.convert_img_show(img_convert)
 
     def set_default(self):
         self.user_interface.imageLabel.setPixmap(self.pixmap_size)
