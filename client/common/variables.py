@@ -1,9 +1,10 @@
 MAX_CONNECTIONS = 3
-MAX_PACKAGE_LENGTH = 1024
+MAX_PACKAGE_LENGTH = 100000
 ENCODING = 'utf-8'
 DEFAULT_IP_ADDRESS = '127.0.0.1'
 DEFAULT_PORT = 7777
 CONFIG_FILE_NAME = 'config_server.ini'
+AVATAR_PATH = 'img/my_img.jpg'
 
 # JIM поля
 ACTION = 'action'
@@ -19,6 +20,7 @@ ROOM = 'room'  # чат
 MESSAGE_TEXT = 'msg_text'
 FROM = 'from'
 TO = 'to'
+IMAGE = 'image'
 EXIT = 'exit'
 
 # значения action
@@ -35,6 +37,8 @@ DELETE_CONTACT = 'del_contact'
 ADD_CONTACT = 'add_contact'
 USERS_REQUEST = 'get_users'
 PUBLIC_KEY_REQUEST = 'get_pubkey'
+SEND_AVATAR = 'send_avatar'
+GET_AVATAR = 'get_avatar'
 
 # code
 BASIC_NOTICE = 100

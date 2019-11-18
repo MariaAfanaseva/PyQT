@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import QDialog, QApplication, QFileDialog
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt
 from gui_client.image_config import Ui_Form
+from common.variables import AVATAR_PATH
 
 
 class ImageAddForm(QDialog):
@@ -63,12 +64,13 @@ class ImageAddForm(QDialog):
         self.show_img()
 
     def show_img(self):
-        pix_img = QPixmap(self.path)
-        self.pix_img_size = pix_img.scaled(300, 300, Qt.KeepAspectRatio)
-        self.user_interface.imageLabel.setPixmap(self.pix_img_size)
-        self.user_interface.imageLabel.setAlignment(Qt.AlignCenter)
-        self.buttons_unlock()
-        self.image = Image.open(self.path)
+        if os.path.exists(self.path):
+            pix_img = QPixmap(self.path)
+            self.pix_img_size = pix_img.scaled(300, 300, Qt.KeepAspectRatio)
+            self.user_interface.imageLabel.setPixmap(self.pix_img_size)
+            self.user_interface.imageLabel.setAlignment(Qt.AlignCenter)
+            self.buttons_unlock()
+            self.image = Image.open(self.path)
 
     def convert_img_show(self, image):
         # image = image.resize((300, 300), Image.NEAREST)
@@ -135,12 +137,12 @@ class ImageAddForm(QDialog):
         self.convert_img_show(center_cropped_img)
 
     def save_img(self):
-        path = 'img/my_img.jpg'
+        save_path = AVATAR_PATH
         if self.convert_pix_img_size:
-            self.convert_pix_img_size.save('img/my_img.jpg')
+            self.convert_pix_img_size.save(save_path)
         else:
-            self.pix_img_size.save('img/my_img.jpg')
-        self.database.add_image(path)
+            self.pix_img_size.save(save_path)
+        self.database.add_image(save_path)
         self.close()
 
 

@@ -11,12 +11,15 @@ import json
 import hmac
 import hashlib
 import binascii
+import base64
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import pyqtSignal, QObject
-from common.variables import CONFIG_FILE_NAME, MAX_CONNECTIONS, TO, USER, ACCOUNT_NAME, \
-    RESPONSE_200, RESPONSE_400, RESPONSE_511, ERROR, DATA, RESPONSE, TIME, PRESENCE, FROM, \
-    EXIT, GET_CONTACTS, PUBLIC_KEY, ACTION, MESSAGE_TEXT, MESSAGE, LIST_INFO, ADD_CONTACT, \
-    DELETE_CONTACT, USERS_REQUEST, PUBLIC_KEY_REQUEST, RESPONSE_205, DEFAULT_PORT
+from common.variables import (CONFIG_FILE_NAME, MAX_CONNECTIONS, TO, USER, ACCOUNT_NAME,
+                              RESPONSE_200, RESPONSE_400, RESPONSE_511, ERROR, DATA, RESPONSE,
+                              TIME, PRESENCE, FROM, EXIT, GET_CONTACTS, PUBLIC_KEY, ACTION,
+                              MESSAGE_TEXT, MESSAGE, LIST_INFO, ADD_CONTACT, DELETE_CONTACT,
+                              USERS_REQUEST, PUBLIC_KEY_REQUEST, RESPONSE_205, DEFAULT_PORT,
+                              SEND_AVATAR, IMAGE)
 from common.utils import get_msg, send_msg
 from common.errors import IncorrectDataNotDictError
 from common.decos import Logging
@@ -297,7 +300,9 @@ class Server(threading.Thread, QObject):
         LOGGER.debug(f'Parsing a message from a client - {message}')
 
         if ACTION in message and TIME in message and USER in message \
-                and ACCOUNT_NAME in message[USER] and message[ACTION] == PRESENCE:
+                and ACCOUNT_NAME in message[USER] \
+                and message[ACTION] == PRESENCE\
+                and PUBLIC_KEY in message[USER]:
             self.checking_new_client(client, message)
 
         elif ACTION in message and message[ACTION] == MESSAGE and\
@@ -327,7 +332,7 @@ class Server(threading.Thread, QObject):
         elif ACTION in message and message[ACTION] == DELETE_CONTACT and ACCOUNT_NAME in message and USER in message \
                 and self.names[message[USER]] == client:
             self.database.delete_contact(message[USER], message[ACCOUNT_NAME])
-            send_msg(client, {RESPONSE: 200})
+            send_msg(client, RESPONSE_200)
             LOGGER.debug(f'Deleted contact {message [ACCOUNT_NAME]} at the user {message [USER]}')
 
         elif ACTION in message and message[ACTION] == USERS_REQUEST and ACCOUNT_NAME in message \
@@ -354,6 +359,24 @@ class Server(threading.Thread, QObject):
                 except OSError:
                     self.remove_client(client)
 
+        elif ACTION in message and message[ACTION] == SEND_AVATAR \
+                and USER in message and ACCOUNT_NAME in message[USER]\
+                and IMAGE in message[USER]:
+            try:
+                send_msg(client, RESPONSE_200)
+            except OSError:
+                self.remove_client(client)
+            else:
+                img = message[USER][IMAGE]
+                login = message[USER][ACCOUNT_NAME]
+                img_data = base64.b64decode(img)
+                filename = f'img/avatar_{login}.jpg'
+                with open(filename, 'wb') as f:
+                    f.write(img_data)
+
+                self.database.add_image_path(login, filename)
+                LOGGER.debug(f'Added avatar for {client}')
+
         elif ACTION in message and message[ACTION] == EXIT and ACCOUNT_NAME in message:
             LOGGER.info(f'User {message [ACCOUNT_NAME]} has disconnected.')
             user_name = message[ACCOUNT_NAME]
@@ -373,7 +396,7 @@ class Server(threading.Thread, QObject):
 
     @Logging()
     def send_message_user(self, clients_send_lst, msg):
-        """# Function respond to users"""
+        """Function respond to users."""
         if msg[TO] in self.names and self.names[msg[TO]] in clients_send_lst:
             send_msg(self.names[msg[TO]], msg)
             self.database.sending_message(msg[FROM], msg[TO])

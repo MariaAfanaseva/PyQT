@@ -16,12 +16,15 @@ class ServerDB:
         password_hash = Column(String)
         last_login = Column(DateTime)
         pubkey = Column(Text)
+        image = Column(String)
 
-        def __init__(self, login, fullname=None, password_hash=None, pubkey=None):
+        def __init__(self, login, fullname=None, password_hash=None, pubkey=None, image_path=None):
             self.login = login
             self.fullname = fullname
             self.password_hash = password_hash
             self.last_login = datetime.datetime.now()
+            self.pubkey = pubkey
+            self.image = image_path
 
         def __repr__(self):
             return "<User('%s, '%s', '%s, '%s')>" % \
@@ -238,6 +241,13 @@ class ServerDB:
                                      self.UsersHistory.send,
                                      self.UsersHistory.accepted).join(self.AllUsers)
         return history.all()
+
+    def add_image_path(self, login, img_path):
+        user = self.session.query(self.AllUsers).filter_by(login=login)
+        if user.count():
+            user = user.first()
+            user.image = img_path
+        self.session.commit()
 
 
 if __name__ == '__main__':

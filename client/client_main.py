@@ -8,15 +8,17 @@ import hashlib
 import hmac
 import binascii
 import json
+import base64
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import pyqtSignal, QObject
 from common.utils import get_msg, send_msg
-from common.variables import DEFAULT_IP_ADDRESS, DEFAULT_PORT, TO, USER, ACCOUNT_NAME, \
-    RESPONSE_511, ERROR, DATA, RESPONSE, TIME, PRESENCE, FROM, \
-    EXIT, GET_CONTACTS, PUBLIC_KEY, ACTION, MESSAGE_TEXT, MESSAGE, LIST_INFO, ADD_CONTACT, \
-    DELETE_CONTACT, USERS_REQUEST, PUBLIC_KEY_REQUEST
-from common.errors import IncorrectDataNotDictError, FieldMissingError, \
-    IncorrectCodeError, ServerError
+from common.variables import (DEFAULT_IP_ADDRESS, DEFAULT_PORT, TO, USER, ACCOUNT_NAME,
+                              RESPONSE_511, ERROR, DATA, RESPONSE, TIME, PRESENCE, FROM,
+                              EXIT, GET_CONTACTS, PUBLIC_KEY, ACTION, MESSAGE_TEXT, MESSAGE,
+                              LIST_INFO, ADD_CONTACT, DELETE_CONTACT, USERS_REQUEST,
+                              PUBLIC_KEY_REQUEST, SEND_AVATAR, IMAGE, AVATAR_PATH)
+from common.errors import (IncorrectDataNotDictError, FieldMissingError,
+                           IncorrectCodeError, ServerError)
 from common.decos import Logging
 from common.descriptors import CheckPort, CheckIP, CheckName
 from database_client import ClientDB
@@ -434,6 +436,26 @@ class ClientTransport:
             logging.debug(f'Successfully delete a contact {del_contact_name} at the user {self.client_login}')
         else:
             raise ServerError('Client uninstall error.')
+
+    # @Logging()
+    def send_avatar_to_server(self):
+        with open(AVATAR_PATH, 'rb') as image_file:
+            encoded_img = base64.b64encode(image_file.read()).decode('utf8')
+
+        message = {
+            ACTION: SEND_AVATAR,
+            USER: {
+                ACCOUNT_NAME: self.client_login,
+                IMAGE: encoded_img
+            }
+        }
+        with LOCK_SOCKET:
+            send_msg(self.connection, message)
+            answer = get_msg(self.connection)
+        if RESPONSE in answer and answer[RESPONSE] == 200:
+            logging.debug(f'Successfully saved avatar.')
+        else:
+            raise ServerError('Server error. Unsuccessfully saved avatar.')
 
     @Logging()
     def exit_client(self):

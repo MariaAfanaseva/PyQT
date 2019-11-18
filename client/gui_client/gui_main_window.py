@@ -9,6 +9,7 @@ from gui_client.gui_add_contact import AddContactDialog
 from gui_client.gui_del_contact import DelContactDialog
 from database_client import ClientDB
 from gui_client.gui_image import ImageAddForm
+from common.variables import AVATAR_PATH
 
 
 class ClientMainWindow(QMainWindow):
@@ -242,9 +243,10 @@ class ClientMainWindow(QMainWindow):
         self.img_window = ImageAddForm(self.database_client)
         self.img_window.init_ui()
         self.img_window.user_interface.saveButton.clicked.connect(self.show_avatar)
+        self.img_window.user_interface.saveButton.clicked.connect(self.client_transport.send_avatar_to_server)
 
     def show_avatar(self):
-        path = 'img/my_img.jpg'
+        path = AVATAR_PATH
         if os.path.exists(path):
             pix_img = QPixmap(path)
             pix_img_size = pix_img.scaled(70, 70, Qt.KeepAspectRatio)
