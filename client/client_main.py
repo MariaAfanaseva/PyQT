@@ -16,7 +16,7 @@ from common.variables import (DEFAULT_IP_ADDRESS, DEFAULT_PORT, TO, USER, ACCOUN
                               RESPONSE_511, ERROR, DATA, RESPONSE, TIME, PRESENCE, FROM,
                               EXIT, GET_CONTACTS, PUBLIC_KEY, ACTION, MESSAGE_TEXT, MESSAGE,
                               LIST_INFO, ADD_CONTACT, DELETE_CONTACT, USERS_REQUEST,
-                              PUBLIC_KEY_REQUEST, SEND_AVATAR, IMAGE, AVATAR_PATH)
+                              PUBLIC_KEY_REQUEST, SEND_AVATAR, IMAGE, AVATAR_PATH, GET_AVATAR)
 from common.errors import (IncorrectDataNotDictError, FieldMissingError,
                            IncorrectCodeError, ServerError)
 from common.decos import Logging
@@ -344,6 +344,34 @@ class ClientTransport:
             return answer[DATA]
         else:
             LOGGER.error(f'Failed to get the key of the interlocutor {login}. '
+                         f'Answer server {answer}')
+
+    @Logging()
+    def avatar_request(self, login):
+        """The function of requesting the avatar of the client from the server."""
+        LOGGER.debug(f'Avatar request for {login}')
+        request = {
+            ACTION: GET_AVATAR,
+            ACCOUNT_NAME: login
+        }
+        with LOCK_SOCKET:
+            try:
+                send_msg(self.connection, request)
+                answer = get_msg(self.connection)
+            except (OSError, json.JSONDecodeError):
+                return None
+        if RESPONSE in answer and answer[RESPONSE] == 511:
+            LOGGER.debug(f'Loaded avatar for {login}')
+            img = answer[DATA]
+            img_data = base64.b64decode(img)
+            filename = f'img/avatar_{login}.jpg'
+            with open(filename, 'wb') as f:
+                f.write(img_data)
+            return True
+        elif RESPONSE in answer and answer[RESPONSE] == 400:
+            LOGGER.info(f'Answer server {answer[ERROR]}')
+        else:
+            LOGGER.error(f'Failed to get the avatar {login}. '
                          f'Answer server {answer}')
 
     @Logging()

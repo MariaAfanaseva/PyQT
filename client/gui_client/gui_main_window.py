@@ -147,9 +147,19 @@ class ClientMainWindow(QMainWindow):
             self.user_interface.smileButton_3.setDisabled(False)
 
             self.history_list_update()
+
+            if self.client_transport.avatar_request(self.current_chat):
+                self.avatar_contact_show(self.current_chat)
         else:
             self.message_window.warning(
                 self, 'Warning', 'User is not online.')
+
+    def avatar_contact_show(self, contact):
+        path = f'img/avatar_{contact}.jpg'
+        if os.path.exists(path):
+            pix_img = QPixmap(path)
+            pix_img_size = pix_img.scaled(70, 70, Qt.KeepAspectRatio)
+            self.user_interface.fotoLabel.setPixmap(pix_img_size)
 
     def send_message(self):
         """Sending an message to the current user"""

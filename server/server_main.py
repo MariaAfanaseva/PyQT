@@ -19,7 +19,7 @@ from common.variables import (CONFIG_FILE_NAME, MAX_CONNECTIONS, TO, USER, ACCOU
                               TIME, PRESENCE, FROM, EXIT, GET_CONTACTS, PUBLIC_KEY, ACTION,
                               MESSAGE_TEXT, MESSAGE, LIST_INFO, ADD_CONTACT, DELETE_CONTACT,
                               USERS_REQUEST, PUBLIC_KEY_REQUEST, RESPONSE_205, DEFAULT_PORT,
-                              SEND_AVATAR, IMAGE)
+                              SEND_AVATAR, IMAGE, GET_AVATAR)
 from common.utils import get_msg, send_msg
 from common.errors import IncorrectDataNotDictError
 from common.decos import Logging
@@ -376,6 +376,24 @@ class Server(threading.Thread, QObject):
 
                 self.database.add_image_path(login, filename)
                 LOGGER.debug(f'Added avatar for {client}')
+
+        elif ACTION in message and message[ACTION] == GET_AVATAR \
+                and ACCOUNT_NAME in message:
+            login = message[ACCOUNT_NAME]
+            filename = f'img/avatar_{login}.jpg'
+            try:
+                with open(filename, 'rb') as image_file:
+                    encoded_img = base64.b64encode(image_file.read()).decode('utf8')
+            except FileNotFoundError:
+                response = RESPONSE_400
+                response[ERROR] = f'Not found avatar {login}'
+            else:
+                response = RESPONSE_511
+                response[DATA] = encoded_img
+            try:
+                send_msg(client, response)
+            except OSError:
+                self.remove_client(client)
 
         elif ACTION in message and message[ACTION] == EXIT and ACCOUNT_NAME in message:
             LOGGER.info(f'User {message [ACCOUNT_NAME]} has disconnected.')
