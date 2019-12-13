@@ -7,13 +7,13 @@
 # WARNING! All changes made in this file will be lost!
 
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 
 class Ui_Loading(object):
     def setupUi(self, Loading):
         Loading.setObjectName("Loading")
-        Loading.resize(354, 153)
+        Loading.resize(354, 152)
         self.gridLayout_2 = QtWidgets.QGridLayout(Loading)
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.gridLayout = QtWidgets.QGridLayout()
@@ -35,7 +35,4 @@ class Ui_Loading(object):
     def retranslateUi(self, Loading):
         _translate = QtCore.QCoreApplication.translate
         Loading.setWindowTitle(_translate("Loading", "Dialog"))
-        self.waitLabel.setText(_translate(
-            "Loading", "<html><head/><body><p align=\"center\">"
-                       "<span style=\" font-size:10pt;\">"
-                       "Loading. Please weit!</span></p></body></html>"))
+        self.waitLabel.setText(_translate("Loading", "<html><head/><body><p align=\"center\"><span style=\" font-size:10pt;\">Server is loading. Please wait!</span></p></body></html>"))

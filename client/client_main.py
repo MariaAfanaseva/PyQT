@@ -297,7 +297,6 @@ class Client(threading.Thread, QObject):
                         user_login = message[FROM]
                         decrypted_message = self.encrypt_decrypt.message_decryption(message[MESSAGE_TEXT])
 
-                        print(f'\nReceived message from user{user_login}:\n{decrypted_message}.\n')
                         LOGGER.info(f'Received message from user {user_login}:\n{decrypted_message}.')
                         self.database.save_message(user_login, 'in', decrypted_message)
                         self.new_message_signal.emit(user_login)
@@ -309,7 +308,7 @@ class Client(threading.Thread, QObject):
 
 
 class ClientTransport:
-    """Сontains functions for interacting with the server."""
+    """Functions for interacting with the server."""
     def __init__(self, connection, client_login, database, encrypt_decrypt):
         self.connection = connection
         self.client_login = client_login

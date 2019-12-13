@@ -41,6 +41,7 @@ class ClientMainWindow(QMainWindow):
         self.user_interface.boldButton.clicked.connect(self.set_bold_font)
         self.user_interface.italicButton.clicked.connect(self.set_italic_font)
         self.user_interface.underlinedButton.clicked.connect(self.set_underline_font)
+        self.user_interface.normalTextButton.clicked.connect(self.normal_font)
         self.user_interface.fotoButton.setText('\U0001F4F7')
         self.user_interface.fotoButton.setStyleSheet('padding-bottom: 6px;'
                                                      'padding-right: 3px;')
@@ -58,9 +59,6 @@ class ClientMainWindow(QMainWindow):
         self.user_interface.clearMessageButton.clicked.connect(self.clear_edit_message)
         # Double-click on the contact list is sent to the handler
         self.user_interface.contactsListView.doubleClicked.connect(self.select_active_user)
-
-        self.user_interface.messageHistoryEdit.fontItalic()
-        self.user_interface.messageHistoryEdit.setFont(QFont('SansSerif', 10))
 
         self.update_clients_list()
         self.show_avatar()
@@ -82,6 +80,7 @@ class ClientMainWindow(QMainWindow):
         self.user_interface.boldButton.setDisabled(True)
         self.user_interface.italicButton.setDisabled(True)
         self.user_interface.underlinedButton.setDisabled(True)
+        self.user_interface.normalTextButton.setDisabled(True)
         self.user_interface.smileButton.setDisabled(True)
         self.user_interface.smileButton_2.setDisabled(True)
         self.user_interface.smileButton_3.setDisabled(True)
@@ -142,6 +141,7 @@ class ClientMainWindow(QMainWindow):
             self.user_interface.boldButton.setDisabled(False)
             self.user_interface.italicButton.setDisabled(False)
             self.user_interface.underlinedButton.setDisabled(False)
+            self.user_interface.normalTextButton.setDisabled(False)
             self.user_interface.smileButton.setDisabled(False)
             self.user_interface.smileButton_2.setDisabled(False)
             self.user_interface.smileButton_3.setDisabled(False)
@@ -153,11 +153,11 @@ class ClientMainWindow(QMainWindow):
 
     def send_message(self):
         """Sending an message to the current user"""
-        message_text = self.user_interface.messageEdit.toPlainText()
-        self.user_interface.messageEdit.clear()
-        if not message_text:
+        message_text = self.user_interface.messageEdit.toHtml()
+        if not self.user_interface.messageEdit.toPlainText():
             return
         else:
+            self.user_interface.messageEdit.clear()
             is_success = self.client_transport.send_user_message(self.current_chat, message_text)
             if not is_success:
                 self.message_window.critical(self, 'Error', 'Lost server connection!')
@@ -169,11 +169,11 @@ class ClientMainWindow(QMainWindow):
 
     def add_message_history(self, message):
         """Add message user in history"""
-        msg = f'Outgoing message from {datetime.datetime.now().replace(microsecond=0)}:\n {message}\n'
-        self.user_interface.messageHistoryEdit.setTextBackgroundColor(QColor(204, 255, 204))
-        self.user_interface.messageHistoryEdit.setAlignment(Qt.AlignRight)
-        self.user_interface.messageHistoryEdit.append(msg)
-
+        time = f'<b style="color:#006400">Outgoing message from ' \
+            f'{datetime.datetime.now().replace(microsecond=0)}: </b><br>'
+        self.user_interface.messageHistoryEdit.insertHtml(time)
+        self.user_interface.messageHistoryEdit.insertHtml(message)
+        self.user_interface.messageHistoryEdit.insertHtml(f'<br>')
         self.user_interface.messageHistoryEdit.ensureCursorVisible()
 
     def history_list_update(self):
@@ -191,53 +191,43 @@ class ClientMainWindow(QMainWindow):
         for i in range(start_index, length):
             item = list_messages[i]
             if item[1] == 'in':
-                msg = f'Incoming message from {item[3].replace(microsecond=0)}:\n {item[2]}\n'
-                self.user_interface.messageHistoryEdit.setTextBackgroundColor(QColor(255, 213, 213))
-                self.user_interface.messageHistoryEdit.setAlignment(Qt.AlignLeft)
-                self.user_interface.messageHistoryEdit.append(msg)
+                time = f'<b style="color:#ff0000">Incoming message from' \
+                    f' {item[3].replace(microsecond=0)}:</b><br>'
+                self.user_interface.messageHistoryEdit.insertHtml(time)
+                self.user_interface.messageHistoryEdit.insertHtml(item[2])
+                self.user_interface.messageHistoryEdit.insertHtml(f'<br>')
             elif item[1] == 'out':
-                msg = f'Outgoing message from {item[3].replace(microsecond=0)}:\n {item[2]}\n'
-                self.user_interface.messageHistoryEdit.setTextBackgroundColor(QColor(204, 255, 204))
-                self.user_interface.messageHistoryEdit.setAlignment(Qt.AlignRight)
-                self.user_interface.messageHistoryEdit.append(msg)
+                time = f'<b style="color:#006400">Outgoing message from' \
+                    f' {datetime.datetime.now().replace(microsecond=0)}:</b><br>'
+                self.user_interface.messageHistoryEdit.insertHtml(time)
+                self.user_interface.messageHistoryEdit.insertHtml(item[2])
+                self.user_interface.messageHistoryEdit.insertHtml(f'<br>')
         self.user_interface.messageHistoryEdit.ensureCursorVisible()
 
     def clear_edit_message(self):
         """Button handler - clear. Clears message input fields."""
         self.user_interface.messageEdit.clear()
 
-    def set_regular_font(self):
-        regular_font = QFont()
-        regular_font.setRawMode(True)
-        self.user_interface.messageEdit.setFont(regular_font)
-        self.font = 'regular'
+    def get_text(self):
+        cursor = self.user_interface.messageEdit.textCursor()
+        text = cursor.selectedText()
+        return text
 
     def set_bold_font(self):
-        if self.font == 'bold':
-            self.set_regular_font()
-        else:
-            bold_font = QFont()
-            bold_font.setBold(True)
-            self.user_interface.messageEdit.setFont(bold_font)
-            self.font = 'bold'
+        text = self.get_text()
+        self.user_interface.messageEdit.insertHtml(f'<b>{text}</b>')
 
     def set_italic_font(self):
-        if self.font == 'italic':
-            self.set_regular_font()
-        else:
-            italic_font = QFont()
-            italic_font.setItalic(True)
-            self.user_interface.messageEdit.setFont(italic_font)
-            self.font = 'italic'
+        text = self.get_text()
+        self.user_interface.messageEdit.insertHtml(f'<i>{text}</i>')
 
     def set_underline_font(self):
-        if self.font == 'underline':
-            self.set_regular_font()
-        else:
-            underline_font = QFont()
-            underline_font.setUnderline(True)
-            self.user_interface.messageEdit.setFont(underline_font)
-            self.font = 'underline'
+        text = self.get_text()
+        self.user_interface.messageEdit.insertHtml(f'<u>{text}</u>')
+
+    def normal_font(self):
+        text = self.get_text()
+        self.user_interface.messageEdit.insertHtml(f'<p>{text}</ps>')
 
     def image_window(self):
         self.img_window = ImageAddForm(self.database_client)
