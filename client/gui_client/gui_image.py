@@ -7,17 +7,17 @@ from PyQt5.QtWidgets import QDialog, QApplication, QFileDialog
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt
 from gui_client.image_config import Ui_Form
-from common.variables import AVATAR_PATH
 
 
 class ImageAddForm(QDialog):
     """Create window for add image."""
     def __init__(self, database):
         self.database = database
+        self.login = self.database.login
         self.pix_img_size = None
         self.convert_pix_img_size = None
         self.image = None
-        self.path = 'img/my_img.jpg'
+        self.path = f'img/avatar_{self.login}.jpg'
         self.user_interface = Ui_Form()
         super().__init__()
 
@@ -137,12 +137,11 @@ class ImageAddForm(QDialog):
         self.convert_img_show(center_cropped_img)
 
     def save_img(self):
-        save_path = AVATAR_PATH
         if self.convert_pix_img_size:
-            self.convert_pix_img_size.save(save_path)
+            self.convert_pix_img_size.save(self.path)
         else:
-            self.pix_img_size.save(save_path)
-        self.database.add_image(save_path)
+            self.pix_img_size.save(self.path)
+        self.database.add_image(self.path)
         self.close()
 
 

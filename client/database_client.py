@@ -61,7 +61,8 @@ class ClientDB:
 
     def __init__(self, login):
         # echo - logging, 7200 - seconds restart connect
-        self.database_engine = create_engine(f'sqlite:///client_{login}.db3',
+        self.login = login
+        self.database_engine = create_engine(f'sqlite:///client_{self.login}.db3',
                                              echo=False, pool_recycle=7200,
                                              connect_args={'check_same_thread': False})
         Base.metadata.create_all(self.database_engine)

@@ -4,7 +4,6 @@ ENCODING = 'utf-8'
 DEFAULT_IP_ADDRESS = '127.0.0.1'
 DEFAULT_PORT = 7777
 CONFIG_FILE_NAME = 'config_server.ini'
-AVATAR_PATH = 'img/my_img.jpg'
 
 # JIM поля
 ACTION = 'action'

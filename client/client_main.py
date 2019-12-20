@@ -16,7 +16,7 @@ from common.variables import (DEFAULT_IP_ADDRESS, DEFAULT_PORT, TO, USER, ACCOUN
                               RESPONSE_511, ERROR, DATA, RESPONSE, TIME, PRESENCE, FROM,
                               EXIT, GET_CONTACTS, PUBLIC_KEY, ACTION, MESSAGE_TEXT, MESSAGE,
                               LIST_INFO, ADD_CONTACT, DELETE_CONTACT, USERS_REQUEST,
-                              PUBLIC_KEY_REQUEST, SEND_AVATAR, IMAGE, AVATAR_PATH, GET_AVATAR)
+                              PUBLIC_KEY_REQUEST, SEND_AVATAR, IMAGE, GET_AVATAR)
 from common.errors import (IncorrectDataNotDictError, FieldMissingError,
                            IncorrectCodeError, ServerError)
 from common.decos import Logging
@@ -466,7 +466,7 @@ class ClientTransport:
 
     # @Logging()
     def send_avatar_to_server(self):
-        with open(AVATAR_PATH, 'rb') as image_file:
+        with open(f'img/avatar_{self.client_login}.jpg', 'rb') as image_file:
             encoded_img = base64.b64encode(image_file.read()).decode('utf8')
 
         message = {

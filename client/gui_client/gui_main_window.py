@@ -2,14 +2,14 @@ import sys
 import os
 import datetime
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox
-from PyQt5.QtGui import QStandardItemModel, QStandardItem, QColor, QFont, QPixmap
-from PyQt5.QtCore import Qt, pyqtSlot
+from PyQt5.QtGui import QStandardItemModel, QStandardItem, QFont, QPixmap
+from PyQt5.QtCore import Qt, pyqtSlot, QSize
 from gui_client.main_window_config import Ui_MainWindow
 from gui_client.gui_add_contact import AddContactDialog
 from gui_client.gui_del_contact import DelContactDialog
 from database_client import ClientDB
 from gui_client.gui_image import ImageAddForm
-from common.variables import AVATAR_PATH
+from gui_client.text_edit import TextEdit
 
 
 class ClientMainWindow(QMainWindow):
@@ -18,6 +18,7 @@ class ClientMainWindow(QMainWindow):
         self.app = app
         self.client_transport = client_transport
         self.database_client = database_client
+        self.login = self.client_transport.client_login
         self.message_window = QMessageBox()
         self.current_chat = None
         super().__init__()
@@ -27,7 +28,11 @@ class ClientMainWindow(QMainWindow):
         self.user_interface = Ui_MainWindow()
         self.user_interface.setupUi(self)
 
-        self.field_disable()
+        self.user_interface.messageEdit = TextEdit(self.user_interface.messageWidget)
+        self.user_interface.messageEdit.setMaximumSize(QSize(16777215, 150))
+        self.user_interface.messageEdit.setStyleSheet("font-size: 10pt ;")
+        self.user_interface.messageLayout.addWidget(self.user_interface.messageEdit, 5, 0, 1, 3)
+        self.user_interface.messageEdit.send_enter_signal.connect(self.send_enter)
 
         self.user_interface.actionClose.triggered.connect(self.app.quit)
         self.user_interface.addContactButton.clicked.connect(self.add_contact_dialog)
@@ -37,7 +42,6 @@ class ClientMainWindow(QMainWindow):
 
         self.user_interface.sendMessageButton.clicked.connect(self.send_message)
 
-        self.font = 'regular'
         self.user_interface.boldButton.clicked.connect(self.set_bold_font)
         self.user_interface.italicButton.clicked.connect(self.set_italic_font)
         self.user_interface.underlinedButton.clicked.connect(self.set_underline_font)
@@ -60,6 +64,7 @@ class ClientMainWindow(QMainWindow):
         # Double-click on the contact list is sent to the handler
         self.user_interface.contactsListView.doubleClicked.connect(self.select_active_user)
 
+        self.field_disable()
         self.update_clients_list()
         self.show_avatar()
         self.show()
@@ -246,7 +251,7 @@ class ClientMainWindow(QMainWindow):
         self.img_window.user_interface.saveButton.clicked.connect(self.client_transport.send_avatar_to_server)
 
     def show_avatar(self):
-        path = AVATAR_PATH
+        path = f'img/avatar_{self.login}.jpg'
         if os.path.exists(path):
             pix_img = QPixmap(path)
             pix_img_size = pix_img.scaled(70, 70, Qt.KeepAspectRatio)
@@ -291,6 +296,10 @@ class ClientMainWindow(QMainWindow):
     def update_users_list(self):
         """Update users list in add and remove contact window."""
         self.add_contact_window.update_users_all()
+
+    @pyqtSlot()
+    def send_enter(self):
+        self.send_message()
 
     def make_connection_with_signals(self, client_obj):
         """Signal connection method."""
