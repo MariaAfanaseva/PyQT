@@ -57,5 +57,7 @@ RESPONSE_511 = {
 
 # 205
 RESPONSE_205 = {
-    RESPONSE: 205
+    RESPONSE: 205,
+    LIST_INFO: None
+
 }

@@ -26,6 +26,7 @@ from gui_client.gui_start_dialog import UserNameDialog
 from gui_client.gui_main_window import ClientMainWindow
 from gui_client.gui_loading_dialog import LoadingWindow
 from encrypt_decrypt import EncryptDecrypt
+import logs.client_log_config
 
 
 LOGGER = logging.getLogger('client')
@@ -59,7 +60,6 @@ class Client(threading.Thread, QObject):
     connection_lack_signal = pyqtSignal()
     progressbar_signal = pyqtSignal()
     answer_server = pyqtSignal(str)
-    users_list_update = pyqtSignal()
 
     #  Main window signals
     new_message_signal = pyqtSignal(str)
@@ -301,8 +301,8 @@ class Client(threading.Thread, QObject):
                         self.database.save_message(user_login, 'in', decrypted_message)
                         self.new_message_signal.emit(user_login)
                     elif RESPONSE in message and message[RESPONSE] == 205:
-                        self.load_database()
-                        self.users_list_update.emit()
+                        with LOCK_DATABASE:
+                            self.database.add_users_known(message[LIST_INFO])
                     else:
                         LOGGER.error(f'Invalid message received from server: {message}')
 

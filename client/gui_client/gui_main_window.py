@@ -293,11 +293,6 @@ class ClientMainWindow(QMainWindow):
         self.close()
 
     @pyqtSlot()
-    def update_users_list(self):
-        """Update users list in add and remove contact window."""
-        self.add_contact_window.update_users_all()
-
-    @pyqtSlot()
     def send_enter(self):
         self.send_message()
 
@@ -305,7 +300,6 @@ class ClientMainWindow(QMainWindow):
         """Signal connection method."""
         client_obj.new_message_signal.connect(self.get_message)
         client_obj.connection_lost_signal.connect(self.connection_lost)
-        client_obj.users_list_update.connect(self.update_users_list)
 
 
 if __name__ == '__main__':

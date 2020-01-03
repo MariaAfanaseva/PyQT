@@ -12,6 +12,7 @@ import hmac
 import hashlib
 import binascii
 import base64
+import asyncio
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import pyqtSignal, QObject
 from common.variables import (CONFIG_FILE_NAME, MAX_CONNECTIONS, TO, USER, ACCOUNT_NAME,
@@ -26,6 +27,7 @@ from common.decos import Logging
 from common.descriptors import CheckPort, CheckIP
 from database_server import ServerDB
 from gui_server.gui_main_window import MainWindow
+import logs.server_log_config
 
 LOGGER = logging.getLogger('server')
 LOGGER.setLevel(logging.DEBUG)
@@ -88,11 +90,17 @@ class Server(threading.Thread, QObject):
         self.listen_port = listen_port
         self.database = database
 
+        self.connection = None
+
         self.clients = []   # All clients
 
         self.messages = []  # All messages
 
         self.names = dict()  # Connected Client Names
+
+        self.clients_read_lst = []
+        self.clients_send_lst = []
+        self.err_lst = []
 
         threading.Thread.__init__(self)
         QObject.__init__(self)
@@ -158,49 +166,74 @@ class Server(threading.Thread, QObject):
                 LOGGER.info(f'Connection to client established - {client_address}.')
                 self.clients.append(client)
 
-            clients_read_lst = []
-            clients_send_lst = []
-            err_lst = []
+            self.clients_read_lst = []
+            self.clients_send_lst = []
+            self.err_lst = []
 
             try:
                 if self.clients:
-                    clients_read_lst, clients_send_lst, err_lst = select.select(self.clients, self.clients, [], 0)
+                    self.clients_read_lst, self.clients_send_lst, self.err_lst = select.select\
+                        (self.clients, self.clients, [], 0)
             except OSError as err:
                 LOGGER.error(f'Error working with sockets: {err}')
 
-            self.get_messages_clients(clients_read_lst)
+            self.async_get_message()
 
-            self.send_messages(clients_send_lst)
+            self.async_send_messages()
 
     @Logging()
-    def get_messages_clients(self, clients_read_lst):
+    def async_get_message(self):
+        # Get messages from clients with asyncio
+        if self.clients_read_lst:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            tasks = [
+                loop.create_task(self.get_messages_clients(client))
+                for client in self.clients_read_lst
+            ]
+            wait_tasks = asyncio.wait(tasks)
+            loop.run_until_complete(wait_tasks)
+            loop.close()
+
+    @Logging()
+    async def get_messages_clients(self, client):
         # Receive a message from clients
-        if clients_read_lst:
-            for client in clients_read_lst:
-                try:
-                    message = get_msg(client)
-                except IncorrectDataNotDictError:
-                    LOGGER.error('Invalid data format received.')
-                except (ConnectionResetError, json.decoder.JSONDecodeError, ConnectionAbortedError):
-                    self.remove_client(client)
-                else:
-                    LOGGER.debug(f'Received message from client {message}.')
-                    self.client_msg(message, client)
+            try:
+                message = get_msg(client)
+            except IncorrectDataNotDictError:
+                LOGGER.error('Invalid data format received.')
+            except (ConnectionResetError, json.decoder.JSONDecodeError, ConnectionAbortedError):
+                self.remove_client(client)
+            else:
+                LOGGER.debug(f'Received message from client {message}.')
+                self.client_msg(message, client)
 
     @Logging()
-    def send_messages(self, clients_send_lst):
-        # If there are messages to send and pending clients, send them a message.
+    def async_send_messages(self):
+        # Send messages to clients with asyncio
         if self.messages:
-            for msg in self.messages:
-                try:
-                    self.send_message_user(clients_send_lst, msg)
-                except (ConnectionResetError, ConnectionError):
-                    LOGGER.info(f'Communication with a client named {msg[TO]} has been lost.')
-                    self.clients.remove(self.names[msg[TO]])
-                    del self.names[msg[TO]]
-                    self.database.user_logout(msg[TO])
-                    self.disconnected_client.emit()
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            tasks = [
+                loop.create_task(self.send_messages(msg))
+                for msg in self.messages
+            ]
+            wait_tasks = asyncio.wait(tasks)
+            loop.run_until_complete(wait_tasks)
+            loop.close()
             self.messages.clear()
+
+    @Logging()
+    async def send_messages(self, msg):
+        # If there are messages to send and pending clients, send them a message.
+        try:
+            self.send_message_user(msg)
+        except (ConnectionResetError, ConnectionError):
+            LOGGER.info(f'Communication with a client named {msg[TO]} has been lost.')
+            self.clients.remove(self.names[msg[TO]])
+            del self.names[msg[TO]]
+            self.database.user_logout(msg[TO])
+            self.disconnected_client.emit()
 
     @Logging()
     def checking_new_client(self, client, message):
@@ -298,7 +331,6 @@ class Server(threading.Thread, QObject):
     @Logging()
     def client_msg(self, message, client):
         LOGGER.debug(f'Parsing a message from a client - {message}')
-
         if ACTION in message and TIME in message and USER in message \
                 and ACCOUNT_NAME in message[USER] \
                 and message[ACTION] == PRESENCE\
@@ -413,13 +445,13 @@ class Server(threading.Thread, QObject):
             LOGGER.info(f'Errors sent to client - {msg}.\n')
 
     @Logging()
-    def send_message_user(self, clients_send_lst, msg):
+    def send_message_user(self, msg):
         """Function respond to users."""
-        if msg[TO] in self.names and self.names[msg[TO]] in clients_send_lst:
+        if msg[TO] in self.names and self.names[msg[TO]] in self.clients_send_lst:
             send_msg(self.names[msg[TO]], msg)
             self.database.sending_message(msg[FROM], msg[TO])
             LOGGER.info(f'A message was sent to user {msg [TO]} from user {msg [FROM]}.')
-        elif msg[TO] in self.names and self.names[msg[TO]] not in clients_send_lst:
+        elif msg[TO] in self.names and self.names[msg[TO]] not in self.clients_send_lst:
             raise ConnectionError
         else:
             LOGGER.error(
@@ -429,7 +461,9 @@ class Server(threading.Thread, QObject):
         """A method that implements sending a service message to 205 clients."""
         for client in self.names:
             try:
-                send_msg(self.names[client], RESPONSE_205)
+                msg = RESPONSE_205
+                msg[LIST_INFO] = [user[0] for user in self.database.users_all()]
+                send_msg(self.names[client], msg)
             except OSError:
                 self.remove_client(self.names[client])
 

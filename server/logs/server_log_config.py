@@ -3,7 +3,7 @@ import logging.handlers
 import sys
 import os
 
-path_file_log = os.path.abspath(os.path.join(__file__, 'files_log/server.log'))
+path_file_log = os.path.abspath(os.path.join(__file__, '../files_log/server.log'))
 # print(path_file_log)
 
 logger = logging.getLogger('server')
