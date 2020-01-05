@@ -206,7 +206,7 @@ class Server(threading.Thread, QObject):
                 self.remove_client(client)
             else:
                 LOGGER.debug(f'Received message from client {message}.')
-                self.client_msg(message, client)
+                await self.client_msg(message, client)
 
     @Logging()
     def async_send_messages(self):
@@ -227,7 +227,7 @@ class Server(threading.Thread, QObject):
     async def send_messages(self, msg):
         # If there are messages to send and pending clients, send them a message.
         try:
-            self.send_message_user(msg)
+            await self.send_message_user(msg)
         except (ConnectionResetError, ConnectionError):
             LOGGER.info(f'Communication with a client named {msg[TO]} has been lost.')
             self.clients.remove(self.names[msg[TO]])
@@ -329,7 +329,7 @@ class Server(threading.Thread, QObject):
         self.disconnected_client.emit()
 
     @Logging()
-    def client_msg(self, message, client):
+    async def client_msg(self, message, client):
         LOGGER.debug(f'Parsing a message from a client - {message}')
         if ACTION in message and TIME in message and USER in message \
                 and ACCOUNT_NAME in message[USER] \
@@ -445,7 +445,7 @@ class Server(threading.Thread, QObject):
             LOGGER.info(f'Errors sent to client - {msg}.\n')
 
     @Logging()
-    def send_message_user(self, msg):
+    async def send_message_user(self, msg):
         """Function respond to users."""
         if msg[TO] in self.names and self.names[msg[TO]] in self.clients_send_lst:
             send_msg(self.names[msg[TO]], msg)
