@@ -3,7 +3,7 @@ from PyQt5 import QtGui
 from PyQt5.QtWidgets import QDialog, QApplication, QMessageBox
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from gui_server.del_user_window_main_config import Ui_Dialog
-from database_server import ServerDB
+from database.database_server import ServerDB
 from gui_server.gui_remove_confirmation import DelUserConfirmation
 
 

@@ -7,7 +7,7 @@ from PyQt5.QtCore import Qt, pyqtSlot, QSize
 from gui_client.main_window_config import Ui_MainWindow
 from gui_client.gui_add_contact import AddContactDialog
 from gui_client.gui_del_contact import DelContactDialog
-from database_client import ClientDB
+from database.database_client import ClientDB
 from gui_client.gui_image import ImageAddForm
 from gui_client.text_edit import TextEdit
 

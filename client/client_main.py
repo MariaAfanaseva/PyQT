@@ -9,6 +9,7 @@ import hmac
 import binascii
 import json
 import base64
+from database.mongo_db_client import MongoDbClient
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import pyqtSignal, QObject
 from common.utils import get_msg, send_msg
@@ -21,13 +22,12 @@ from common.errors import (IncorrectDataNotDictError, FieldMissingError,
                            IncorrectCodeError, ServerError)
 from common.decos import Logging
 from common.descriptors import CheckPort, CheckIP, CheckName
-from database_client import ClientDB
+from database.database_client import ClientDB
 from gui_client.gui_start_dialog import UserNameDialog
 from gui_client.gui_main_window import ClientMainWindow
 from gui_client.gui_loading_dialog import LoadingWindow
 from encrypt_decrypt import EncryptDecrypt
 import logs.client_log_config
-
 
 LOGGER = logging.getLogger('client')
 
@@ -66,12 +66,13 @@ class Client(threading.Thread, QObject):
     connection_lost_signal = pyqtSignal()
 
     def __init__(self, connection, server_ip, server_port, client_login,
-                 client_password, database, encrypt_decrypt):
+                 client_password, database, mongo_db, encrypt_decrypt):
         self.server_ip = server_ip
         self.server_port = server_port
         self.client_login = client_login
         self.client_password = client_password
         self.database = database
+        self.mongo_db = mongo_db
         self.connection = connection
         self.encrypt_decrypt = encrypt_decrypt
         self.pubkey = encrypt_decrypt.get_pubkey_user()
@@ -193,7 +194,8 @@ class Client(threading.Thread, QObject):
             self.connection_lack()
         else:
             with LOCK_DATABASE:
-                self.database.add_users_known(users_all)
+                self.database.add_known_users(users_all)
+                self.mongo_db.add_known_users(users_all)
             print('List of known users updated successfully.')
             self.progressbar_signal.emit()
         try:
@@ -302,7 +304,8 @@ class Client(threading.Thread, QObject):
                         self.new_message_signal.emit(user_login)
                     elif RESPONSE in message and message[RESPONSE] == 205:
                         with LOCK_DATABASE:
-                            self.database.add_users_known(message[LIST_INFO])
+                            self.database.add_known_users(message[LIST_INFO])
+                            self.mongo_db.add_known_users(message[LIST_INFO])
                     else:
                         LOGGER.error(f'Invalid message received from server: {message}')
 
@@ -537,6 +540,9 @@ def main():
 
     database = ClientDB(client_login)
 
+    # Create Mongo database
+    mongo_db = MongoDbClient(client_login)
+
     connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     
     encrypt_decrypt = EncryptDecrypt(client_login)
@@ -545,7 +551,7 @@ def main():
                                        database, encrypt_decrypt)
 
     loading_client = Client(connection, server_ip, server_port,
-                            client_login, client_password, database,
+                            client_login, client_password, database, mongo_db,
                             encrypt_decrypt)
     loading_client.daemon = True
     loading_client.start()

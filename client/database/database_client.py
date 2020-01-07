@@ -76,7 +76,7 @@ class ClientDB:
         for contact in contacts_list:
             self.add_contact(contact)
 
-    def add_users_known(self, users_all):
+    def add_known_users(self, users_all):
         #  users_all - from server
         self.session.query(self.UsersKnown).delete()
         for user in users_all:
@@ -84,7 +84,7 @@ class ClientDB:
             self.session.add(user_new)
         self.session.commit()
 
-    def get_users_known(self):
+    def get_known_users(self):
         return [user[0] for user in self.session.query(self.UsersKnown.login).all()]
 
     def add_contact(self, contact):
@@ -130,5 +130,5 @@ class ClientDB:
 
 if __name__ == '__main__':
     client = ClientDB('maria')
-    client.get_users_known()
+    client.get_known_users()
     client.get_contacts()

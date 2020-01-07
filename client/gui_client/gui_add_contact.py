@@ -2,7 +2,7 @@ import sys
 from PyQt5.QtWidgets import QDialog, QApplication, QMessageBox
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from gui_client.add_contact_config import Ui_Dialog
-from database_client import ClientDB
+from database.database_client import ClientDB
 
 
 class AddContactDialog(QDialog):
@@ -29,7 +29,7 @@ class AddContactDialog(QDialog):
         List all registered users with the exception of those
         already added to the contacts and himself.
         """
-        users_all = set(self.database_client.get_users_known())
+        users_all = set(self.database_client.get_known_users())
         contacts_all = set(self.database_client.get_contacts())
         new_contacts = users_all - contacts_all
         new_contacts.remove(self.client_transport.client_login)

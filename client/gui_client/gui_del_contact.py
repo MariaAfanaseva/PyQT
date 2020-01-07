@@ -2,7 +2,7 @@ import sys
 from PyQt5.QtWidgets import QDialog, QApplication, QMessageBox
 from PyQt5 import QtGui
 from gui_client.del_contact_config import Ui_Dialog
-from database_client import ClientDB
+from database.database_client import ClientDB
 
 
 class DelContactDialog(QDialog):

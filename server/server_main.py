@@ -25,9 +25,10 @@ from common.utils import get_msg, send_msg
 from common.errors import IncorrectDataNotDictError
 from common.decos import Logging
 from common.descriptors import CheckPort, CheckIP
-from database_server import ServerDB
+from database.database_server import ServerDB
 from gui_server.gui_main_window import MainWindow
 import logs.server_log_config
+from database.mongo_db_server import MongoDbServer
 
 LOGGER = logging.getLogger('server')
 LOGGER.setLevel(logging.DEBUG)
@@ -85,17 +86,16 @@ class Server(threading.Thread, QObject):
     new_connected_client = pyqtSignal()
     disconnected_client = pyqtSignal()
 
-    def __init__(self, listen_ip, listen_port, database):
+    def __init__(self, listen_ip, listen_port, database, mongo_db):
         self.listen_ip = listen_ip
         self.listen_port = listen_port
         self.database = database
+        self.mongo_db = mongo_db
 
         self.connection = None
 
         self.clients = []   # All clients
-
         self.messages = []  # All messages
-
         self.names = dict()  # Connected Client Names
 
         self.clients_read_lst = []
@@ -313,6 +313,7 @@ class Server(threading.Thread, QObject):
         else:
             with LOCK_DATABASE:
                 self.database.add_user(login_user, password_hash_str, fullname)
+                self.mongo_db.add_user(login_user, password_hash_str, fullname)
             self.update_users_list_message()
             return True
 
@@ -486,7 +487,11 @@ def main():
     listen_ip, listen_port = get_args(default_ip, default_port)
 
     database = ServerDB(db_path)
-    server = Server(listen_ip, listen_port, database)
+
+    # Create Mongo database
+    mongo_db = MongoDbServer()
+
+    server = Server(listen_ip, listen_port, database, mongo_db)
     server.daemon = True
     server.start()
 
