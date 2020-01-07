@@ -31,7 +31,7 @@ class ClientMainWindow(QMainWindow):
         self.user_interface.messageEdit = TextEdit(self.user_interface.messageWidget)
         self.user_interface.messageEdit.setMaximumSize(QSize(16777215, 150))
         self.user_interface.messageEdit.setStyleSheet("font-size: 10pt ;")
-        self.user_interface.messageLayout.addWidget(self.user_interface.messageEdit, 5, 0, 1, 3)
+        self.user_interface.messageLayout.addWidget(self.user_interface.messageEdit, 7, 0, 1, 3)
         self.user_interface.messageEdit.send_enter_signal.connect(self.send_enter)
 
         self.user_interface.actionClose.triggered.connect(self.app.quit)
@@ -64,6 +64,9 @@ class ClientMainWindow(QMainWindow):
         # Double-click on the contact list is sent to the handler
         self.user_interface.contactsListView.doubleClicked.connect(self.select_active_user)
 
+        self.user_interface.searchContactPushButton.clicked.connect(self.search_contact)
+        self.user_interface.searchMessagePushButton.clicked.connect(self.search_message)
+
         self.field_disable()
         self.update_clients_list()
         self.show_avatar()
@@ -89,6 +92,8 @@ class ClientMainWindow(QMainWindow):
         self.user_interface.smileButton.setDisabled(True)
         self.user_interface.smileButton_2.setDisabled(True)
         self.user_interface.smileButton_3.setDisabled(True)
+        self.user_interface.searchMessageTextEdit.setDisabled(True)
+        self.user_interface.searchMessagePushButton.setDisabled(True)
 
     def add_contact_dialog(self):
         """Open add contact dialog method"""
@@ -149,7 +154,9 @@ class ClientMainWindow(QMainWindow):
             self.user_interface.normalTextButton.setDisabled(False)
             self.user_interface.smileButton.setDisabled(False)
             self.user_interface.smileButton_2.setDisabled(False)
+            self.user_interface.searchMessageTextEdit.setDisabled(False)
             self.user_interface.smileButton_3.setDisabled(False)
+            self.user_interface.searchMessagePushButton.setDisabled(False)
 
             self.history_list_update()
 
@@ -191,20 +198,16 @@ class ClientMainWindow(QMainWindow):
         self.user_interface.messageHistoryEdit.insertHtml(f'<br>')
         self.user_interface.messageHistoryEdit.ensureCursorVisible()
 
-    def history_list_update(self):
-        """Message history update method."""
-        list_messages = sorted(self.database_client.get_history(self.current_chat),
-                               key=lambda item: item[3])  # sort by date
-
+    def show_history(self, list_message):
         self.user_interface.messageHistoryEdit.clear()
 
-        length = len(list_messages)
+        length = len(list_message)
         start_index = 0
         if length > 20:
             start_index = length - 20
 
         for i in range(start_index, length):
-            item = list_messages[i]
+            item = list_message[i]
             if item[1] == 'in':
                 time = f'<b style="color:#ff0000">Incoming message from' \
                     f' {item[3].replace(microsecond=0)}:</b><br>'
@@ -218,6 +221,13 @@ class ClientMainWindow(QMainWindow):
                 self.user_interface.messageHistoryEdit.insertHtml(item[2])
                 self.user_interface.messageHistoryEdit.insertHtml(f'<br>')
         self.user_interface.messageHistoryEdit.ensureCursorVisible()
+
+    def history_list_update(self):
+        """Message history update method."""
+        list_message = sorted(self.database_client.get_history(self.current_chat),
+                               key=lambda item: item[3])  # sort by date
+
+        self.show_history(list_message)
 
     def clear_edit_message(self):
         """Button handler - clear. Clears message input fields."""
@@ -256,6 +266,31 @@ class ClientMainWindow(QMainWindow):
             pix_img = QPixmap(path)
             pix_img_size = pix_img.scaled(70, 70, Qt.KeepAspectRatio)
             self.user_interface.avatarLabel.setPixmap(pix_img_size)
+
+    def search_contact(self):
+        """Search contact in Contacts and show in contacts list view"""
+        text = self.user_interface.searchContactTextEdit.toPlainText()
+        if text:
+            self.search_list = self.database_client.get_search_contact(text)
+            self.search_model = QStandardItemModel()
+            for contact in sorted(self.search_list):
+                item = QStandardItem(contact)
+                item.setEditable(False)
+                self.search_model.appendRow(item)
+            self.user_interface.contactsListView.setModel(self.search_model)
+        else:
+            self.update_clients_list()
+
+    def search_message(self):
+        """Search message in history"""
+        text = self.user_interface.searchMessageTextEdit.toPlainText()
+        if text:
+            list_message = sorted(self.database_client.get_search_message
+                                  (self.current_chat, text),
+                                  key=lambda item: item[3])  # sort by date
+            self.show_history(list_message)
+        else:
+            self.history_list_update()
 
     @pyqtSlot(str)
     def get_message(self, sender):

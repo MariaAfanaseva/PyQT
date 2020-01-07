@@ -283,9 +283,12 @@ class Client(threading.Thread, QObject):
                 except OSError as err:
                     # print(err.errno)
                     if err.errno:
-                        LOGGER.critical(f'Lost server connection.')
-                        self.connection_lost_signal.emit()
-                        break
+                        if err.errno != 10038:
+                            LOGGER.critical(f'Lost server connection.')
+                            self.connection_lost_signal.emit()
+                            break
+                        else:
+                            break
                 except (ConnectionError, ConnectionAbortedError, ConnectionResetError,
                         json.JSONDecodeError):
                     LOGGER.critical(f'Lost server connection.')

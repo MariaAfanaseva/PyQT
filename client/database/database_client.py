@@ -127,8 +127,14 @@ class ClientDB:
         self.session.add(img)
         self.session.commit()
 
+    def get_search_contact(self, login):
+        """ Search contact in Contacts"""
+        contacts = self.session.query(self.Contacts.contact).filter(self.Contacts.contact.ilike(f'%{login}%'))
+        return [contact[0] for contact in contacts.all()]
 
-if __name__ == '__main__':
-    client = ClientDB('maria')
-    client.get_known_users()
-    client.get_contacts()
+    def get_search_message(self, contact, text):
+        """Search message in history"""
+        query = self.session.query(self.HistoryMessages).filter(self.HistoryMessages.contact.like(f'{contact}'),
+                                                      self.HistoryMessages.message.ilike(f'%{text}%'))
+        return [(history_row.contact, history_row.direction, history_row.message, history_row.date)
+                for history_row in query.all()]
