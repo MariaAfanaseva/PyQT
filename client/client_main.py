@@ -547,7 +547,7 @@ def main():
     mongo_db = MongoDbClient(client_login)
 
     connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    
+
     encrypt_decrypt = EncryptDecrypt(client_login)
 
     client_transport = ClientTransport(connection, client_login,

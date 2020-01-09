@@ -216,7 +216,7 @@ class ClientMainWindow(QMainWindow):
                 self.user_interface.messageHistoryEdit.insertHtml(f'<br>')
             elif item[1] == 'out':
                 time = f'<b style="color:#006400">Outgoing message from' \
-                    f' {datetime.datetime.now().replace(microsecond=0)}:</b><br>'
+                    f' {item[3].replace(microsecond=0)}:</b><br>'
                 self.user_interface.messageHistoryEdit.insertHtml(time)
                 self.user_interface.messageHistoryEdit.insertHtml(item[2])
                 self.user_interface.messageHistoryEdit.insertHtml(f'<br>')
@@ -225,7 +225,7 @@ class ClientMainWindow(QMainWindow):
     def history_list_update(self):
         """Message history update method."""
         list_message = sorted(self.database_client.get_history(self.current_chat),
-                               key=lambda item: item[3])  # sort by date
+                              key=lambda item: item[3])  # sort by date
 
         self.show_history(list_message)
 
@@ -285,9 +285,7 @@ class ClientMainWindow(QMainWindow):
         """Search message in history"""
         text = self.user_interface.searchMessageTextEdit.toPlainText()
         if text:
-            list_message = sorted(self.database_client.get_search_message
-                                  (self.current_chat, text),
-                                  key=lambda item: item[3])  # sort by date
+            list_message = self.database_client.get_search_message(self.current_chat, text)
             self.show_history(list_message)
         else:
             self.history_list_update()

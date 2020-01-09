@@ -1,7 +1,8 @@
-from sqlalchemy import create_engine, Column, String, Integer, DateTime, Text, BLOB
+from sqlalchemy import create_engine, Column, String, Integer, DateTime, Text, asc
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import datetime
+import re
 
 Base = declarative_base()
 
@@ -134,7 +135,17 @@ class ClientDB:
 
     def get_search_message(self, contact, text):
         """Search message in history"""
-        query = self.session.query(self.HistoryMessages).filter(self.HistoryMessages.contact.like(f'{contact}'),
-                                                      self.HistoryMessages.message.ilike(f'%{text}%'))
+        query = self.session.query(self.HistoryMessages).\
+            filter(self.HistoryMessages.contact.like(f'{contact}'),
+                   self.HistoryMessages.message.ilike(f'%{text}%'))
+        query = query.order_by(asc(self.HistoryMessages.date))  # sort by date
+        messages = []
+        for history_row in query.all():
+            html_message = history_row.message
+            matches = re.findall(r'>[^<>]+</p|>[^<>]+</span', html_message)
+            for message in matches:
+                if text.lower() in message.lower():
+                    messages.append(history_row)
+                    break
         return [(history_row.contact, history_row.direction, history_row.message, history_row.date)
-                for history_row in query.all()]
+                for history_row in messages]
