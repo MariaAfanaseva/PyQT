@@ -1,8 +1,9 @@
+import datetime
+import re
+import asyncio
 from sqlalchemy import create_engine, Column, String, Integer, DateTime, Text, asc
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-import datetime
-import re
 
 Base = declarative_base()
 
@@ -133,7 +134,15 @@ class ClientDB:
         contacts = self.session.query(self.Contacts.contact).filter(self.Contacts.contact.ilike(f'%{login}%'))
         return [contact[0] for contact in contacts.all()]
 
-    def get_search_message(self, contact, text):
+    def async_search_message(self, contact, text):
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        task = loop.create_task(self.get_search_message(contact, text))
+        result = loop.run_until_complete(task)
+        loop.close()
+        return result
+
+    async def get_search_message(self, contact, text):
         """Search message in history"""
         query = self.session.query(self.HistoryMessages).\
             filter(self.HistoryMessages.contact.like(f'{contact}'),

@@ -285,7 +285,7 @@ class ClientMainWindow(QMainWindow):
         """Search message in history"""
         text = self.user_interface.searchMessageTextEdit.toPlainText()
         if text:
-            list_message = self.database_client.get_search_message(self.current_chat, text)
+            list_message = self.database_client.async_search_message(self.current_chat, text)
             self.show_history(list_message)
         else:
             self.history_list_update()
