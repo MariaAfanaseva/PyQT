@@ -16,7 +16,7 @@ class EncryptDecrypt:
     HASH_SIZE = SHA1.digest_size  # SHA1 Hash size in bytes
     KEY_SIZE = 2048  # RSA Key size in bits
     INPUT_BLOCK_SIZE = int(KEY_SIZE / 8 - 2 * HASH_SIZE - 2)
-    OUTPUT_BLOCK_SIZE = 512  # Encrypted block key plus encrypted block
+    OUTPUT_BLOCK_SIZE = 256  # Encrypted block key plus encrypted block
 
     """The class creates keys, encodes and decodes messages"""
     def __init__(self, user_login):
@@ -95,7 +95,7 @@ class EncryptDecrypt:
                 block = encrypted_message_str
                 decrypted = self.decrypter.decrypt(block)
                 decrypted_message += decrypted.decode('utf8')
-
+                
         except (ValueError, TypeError):
             LOGGER.warning(
                 self, 'Error', 'Failed to decode message.')
