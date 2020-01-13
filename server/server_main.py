@@ -20,7 +20,7 @@ from common.variables import (CONFIG_FILE_NAME, MAX_CONNECTIONS, TO, USER, ACCOU
                               TIME, PRESENCE, FROM, EXIT, GET_CONTACTS, PUBLIC_KEY, ACTION,
                               MESSAGE_TEXT, MESSAGE, LIST_INFO, ADD_CONTACT, DELETE_CONTACT,
                               USERS_REQUEST, PUBLIC_KEY_REQUEST, RESPONSE_205, DEFAULT_PORT,
-                              SEND_AVATAR, IMAGE, GET_AVATAR)
+                              SEND_AVATAR, IMAGE, GET_AVATAR, RESPONSE_206, GET_GROUPS)
 from common.utils import get_msg, send_msg
 from common.errors import IncorrectDataNotDictError
 from common.decos import Logging
@@ -355,6 +355,15 @@ class Server(threading.Thread, QObject):
             send_msg(client, answer)
             LOGGER.debug(f'Contact list sent to {answer [LIST_INFO]} to user - {message[USER]}\n')
 
+        elif ACTION in message and message[ACTION] == GET_GROUPS and USER in message \
+                and self.names[message[USER]] == client:
+            answer = {
+                RESPONSE: 202,
+                LIST_INFO: [group[1] for group in self.database.get_groups()]
+                }
+            send_msg(client, answer)
+            LOGGER.debug(f'Groups list sent to {answer [LIST_INFO]} to user - {message[USER]}\n')
+
         elif ACTION in message and message[ACTION] == ADD_CONTACT \
                 and ACCOUNT_NAME in message and USER in message \
                 and self.names[message[USER]] == client:
@@ -474,6 +483,21 @@ class Server(threading.Thread, QObject):
             self.database.remove_user(login)
         self.update_users_list_message()
         return True
+
+    @Logging()
+    def send_groups(self):
+        for client in self.names:
+            try:
+                msg = RESPONSE_206
+                msg[LIST_INFO] = [group[1] for group in self.database.get_groups()]
+                send_msg(self.names[client], msg)
+            except OSError:
+                self.remove_client(self.names[client])
+
+    @Logging()
+    def create_new_group(self, group_name):
+        self.database.add_new_group(group_name)
+        self.send_groups()
 
     @Logging()
     def close_socket(self):

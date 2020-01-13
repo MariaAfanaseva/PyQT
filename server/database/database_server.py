@@ -96,6 +96,36 @@ class ServerDB:
             return "<User('%s','%s,'%s')>" % \
                    (self.user_id, self.send, self.accepted)
 
+    class Groups(Base):
+        __tablename__ = 'groups'
+        group_id = Column(Integer, primary_key=True)
+        group_name = Column(String, unique=True)
+
+        def __init__(self, group_name):
+            self.group_name = group_name
+
+        def __repr__(self):
+            return "<Group('%s','%s)>" % \
+                   (self.group_id, self.group_name)
+
+    class GroupsMessages(Base):
+        __tablename__ = 'groups_messages'
+        id = Column(Integer, primary_key=True)
+        group_id = Column(Integer)
+        from_user = Column(String)
+        message = Column(Text)
+        date = Column(DateTime)
+
+        def __init__(self, group_id, from_user, message, date):
+            self.group_id = group_id
+            self.from_user = from_user
+            self.message = message
+            self.date = date
+
+        def __repr__(self):
+            return "<Group messages('%s','%s, '%s','%s)>" % \
+                   (self.group_id, self.from_user, self.message, self.date)
+
     def __init__(self, path):
         # echo=False - disable logging (output sql queries)
         # pool_recycle - By default, the connection to the database is terminated after 8 hours of inactivity.
@@ -249,18 +279,18 @@ class ServerDB:
             user.image = img_path
         self.session.commit()
 
+    def add_new_group(self, group_name):
+        group = self.Groups(group_name)
+        self.session.add(group)
+        self.session.commit()
 
-if __name__ == '__main__':
-    server = ServerDB()
-    server.login_user('maria4', '127.0.0.1', 7777)
-    server.login_user('maria5', '127.0.0.1', 7777)
-    server.login_user('maria6', '127.0.0.1', 7777)
-    # print(server.users_active_list())
-    # server.user_logout('maria2')
-    # print(server.history_login('maria2'))
-    # print(server.users_all())
-    # server.add_contact('maria2', 'maria1')
-    # server.add_contact('maria2', 'maria')
-    # server.delete_contact('maria2', 'maria1')
-    # print(server.get_contacts('maria2'))
-    # server.sending_message('maria5', 'maria3')
+    def get_groups(self):
+        groups = self.session.query(self.Groups.group_id, self.Groups.group_name)
+        return groups.all()
+
+    def add_group_message(self, group_id, from_user, message):
+        new_message = self.GroupsMessages(group_id, from_user, message, date=datetime.datetime.now())
+        self.session.add(new_message)
+        self.session.commit()
+
+

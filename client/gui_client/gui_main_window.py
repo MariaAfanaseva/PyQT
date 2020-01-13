@@ -10,6 +10,7 @@ from gui_client.gui_del_contact import DelContactDialog
 from database.database_client import ClientDB
 from gui_client.gui_image import ImageAddForm
 from gui_client.text_edit import TextEdit
+from common.variables import get_path
 
 
 class ClientMainWindow(QMainWindow):
@@ -69,6 +70,7 @@ class ClientMainWindow(QMainWindow):
 
         self.field_disable()
         self.update_clients_list()
+        self.update_groups_list()
         self.show_avatar()
         self.show()
 
@@ -167,7 +169,7 @@ class ClientMainWindow(QMainWindow):
                 self, 'Warning', 'User is not online.')
 
     def avatar_contact_show(self, contact):
-        path = f'img/avatar_{contact}.jpg'
+        path = get_path(contact)
         if os.path.exists(path):
             pix_img = QPixmap(path)
             pix_img_size = pix_img.scaled(70, 70, Qt.KeepAspectRatio)
@@ -261,7 +263,7 @@ class ClientMainWindow(QMainWindow):
         self.img_window.user_interface.saveButton.clicked.connect(self.client_transport.send_avatar_to_server)
 
     def show_avatar(self):
-        path = f'img/avatar_{self.login}.jpg'
+        path = get_path(self.login)
         if os.path.exists(path):
             pix_img = QPixmap(path)
             pix_img_size = pix_img.scaled(70, 70, Qt.KeepAspectRatio)
@@ -289,6 +291,16 @@ class ClientMainWindow(QMainWindow):
             self.show_history(list_message)
         else:
             self.history_list_update()
+
+    def update_groups_list(self):
+        """'Updating the groups list on the main window."""
+        self.groups_list = self.database_client.get_groups()
+        self.groups_model = QStandardItemModel()
+        for group in sorted(self.groups_list):
+            item = QStandardItem(group)
+            item.setEditable(False)
+            self.groups_model.appendRow(item)
+        self.user_interface.groupslistView.setModel(self.groups_model)
 
     @pyqtSlot(str)
     def get_message(self, sender):
@@ -329,10 +341,15 @@ class ClientMainWindow(QMainWindow):
     def send_enter(self):
         self.send_message()
 
+    @pyqtSlot()
+    def show_new_group(self):
+        self.update_groups_list()
+
     def make_connection_with_signals(self, client_obj):
         """Signal connection method."""
         client_obj.new_message_signal.connect(self.get_message)
         client_obj.connection_lost_signal.connect(self.connection_lost)
+        client_obj.new_group_signal.connect(self.show_new_group)
 
 
 if __name__ == '__main__':

@@ -17,7 +17,7 @@ from common.variables import (DEFAULT_IP_ADDRESS, DEFAULT_PORT, TO, USER, ACCOUN
                               RESPONSE_511, ERROR, DATA, RESPONSE, TIME, PRESENCE, FROM,
                               EXIT, GET_CONTACTS, PUBLIC_KEY, ACTION, MESSAGE_TEXT, MESSAGE,
                               LIST_INFO, ADD_CONTACT, DELETE_CONTACT, USERS_REQUEST,
-                              PUBLIC_KEY_REQUEST, SEND_AVATAR, IMAGE, GET_AVATAR)
+                              PUBLIC_KEY_REQUEST, SEND_AVATAR, IMAGE, GET_AVATAR, GET_GROUPS, get_path)
 from common.errors import (IncorrectDataNotDictError, FieldMissingError,
                            IncorrectCodeError, ServerError)
 from common.decos import Logging
@@ -64,6 +64,7 @@ class Client(threading.Thread, QObject):
     #  Main window signals
     new_message_signal = pyqtSignal(str)
     connection_lost_signal = pyqtSignal()
+    new_group_signal = pyqtSignal()
 
     def __init__(self, connection, server_ip, server_port, client_login,
                  client_password, database, mongo_db, encrypt_decrypt):
@@ -208,6 +209,16 @@ class Client(threading.Thread, QObject):
                 self.database.add_contacts(contacts_list)
             print('Contact list updated successfully.')
             self.progressbar_signal.emit()
+        try:
+            groups_list = self.get_groups()
+        except (ConnectionResetError, ServerError):
+            LOGGER.error('Contact list request error.')
+            self.connection_lack()
+        else:
+            with LOCK_DATABASE:
+                self.database.add_groups(groups_list)
+            print('Contact list updated successfully.')
+            self.progressbar_signal.emit()
 
     @Logging()
     def create_presence_msg(self, account_name, pubkey):
@@ -222,13 +233,8 @@ class Client(threading.Thread, QObject):
         return msg
 
     @Logging()
-    def get_users_all(self):
-        LOGGER.debug(f'Request a list of known users {self.client_login}')
-        request = {
-            ACTION: USERS_REQUEST,
-            TIME: time.time(),
-            ACCOUNT_NAME: self.client_login
-        }
+    def _get_info(self, request):
+        LOGGER.debug(f'Formed request {request}')
         with LOCK_SOCKET:
             send_msg(self.connection, request)
             answer = get_msg(self.connection)
@@ -238,22 +244,34 @@ class Client(threading.Thread, QObject):
             raise ServerError('Invalid server response.')
 
     @Logging()
+    def get_users_all(self):
+        LOGGER.debug(f'Request a list of known users {self.client_login}')
+        request = {
+            ACTION: USERS_REQUEST,
+            TIME: time.time(),
+            ACCOUNT_NAME: self.client_login
+        }
+        return self._get_info(request)
+
+    @Logging()
     def get_contacts_all(self):
         LOGGER.debug(f'Request contact sheet for user {self.client_login}.')
-        message = {
+        request = {
             ACTION: GET_CONTACTS,
             TIME: time.time(),
             USER: self.client_login
         }
-        LOGGER.debug(f'Formed request {message}')
-        with LOCK_SOCKET:
-            send_msg(self.connection, message)
-            answer = get_msg(self.connection)
-        LOGGER.debug(f'Answer received {answer}')
-        if RESPONSE in answer and answer[RESPONSE] == 202:
-            return answer[LIST_INFO]
-        else:
-            raise ServerError
+        return self._get_info(request)
+
+    @Logging()
+    def get_groups(self):
+        LOGGER.debug(f'Request groups for {self.client_login}.')
+        request = {
+            ACTION: GET_GROUPS,
+            TIME: time.time(),
+            USER: self.client_login
+        }
+        return self._get_info(request)
 
     @Logging()
     def answer_server_presence(self, msg):
@@ -295,6 +313,7 @@ class Client(threading.Thread, QObject):
                     self.connection_lost_signal.emit()
                     break
                 else:
+                    print(message)
                     if ACTION in message and message[ACTION] == MESSAGE \
                             and TO in message and FROM in message \
                             and MESSAGE_TEXT in message and message[TO] == self.client_login:
@@ -305,10 +324,16 @@ class Client(threading.Thread, QObject):
                         LOGGER.info(f'Received message from user {user_login}:\n{decrypted_message}.')
                         self.database.save_message(user_login, 'in', decrypted_message)
                         self.new_message_signal.emit(user_login)
+
                     elif RESPONSE in message and message[RESPONSE] == 205:
                         with LOCK_DATABASE:
                             self.database.add_known_users(message[LIST_INFO])
                             self.mongo_db.add_known_users(message[LIST_INFO])
+
+                    elif RESPONSE in message and message[RESPONSE] == 206:
+                        with LOCK_DATABASE:
+                            self.database.add_groups(message[LIST_INFO])
+                            self.new_group_signal.emit()
                     else:
                         LOGGER.error(f'Invalid message received from server: {message}')
 
@@ -370,7 +395,7 @@ class ClientTransport:
             LOGGER.debug(f'Loaded avatar for {login}')
             img = answer[DATA]
             img_data = base64.b64decode(img)
-            filename = f'img/avatar_{login}.jpg'
+            filename = get_path(login)
             with open(filename, 'wb') as f:
                 f.write(img_data)
             return True
@@ -472,7 +497,7 @@ class ClientTransport:
 
     # @Logging()
     def send_avatar_to_server(self):
-        with open(f'img/avatar_{self.client_login}.jpg', 'rb') as image_file:
+        with open(get_path(self.client_login), 'rb') as image_file:
             encoded_img = base64.b64encode(image_file.read()).decode('utf8')
 
         message = {

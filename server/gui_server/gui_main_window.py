@@ -2,11 +2,12 @@ import sys
 from PyQt5 import QtGui
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QWidget, QApplication, QTableView, QMainWindow, \
-    QAction, QLabel, QGridLayout
+    QAction, QLabel, QGridLayout, QMenu
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from gui_server.gui_settings_window import SettingsWindow
 from gui_server.gui_registration_user import RegistrationDialog
 from gui_server.gui_remove_user import RemoveUserDialog
+from gui_server.gui_create_group import CreateGroupDialog
 
 
 class MainWindow(QMainWindow):
@@ -42,12 +43,24 @@ class MainWindow(QMainWindow):
         rm_user = QAction('Remove user', self)
         rm_user.triggered.connect(self.user_remove)
 
+        menu_users = QMenu('Users', self)
+        menu_users.setObjectName("menu_users")
+        menu_users.addAction(add_user)
+        menu_users.addAction(rm_user)
+
+        create_group = QAction('Create group', self)
+        create_group.triggered.connect(self.create_group)
+
+        menu_groups = QMenu('Groups', self)
+        menu_groups.setObjectName("menu_groups")
+        menu_groups.addAction(create_group)
+
         self.toolbar = self.addToolBar('MainBar')
         self.toolbar.setFont(QtGui.QFont('Montserrat', 10))
         self.toolbar.addAction(update_connected_users_action)
+        self.toolbar.addAction(menu_users.menuAction())
+        self.toolbar.addAction(menu_groups.menuAction())
         self.toolbar.addAction(server_settings_action)
-        self.toolbar.addAction(add_user)
-        self.toolbar.addAction(rm_user)
         self.toolbar.addAction(exit_action)
 
         self.central_widget = QWidget(self)
@@ -107,6 +120,10 @@ class MainWindow(QMainWindow):
 
         #  Align Date Column
         self.connected_users_table.resizeColumnToContents(3)
+
+    def create_group(self):
+        self.create_group_window = CreateGroupDialog(self.server)
+        self.create_group_window.init_ui()
 
     @pyqtSlot()
     def update_connected_users_slot(self):

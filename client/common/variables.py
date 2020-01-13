@@ -38,6 +38,7 @@ USERS_REQUEST = 'get_users'
 PUBLIC_KEY_REQUEST = 'get_pubkey'
 SEND_AVATAR = 'send_avatar'
 GET_AVATAR = 'get_avatar'
+GET_GROUPS = 'get_groups'
 
 # code
 BASIC_NOTICE = 100
@@ -66,3 +67,13 @@ RESPONSE_511 = {
 RESPONSE_205 = {
     RESPONSE: 205
 }
+
+# 206
+RESPONSE_206 = {
+    RESPONSE: 206,
+    LIST_INFO: None
+}
+
+
+def get_path(name):
+    return f'img/avatar_{name}.jpg'

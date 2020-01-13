@@ -50,16 +50,25 @@ class ClientDB:
             return "<User('%s','%s', '%s, '%s')>" % \
                    (self.contact, self.direction, self.message, self.date)
 
-    class Image(Base):
-        __tablename__ = 'image'
-        id = Column(Integer, primary_key=True)
-        path = Column(String)
+    class Groups(Base):
+        __tablename__ = 'groups'
+        group_id = Column(Integer, primary_key=True)
+        group_name = Column(String, unique=True)
 
-        def __init__(self, path):
-            self.path = path
+        def __init__(self, group_name):
+            self.group_name = group_name
 
         def __repr__(self):
-            return "<Image(%s)>" % self.path
+            return "<Group('%s','%s)>" % \
+                   (self.group_id, self.group_name)
+
+    class GroupsMessages(Base):
+        __tablename__ = 'groups_messages'
+        id = Column(Integer, primary_key=True)
+        group_id = Column(Integer)
+        from_user = Column(String)
+        message = Column(Text)
+        date = Column(DateTime)
 
     def __init__(self, login):
         # echo - logging, 7200 - seconds restart connect
@@ -124,11 +133,6 @@ class ClientDB:
         return [(history_row.contact, history_row.direction, history_row.message, history_row.date)
                 for history_row in query.all()]
 
-    def add_image(self, path):
-        img = self.Image(path)
-        self.session.add(img)
-        self.session.commit()
-
     def get_search_contact(self, login):
         """ Search contact in Contacts"""
         contacts = self.session.query(self.Contacts.contact).filter(self.Contacts.contact.ilike(f'%{login}%'))
@@ -158,3 +162,19 @@ class ClientDB:
                     break
         return [(history_row.contact, history_row.direction, history_row.message, history_row.date)
                 for history_row in messages]
+
+    def add_group(self, group):
+        if not self.session.query(self.Groups).filter_by(group_name=group).count():
+            group = self.Groups(group)
+            self.session.add(group)
+            self.session.commit()
+
+    def add_groups(self, groups_list):
+        #  groups-list - groups list from server
+        self.session.query(self.Groups).delete()
+        self.session.commit()
+        for group in groups_list:
+            self.add_group(group)
+
+    def get_groups(self):
+        return [group[0] for group in self.session.query(self.Groups.group_name).all()]

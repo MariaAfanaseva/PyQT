@@ -33,6 +33,7 @@ USERS_REQUEST = 'get_users'
 PUBLIC_KEY_REQUEST = 'get_pubkey'
 SEND_AVATAR = 'send_avatar'
 GET_AVATAR = 'get_avatar'
+GET_GROUPS = 'get_groups'
 
 # code
 OK = 200
@@ -60,4 +61,10 @@ RESPONSE_205 = {
     RESPONSE: 205,
     LIST_INFO: None
 
+}
+
+# 206
+RESPONSE_206 = {
+    RESPONSE: 206,
+    LIST_INFO: None
 }

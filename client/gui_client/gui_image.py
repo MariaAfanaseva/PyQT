@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import QDialog, QApplication, QFileDialog
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt
 from gui_client.image_config import Ui_Form
+from common.variables import get_path
 
 
 class ImageAddForm(QDialog):
@@ -17,7 +18,7 @@ class ImageAddForm(QDialog):
         self.pix_img_size = None
         self.convert_pix_img_size = None
         self.image = None
-        self.path = f'img/avatar_{self.login}.jpg'
+        self.avatar_path = get_path(self.login)
         self.user_interface = Ui_Form()
         super().__init__()
 
@@ -35,8 +36,7 @@ class ImageAddForm(QDialog):
         self.user_interface.cancelButton.clicked.connect(self.close)
         self.user_interface.saveButton.clicked.connect(self.save_img)
 
-        if os.path.exists(self.path):
-            self.show_img()
+        self.show_img(self.avatar_path)
         self.show()
 
     def buttons_unlock(self):
@@ -60,17 +60,17 @@ class ImageAddForm(QDialog):
         self.user_interface.cancelButton.setDisabled(True)
 
     def open_image(self):
-        self.path = QFileDialog.getOpenFileName(self, 'Open file', '/home')[0]
-        self.show_img()
+        path = QFileDialog.getOpenFileName(self, 'Open file', '/home')[0]
+        self.show_img(path)
 
-    def show_img(self):
-        if os.path.exists(self.path):
-            pix_img = QPixmap(self.path)
+    def show_img(self, path):
+        if os.path.exists(path):
+            pix_img = QPixmap(path)
             self.pix_img_size = pix_img.scaled(300, 300, Qt.KeepAspectRatio)
             self.user_interface.imageLabel.setPixmap(self.pix_img_size)
             self.user_interface.imageLabel.setAlignment(Qt.AlignCenter)
             self.buttons_unlock()
-            self.image = Image.open(self.path)
+            self.image = Image.open(path)
 
     def convert_img_show(self, image):
         # image = image.resize((300, 300), Image.NEAREST)
@@ -138,10 +138,9 @@ class ImageAddForm(QDialog):
 
     def save_img(self):
         if self.convert_pix_img_size:
-            self.convert_pix_img_size.save(self.path)
+            self.convert_pix_img_size.save(self.avatar_path)
         else:
-            self.pix_img_size.save(self.path)
-        self.database.add_image(self.path)
+            self.pix_img_size.save(self.avatar_path)
         self.close()
 
 
