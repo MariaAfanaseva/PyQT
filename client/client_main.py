@@ -17,7 +17,8 @@ from common.variables import (DEFAULT_IP_ADDRESS, DEFAULT_PORT, TO, USER, ACCOUN
                               RESPONSE_511, ERROR, DATA, RESPONSE, TIME, PRESENCE, FROM,
                               EXIT, GET_CONTACTS, PUBLIC_KEY, ACTION, MESSAGE_TEXT, MESSAGE,
                               LIST_INFO, ADD_CONTACT, DELETE_CONTACT, USERS_REQUEST,
-                              PUBLIC_KEY_REQUEST, SEND_AVATAR, IMAGE, GET_AVATAR, GET_GROUPS, get_path)
+                              PUBLIC_KEY_REQUEST, SEND_AVATAR, IMAGE, GET_AVATAR,
+                              GET_GROUPS, get_path, GET_MESSAGES_GROUPS, MESSAGE_GROUP)
 from common.errors import (IncorrectDataNotDictError, FieldMissingError,
                            IncorrectCodeError, ServerError)
 from common.decos import Logging
@@ -63,6 +64,7 @@ class Client(threading.Thread, QObject):
 
     #  Main window signals
     new_message_signal = pyqtSignal(str)
+    new_message_group_signal = pyqtSignal(str)
     connection_lost_signal = pyqtSignal()
     new_group_signal = pyqtSignal()
 
@@ -219,6 +221,16 @@ class Client(threading.Thread, QObject):
                 self.database.add_groups(groups_list)
             print('Contact list updated successfully.')
             self.progressbar_signal.emit()
+        try:
+            messages_groups_list = self.get_messages_groups()
+        except (ConnectionResetError, ServerError):
+            LOGGER.error('Contact list request error.')
+            self.connection_lack()
+        else:
+            with LOCK_DATABASE:
+                self.database.add_messages_groups(messages_groups_list)
+            print('Contact list updated successfully.')
+            self.progressbar_signal.emit()
 
     @Logging()
     def create_presence_msg(self, account_name, pubkey):
@@ -274,6 +286,16 @@ class Client(threading.Thread, QObject):
         return self._get_info(request)
 
     @Logging()
+    def get_messages_groups(self):
+        LOGGER.debug(f'Request messages groups for.')
+        request = {
+            ACTION: GET_MESSAGES_GROUPS,
+            TIME: time.time(),
+            USER: self.client_login
+        }
+        return self._get_info(request)
+
+    @Logging()
     def answer_server_presence(self, msg):
         LOGGER.debug(f'Parsing a message from the server - {msg}')
         if RESPONSE in msg:
@@ -313,7 +335,6 @@ class Client(threading.Thread, QObject):
                     self.connection_lost_signal.emit()
                     break
                 else:
-                    print(message)
                     if ACTION in message and message[ACTION] == MESSAGE \
                             and TO in message and FROM in message \
                             and MESSAGE_TEXT in message and message[TO] == self.client_login:
@@ -324,6 +345,13 @@ class Client(threading.Thread, QObject):
                         LOGGER.info(f'Received message from user {user_login}:\n{decrypted_message}.')
                         self.database.save_message(user_login, 'in', decrypted_message)
                         self.new_message_signal.emit(user_login)
+
+                    if ACTION in message and message[ACTION] == MESSAGE_GROUP \
+                            and TO in message and FROM in message \
+                            and MESSAGE_TEXT in message:
+                        with LOCK_DATABASE:
+                            self.database.add_group_message(message[TO], message[FROM], message[MESSAGE_TEXT])
+                        self.new_message_group_signal.emit(message[TO])
 
                     elif RESPONSE in message and message[RESPONSE] == 205:
                         with LOCK_DATABASE:
@@ -427,7 +455,31 @@ class ClientTransport:
                     LOGGER.info(f'{answer[ERROR]}. User {contact_name} is offline.')
                     return f'User {contact_name} is offline!'
         LOGGER.debug(f'Message sent: {message},from {self.client_login} username {contact_name}')
-        self.database.save_message(contact_name, 'out', message_text)
+        with LOCK_DATABASE:
+            self.database.save_message(contact_name, 'out', message_text)
+        return True
+
+    @Logging()
+    def send_group_message(self, group_name, message_text):
+        message = {
+            ACTION: MESSAGE_GROUP,
+            FROM: self.client_login,
+            TO: group_name,
+            TIME: time.time(),
+            MESSAGE_TEXT: message_text
+        }
+        with LOCK_SOCKET:
+            try:
+                send_msg(self.connection, message)
+                answer = get_msg(self.connection)
+            except (ConnectionResetError, ConnectionAbortedError, OSError):
+                LOGGER.critical('Lost server connection.')
+                return False
+            else:
+                if answer[RESPONSE] == 200:
+                    LOGGER.info(f'Successfully sent a message for the group {group_name} to the server.')
+        with LOCK_DATABASE:
+            self.database.add_group_message(group_name, self.client_login, message_text)
         return True
 
     @Logging()

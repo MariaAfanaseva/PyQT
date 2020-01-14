@@ -9,7 +9,7 @@ class LoadingWindow(QDialog):
     def __init__(self, app):
         self.app = app
         self.message_window = QMessageBox()
-        self.progress = 24
+        self.progress = 19
         super().__init__()
 
     def init_ui(self):
@@ -25,7 +25,7 @@ class LoadingWindow(QDialog):
 
     @pyqtSlot()
     def change_value(self):
-        self.progress += 25
+        self.progress += 16
         self.user_interface.loadingProgressBar.setValue(self.progress)
         if self.progress == 99:
             self.close()

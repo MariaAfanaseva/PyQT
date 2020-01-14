@@ -111,7 +111,7 @@ class ServerDB:
     class GroupsMessages(Base):
         __tablename__ = 'groups_messages'
         id = Column(Integer, primary_key=True)
-        group_id = Column(Integer)
+        group_id = Column(ForeignKey('groups.group_id'))
         from_user = Column(String)
         message = Column(Text)
         date = Column(DateTime)
@@ -288,9 +288,14 @@ class ServerDB:
         groups = self.session.query(self.Groups.group_id, self.Groups.group_name)
         return groups.all()
 
-    def add_group_message(self, group_id, from_user, message):
+    def add_group_message(self, group_name, from_user, message):
+        group_id = self.session.query(self.Groups).filter_by(group_name=group_name).first().group_id
         new_message = self.GroupsMessages(group_id, from_user, message, date=datetime.datetime.now())
         self.session.add(new_message)
         self.session.commit()
 
-
+    def get_messages_groups(self):
+        query = self.session.query(self.GroupsMessages)
+        return [(history_row.group_id, history_row.from_user, history_row.message,
+                 history_row.date.strftime('%y-%m-%d %H:%M:%S'))
+                for history_row in query.all()]

@@ -21,7 +21,9 @@ class ClientMainWindow(QMainWindow):
         self.database_client = database_client
         self.login = self.client_transport.client_login
         self.message_window = QMessageBox()
+        self.user_interface = None
         self.current_chat = None
+        self.current_group = None
         super().__init__()
 
     def init_ui(self):
@@ -64,6 +66,8 @@ class ClientMainWindow(QMainWindow):
         self.user_interface.clearMessageButton.clicked.connect(self.clear_edit_message)
         # Double-click on the contact list is sent to the handler
         self.user_interface.contactsListView.doubleClicked.connect(self.select_active_user)
+        # Double-click on the groups list
+        self.user_interface.groupslistView.doubleClicked.connect(self.select_active_group)
 
         self.user_interface.searchContactPushButton.clicked.connect(self.search_contact)
         self.user_interface.searchMessagePushButton.clicked.connect(self.search_message)
@@ -140,25 +144,45 @@ class ClientMainWindow(QMainWindow):
 
     def select_active_user(self):
         """Interlocutor selection method."""
+        self.current_group = None
         self.current_chat = self.user_interface.contactsListView.currentIndex().data()
         self.set_active_user()
+
+    def select_active_group(self):
+        self.current_chat = None
+        self.current_group = self.user_interface.groupslistView.currentIndex().data()
+        self.set_active()
+        self.history_group_update()
+
+    def history_group_update(self):
+        list_message = sorted(self.database_client.get_messages_group(self.current_group),
+                              key=lambda item: item[2])  # sort by date
+
+        self.show_history(list_message)
+
+    def set_active_group(self):
+        self.set_active()
+        self.history_group_update()
+
+    def set_active(self):
+        self.user_interface.clearMessageButton.setDisabled(False)
+        self.user_interface.sendMessageButton.setDisabled(False)
+        self.user_interface.messageEdit.setDisabled(False)
+        self.user_interface.boldButton.setDisabled(False)
+        self.user_interface.italicButton.setDisabled(False)
+        self.user_interface.underlinedButton.setDisabled(False)
+        self.user_interface.normalTextButton.setDisabled(False)
+        self.user_interface.smileButton.setDisabled(False)
+        self.user_interface.smileButton_2.setDisabled(False)
+        self.user_interface.searchMessageTextEdit.setDisabled(False)
+        self.user_interface.smileButton_3.setDisabled(False)
+        self.user_interface.searchMessagePushButton.setDisabled(False)
 
     def set_active_user(self):
         """The method of activating chat with the interlocutor."""
         if self.client_transport.is_received_pubkey(self.current_chat):
             self.user_interface.messageLabel.setText(f'Enter message for {self.current_chat}:')
-            self.user_interface.clearMessageButton.setDisabled(False)
-            self.user_interface.sendMessageButton.setDisabled(False)
-            self.user_interface.messageEdit.setDisabled(False)
-            self.user_interface.boldButton.setDisabled(False)
-            self.user_interface.italicButton.setDisabled(False)
-            self.user_interface.underlinedButton.setDisabled(False)
-            self.user_interface.normalTextButton.setDisabled(False)
-            self.user_interface.smileButton.setDisabled(False)
-            self.user_interface.smileButton_2.setDisabled(False)
-            self.user_interface.searchMessageTextEdit.setDisabled(False)
-            self.user_interface.smileButton_3.setDisabled(False)
-            self.user_interface.searchMessagePushButton.setDisabled(False)
+            self.set_active()
 
             self.history_list_update()
 
@@ -182,14 +206,22 @@ class ClientMainWindow(QMainWindow):
             return
         else:
             self.user_interface.messageEdit.clear()
-            is_success = self.client_transport.send_user_message(self.current_chat, message_text)
-            if not is_success:
-                self.message_window.critical(self, 'Error', 'Lost server connection!')
-                self.close()
-            elif is_success is True:
-                self.add_message_history(message_text)
-            else:
-                self.message_window.warning(self, 'Warning', is_success)
+            if self.current_chat:
+                is_success = self.client_transport.send_user_message(self.current_chat, message_text)
+                if not is_success:
+                    self.message_window.critical(self, 'Error', 'Lost server connection!')
+                    self.close()
+                elif is_success is True:
+                    self.add_message_history(message_text)
+                else:
+                    self.message_window.warning(self, 'Warning', is_success)
+            elif self.current_group:
+                is_success = self.client_transport.send_group_message(self.current_group, message_text)
+                if not is_success:
+                    self.message_window.critical(self, 'Error', 'Lost server connection!')
+                    self.close()
+                else:
+                    self.add_message_history(message_text)
 
     def add_message_history(self, message):
         """Add message user in history"""
@@ -200,6 +232,23 @@ class ClientMainWindow(QMainWindow):
         self.user_interface.messageHistoryEdit.insertHtml(f'<br>')
         self.user_interface.messageHistoryEdit.ensureCursorVisible()
 
+    def show_history_group(self, start_index, length, list_message):
+        for i in range(start_index, length):
+            item = list_message[i]
+            if item[0] == self.login:
+                time = f'<b style="color:#006400">Outgoing message from' \
+                    f' {item[2]}:</b><br>'
+                self.user_interface.messageHistoryEdit.insertHtml(time)
+                self.user_interface.messageHistoryEdit.insertHtml(item[1])
+                self.user_interface.messageHistoryEdit.insertHtml(f'<br>')
+            else:
+                time = f'<b style="color:#ff0000">Incoming message from {item[0]}' \
+                    f' {item[2]}:</b><br>'
+                self.user_interface.messageHistoryEdit.insertHtml(time)
+                self.user_interface.messageHistoryEdit.insertHtml(item[1])
+                self.user_interface.messageHistoryEdit.insertHtml(f'<br>')
+        self.user_interface.messageHistoryEdit.ensureCursorVisible()
+
     def show_history(self, list_message):
         self.user_interface.messageHistoryEdit.clear()
 
@@ -208,6 +257,12 @@ class ClientMainWindow(QMainWindow):
         if length > 20:
             start_index = length - 20
 
+        if self.current_chat:
+            self.show_history_contact(start_index, length, list_message)
+        elif self.current_group:
+            self.show_history_group(start_index, length, list_message)
+
+    def show_history_contact(self, start_index, length, list_message):
         for i in range(start_index, length):
             item = list_message[i]
             if item[1] == 'in':
@@ -286,11 +341,18 @@ class ClientMainWindow(QMainWindow):
     def search_message(self):
         """Search message in history"""
         text = self.user_interface.searchMessageTextEdit.toPlainText()
-        if text:
-            list_message = self.database_client.async_search_message(self.current_chat, text)
-            self.show_history(list_message)
-        else:
-            self.history_list_update()
+        if self.current_chat:
+            if text:
+                    list_message = self.database_client.async_search_message(self.current_chat, text)
+                    self.show_history(list_message)
+            else:
+                self.history_list_update()
+        elif self.current_group:
+            if text:
+                    list_message = self.database_client.async_search_message_group(self.current_group, text)
+                    self.show_history(list_message)
+            else:
+                self.history_group_update()
 
     def update_groups_list(self):
         """'Updating the groups list on the main window."""
@@ -318,6 +380,7 @@ class ClientMainWindow(QMainWindow):
                                                 f'open chat with him? ',
                                                 QMessageBox.Yes,
                                                 QMessageBox.No) == QMessageBox.Yes:
+                    self.current_group = None
                     self.current_chat = sender
                     self.set_active_user()
             else:
@@ -327,6 +390,7 @@ class ClientMainWindow(QMainWindow):
                                                 f'Add to contacts and open a chat with him?',
                                                 QMessageBox.Yes,
                                                 QMessageBox.No) == QMessageBox.Yes:
+                    self.current_group = None
                     self.add_contact(sender)
                     self.current_chat = sender
                     self.set_active_user()
@@ -345,11 +409,31 @@ class ClientMainWindow(QMainWindow):
     def show_new_group(self):
         self.update_groups_list()
 
+    @pyqtSlot(str)
+    def get_message_group(self, group_name):
+        """
+        Slot handler of incoming messages from group.
+        Asks the user if a message was received not from the current group.
+        If necessary, change the group.
+        """
+        if group_name == self.current_group:
+            self.history_group_update()
+        else:
+            if self.message_window.question(self, 'New message',
+                                            f'Received a new message from group {group_name},'
+                                            f'open chat with him? ',
+                                            QMessageBox.Yes,
+                                            QMessageBox.No) == QMessageBox.Yes:
+                self.current_chat = None
+                self.current_group = group_name
+                self.set_active_group()
+
     def make_connection_with_signals(self, client_obj):
         """Signal connection method."""
         client_obj.new_message_signal.connect(self.get_message)
         client_obj.connection_lost_signal.connect(self.connection_lost)
         client_obj.new_group_signal.connect(self.show_new_group)
+        client_obj.new_message_group_signal.connect(self.get_message_group)
 
 
 if __name__ == '__main__':

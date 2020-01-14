@@ -20,7 +20,8 @@ from common.variables import (CONFIG_FILE_NAME, MAX_CONNECTIONS, TO, USER, ACCOU
                               TIME, PRESENCE, FROM, EXIT, GET_CONTACTS, PUBLIC_KEY, ACTION,
                               MESSAGE_TEXT, MESSAGE, LIST_INFO, ADD_CONTACT, DELETE_CONTACT,
                               USERS_REQUEST, PUBLIC_KEY_REQUEST, RESPONSE_205, DEFAULT_PORT,
-                              SEND_AVATAR, IMAGE, GET_AVATAR, RESPONSE_206, GET_GROUPS)
+                              SEND_AVATAR, IMAGE, GET_AVATAR, RESPONSE_206,
+                              GET_GROUPS, GET_MESSAGES_GROUPS, MESSAGE_GROUP)
 from common.utils import get_msg, send_msg
 from common.errors import IncorrectDataNotDictError
 from common.decos import Logging
@@ -346,6 +347,13 @@ class Server(threading.Thread, QObject):
             else:
                 send_msg(client, {RESPONSE: 400, ERROR: 'The user is not registered on the server.'})
 
+        elif ACTION in message and message[ACTION] == MESSAGE_GROUP and\
+                TIME in message and MESSAGE_TEXT in message and TO in message and FROM in message:
+            with LOCK_DATABASE:
+                self.database.add_group_message(message[TO], message[FROM], message[MESSAGE_TEXT])
+            send_msg(client, {RESPONSE: 200})
+            self.send_group_message(message)
+
         elif ACTION in message and message[ACTION] == GET_CONTACTS and USER in message \
                 and self.names[message[USER]] == client:
             answer = {
@@ -360,6 +368,15 @@ class Server(threading.Thread, QObject):
             answer = {
                 RESPONSE: 202,
                 LIST_INFO: [group[1] for group in self.database.get_groups()]
+                }
+            send_msg(client, answer)
+            LOGGER.debug(f'Groups list sent to {answer [LIST_INFO]} to user - {message[USER]}\n')
+
+        elif ACTION in message and message[ACTION] == GET_MESSAGES_GROUPS and USER in message \
+                and self.names[message[USER]] == client:
+            answer = {
+                RESPONSE: 202,
+                LIST_INFO: self.database.get_messages_groups()
                 }
             send_msg(client, answer)
             LOGGER.debug(f'Groups list sent to {answer [LIST_INFO]} to user - {message[USER]}\n')
@@ -498,6 +515,15 @@ class Server(threading.Thread, QObject):
     def create_new_group(self, group_name):
         self.database.add_new_group(group_name)
         self.send_groups()
+
+    @Logging()
+    def send_group_message(self, message):
+        for client in self.names:
+            if client != message[FROM]:
+                try:
+                    send_msg(self.names[client], message)
+                except OSError:
+                    self.remove_client(self.names[client])
 
     @Logging()
     def close_socket(self):

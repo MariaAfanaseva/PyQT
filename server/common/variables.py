@@ -34,6 +34,8 @@ PUBLIC_KEY_REQUEST = 'get_pubkey'
 SEND_AVATAR = 'send_avatar'
 GET_AVATAR = 'get_avatar'
 GET_GROUPS = 'get_groups'
+GET_MESSAGES_GROUPS = 'get_messages_groups'
+MESSAGE_GROUP = 'message_group'
 
 # code
 OK = 200
