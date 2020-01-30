@@ -346,7 +346,7 @@ class Client(threading.Thread, QObject):
                         self.database.save_message(user_login, 'in', decrypted_message)
                         self.new_message_signal.emit(user_login)
 
-                    if ACTION in message and message[ACTION] == MESSAGE_GROUP \
+                    elif ACTION in message and message[ACTION] == MESSAGE_GROUP \
                             and TO in message and FROM in message \
                             and MESSAGE_TEXT in message:
                         with LOCK_DATABASE:

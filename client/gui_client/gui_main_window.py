@@ -34,7 +34,7 @@ class ClientMainWindow(QMainWindow):
         self.user_interface.messageEdit = TextEdit(self.user_interface.messageWidget)
         self.user_interface.messageEdit.setMaximumSize(QSize(16777215, 150))
         self.user_interface.messageEdit.setStyleSheet("font-size: 10pt ;")
-        self.user_interface.messageLayout.addWidget(self.user_interface.messageEdit, 7, 0, 1, 3)
+        self.user_interface.messageLayout.addWidget(self.user_interface.messageEdit, 6, 0, 1, 3)
         self.user_interface.messageEdit.send_enter_signal.connect(self.send_enter)
 
         self.user_interface.actionClose.triggered.connect(self.app.quit)
@@ -98,7 +98,7 @@ class ClientMainWindow(QMainWindow):
         self.user_interface.smileButton.setDisabled(True)
         self.user_interface.smileButton_2.setDisabled(True)
         self.user_interface.smileButton_3.setDisabled(True)
-        self.user_interface.searchMessageTextEdit.setDisabled(True)
+        self.user_interface.searchMessageLineEdit.setDisabled(True)
         self.user_interface.searchMessagePushButton.setDisabled(True)
 
     def add_contact_dialog(self):
@@ -174,7 +174,7 @@ class ClientMainWindow(QMainWindow):
         self.user_interface.normalTextButton.setDisabled(False)
         self.user_interface.smileButton.setDisabled(False)
         self.user_interface.smileButton_2.setDisabled(False)
-        self.user_interface.searchMessageTextEdit.setDisabled(False)
+        self.user_interface.searchMessageLineEdit.setDisabled(False)
         self.user_interface.smileButton_3.setDisabled(False)
         self.user_interface.searchMessagePushButton.setDisabled(False)
 
@@ -325,8 +325,8 @@ class ClientMainWindow(QMainWindow):
             self.user_interface.avatarLabel.setPixmap(pix_img_size)
 
     def search_contact(self):
-        """Search contact in Contacts and show in contacts list view"""
-        text = self.user_interface.searchContactTextEdit.toPlainText()
+        """Search contact in Contacts and show in contacts li9st view"""
+        text = self.user_interface.searchContactLineEdit.text()
         if text:
             self.search_list = self.database_client.get_search_contact(text)
             self.search_model = QStandardItemModel()
@@ -340,7 +340,7 @@ class ClientMainWindow(QMainWindow):
 
     def search_message(self):
         """Search message in history"""
-        text = self.user_interface.searchMessageTextEdit.toPlainText()
+        text = self.user_interface.searchMessageLineEdit.text()
         if self.current_chat:
             if text:
                     list_message = self.database_client.async_search_message(self.current_chat, text)
