@@ -1,8 +1,7 @@
 # PyQT
-Для запуска сервера нужно запустить файл server_main.py в папке server.
-Для запуска клиента нужно запустить файл client_main.py в папке client.
+The messenger was written on python and PyQt. Users can search other users, add to friends, write, send, and receive a message.<br/>
+To start the server, you need to run the server_main.py file in the server folder.<br/>
+To start the client, you need to run the client_main.py file in the client folder.<br/>
 
-В базе данных есть два зарегистрированных пользователя:
-mari с паролем 123
-lala с паролем 123
-
+There are two registered users in the database:<br/>
+'mari' and 'lala' with password 123.<br/>
